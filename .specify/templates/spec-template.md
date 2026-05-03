@@ -5,6 +5,28 @@
 **Status**: Draft  
 **Input**: User description: "$ARGUMENTS"
 
+## Baseline Scope Alignment *(mandatory)*
+
+<!--
+  REQUIRED: Before writing feature scope, read the relevant materials in
+  Diagrams/: SRS, database schema, ERD, use-case diagram, activity diagrams,
+  class diagram, object diagram, and system architecture diagram. Treat them as
+  the baseline source of truth unless the team records an explicit scope change.
+-->
+
+- **Source Materials Reviewed**: [List exact files/sections from Diagrams/]
+- **SRS / Use Case IDs**: [e.g., UC-7 Proctored Environment Controller]
+- **Baseline Entities**: [tables/classes affected, or N/A]
+- **Baseline Workflow**: [activity/use-case flow affected, or N/A]
+- **Scope Decision**: [Matches baseline / team-approved change with reason]
+
+## Laravel Delivery Constraints *(mandatory)*
+
+- **Delivery Mode**: Laravel monolithic MVC with Blade server-rendered pages.
+- **Routing**: Web routes and form submissions only; no REST API contract.
+- **Data Access**: MySQL through Eloquent models and migrations.
+- **Security**: Sessions, CSRF protection, server-side validation, middleware, and policies.
+
 ## User Scenarios & Testing *(mandatory)*
 
 <!--
@@ -74,6 +96,9 @@
 
 - What happens when [boundary condition]?
 - How does system handle [error scenario]?
+- What happens when an authenticated user attempts an action outside their role?
+- How does the Blade form handle invalid, missing, duplicated, or expired input?
+- What candidate data is hidden, retained, anonymized, or deleted in this flow?
 
 ## Requirements *(mandatory)*
 
@@ -84,16 +109,25 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST [specific capability through a Laravel Blade workflow]
+- **FR-002**: System MUST validate [inputs] server-side using [Form Request/controller validation]
+- **FR-003**: Users with role [role] MUST be able to [authorized interaction]
+- **FR-004**: System MUST persist [data] using Eloquent models and MySQL migrations
+- **FR-005**: System MUST protect [action/data] with middleware, policies, sessions, and CSRF
 
 *Example of marking unclear requirements:*
 
 - **FR-006**: System MUST authenticate users via [NEEDS CLARIFICATION: auth method not specified - email/password, SSO, OAuth?]
 - **FR-007**: System MUST retain user data for [NEEDS CLARIFICATION: retention period not specified]
+
+### Role & Privacy Requirements *(mandatory when candidate or evaluation data is touched)*
+
+- **RP-001**: HR Admin access MUST be limited to [approved actions/data for this feature]
+- **RP-002**: Technical Interviewer access MUST be limited to [assigned candidate/interview data]
+- **RP-003**: Candidate access MUST be limited to their own profile, applications, assessments, offers, and status
+- **RP-004**: Junior Staff or observer access MUST be read-only/training-only when applicable
+- **RP-005**: Candidate PII, resumes, scores, feedback, and offer details MUST be hidden from unauthorized roles
+- **RP-006**: Simulated AI/proctoring decisions MUST be labeled as simulated and reviewable by an authorized role
 
 ### Key Entities *(include if feature involves data)*
 

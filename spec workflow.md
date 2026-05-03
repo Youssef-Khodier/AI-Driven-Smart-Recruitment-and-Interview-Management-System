@@ -49,7 +49,7 @@ Only move to the next phase after the current phase is implemented, reviewed, an
 Create the project rules before implementation begins.
 
 ```text
-/speckit.constitution Create principles for a 3-person academic software engineering project: clear specs before code, small phased delivery, Laravel monolithic MVC architecture, MySQL-backed data model, Blade server-rendered frontend, role-based access control, testable acceptance criteria, privacy-aware candidate data handling, simulated AI/proctoring where needed, and mandatory peer review before implementation.
+/speckit.constitution Create principles for a 3-person academic software engineering project. The project must use Laravel PHP as a monolithic MVC application with Blade server-rendered pages, MySQL, Eloquent models, migrations, controllers, middleware, policies, sessions, CSRF protection, and server-side validation. Do not use REST APIs or a separated frontend. Before creating any spec, plan, or task list, read and respect the existing project materials in the Diagrams folder, including the SRS, database schema, ERD, use-case diagram, activity diagrams, class diagram, object diagram, and system architecture diagram. Treat these files as the baseline source of truth unless the team explicitly changes scope. Enforce clear specs before code, small phased delivery, role-based access control, testable acceptance criteria, privacy-aware candidate data handling, simulated AI/proctoring where needed, and mandatory peer review before implementation.
 ```
 
 ## Phase 1: Foundation, Auth, Roles, Layouts
