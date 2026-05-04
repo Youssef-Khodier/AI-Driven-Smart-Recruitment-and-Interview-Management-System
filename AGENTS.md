@@ -1,7 +1,7 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan at
-`specs/004-interview-scheduling-feedback/plan.md` and `.specify/memory/constitution.md`.
+`specs/005-final-offer-onboarding/plan.md` and `.specify/memory/constitution.md`.
 
 Before creating or changing any spec, plan, task list, or implementation
 scope, read and respect the baseline materials in `Diagrams/`, including

@@ -37,6 +37,10 @@ $router->post('/candidate/assessments/{id}/submit', [AssessmentController::class
 $router->post('/candidate/assessments/{id}/focus-events', [AssessmentController::class, 'focusEvent'], 'candidate.assessments.focus-events.store');
 $router->get('/candidate/assessments/{id}/result', [AssessmentController::class, 'resultCandidate'], 'candidate.assessments.result');
 
+$router->get('/candidate/offers/{id}', [\App\Controllers\CandidateOfferController::class, 'show'], 'candidate.offers.show');
+$router->post('/candidate/offers/{id}/accept', [\App\Controllers\CandidateOfferController::class, 'accept'], 'candidate.offers.accept');
+$router->post('/candidate/offers/{id}/reject', [\App\Controllers\CandidateOfferController::class, 'reject'], 'candidate.offers.reject');
+
 $router->get('/hr/users', [HrController::class, 'users'], 'hr.users.index');
 $router->get('/hr/users/create', [HrController::class, 'createUser'], 'hr.users.create');
 $router->post('/hr/users', [HrController::class, 'storeUser'], 'hr.users.store');
@@ -79,6 +83,21 @@ $router->get('/hr/interviews/{id}/edit', [HrInterviewController::class, 'edit'],
 $router->put('/hr/interviews/{id}', [HrInterviewController::class, 'update'], 'hr.interviews.update');
 $router->post('/hr/interviews/{id}/cancel', [HrInterviewController::class, 'cancel'], 'hr.interviews.cancel');
 $router->post('/hr/interviews/{id}/complete', [HrInterviewController::class, 'complete'], 'hr.interviews.complete');
+
+$router->get('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'show'], 'hr.evaluations.show');
+$router->post('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'store'], 'hr.evaluations.store');
+
+$router->get('/hr/offers', [\App\Controllers\HrOfferController::class, 'index'], 'hr.offers.index');
+$router->get('/hr/applications/{id}/offers/create', [\App\Controllers\HrOfferController::class, 'create'], 'hr.offers.create');
+$router->post('/hr/applications/{id}/offers', [\App\Controllers\HrOfferController::class, 'store'], 'hr.offers.store');
+$router->get('/hr/offers/{id}', [\App\Controllers\HrOfferController::class, 'show'], 'hr.offers.show');
+$router->post('/hr/offers/{id}/send', [\App\Controllers\HrOfferController::class, 'send'], 'hr.offers.send');
+
+$router->get('/hr/onboarding', [\App\Controllers\HrOnboardingController::class, 'index'], 'hr.onboarding.index');
+$router->get('/hr/offers/{id}/onboarding/create', [\App\Controllers\HrOnboardingController::class, 'create'], 'hr.onboarding.create');
+$router->post('/hr/offers/{id}/onboarding', [\App\Controllers\HrOnboardingController::class, 'store'], 'hr.onboarding.store');
+$router->get('/hr/onboarding/{id}', [\App\Controllers\HrOnboardingController::class, 'show'], 'hr.onboarding.show');
+$router->put('/hr/onboarding/{id}', [\App\Controllers\HrOnboardingController::class, 'update'], 'hr.onboarding.update');
 
 $router->get('/interviewer/interviews', [InterviewerInterviewController::class, 'index'], 'interviewer.interviews.index');
 $router->get('/interviewer/interviews/{id}', [InterviewerInterviewController::class, 'show'], 'interviewer.interviews.show');

@@ -1,0 +1,93 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Core\Controller;
+use App\Core\Request;
+use App\Core\Response;
+use App\Core\Auth;
+use App\Enums\OfferStatus;
+use App\Enums\PostOfferAuditAction;
+use App\Policies\OfferPolicy;
+use App\Repositories\OfferRepository;
+use App\Repositories\PostOfferAuditRepository;
+use App\Core\Database;
+
+final class CandidateOfferController extends Controller
+{
+    public function show(Request $request, int $offerId): Response
+    {
+        $actorId = Auth::id();
+        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+
+        if (!OfferPolicy::view($offerId)) {
+            return Response::redirect(url('candidate.dashboard'))->with('error', 'Unauthorized');
+        }
+
+        $offer = Database::fetch(
+            'SELECT o.*, a.job_id, j.title as job_title, c.candidate_id, u.name as candidate_name 
+             FROM offers o 
+             JOIN applications a ON o.application_id = a.application_id
+             JOIN job_requisitions j ON a.job_id = j.job_id
+             JOIN candidates c ON a.candidate_id = c.candidate_id
+             JOIN users u ON c.candidate_id = u.user_id
+             WHERE o.offer_id = ? AND o.status != ?',
+            [$offerId, OfferStatus::DRAFT->value]
+        );
+
+        if (!$offer) {
+            return Response::redirect(url('candidate.applications.index'))->with('error', 'Offer not found or not sent yet');
+        }
+
+        return Response::view('candidate/offers/show', [
+            'title' => 'Your Offer',
+            'offer' => $offer
+        ]);
+    }
+
+    public function accept(Request $request, int $offerId): Response
+    {
+        if (!OfferPolicy::respond($offerId)) {
+            return Response::redirect(url('candidate.dashboard'))->with('error', 'Unauthorized');
+        }
+
+        $actorId = Auth::id();
+        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+
+        $offer = OfferRepository::find($offerId);
+        if (!$offer || $offer['status'] !== OfferStatus::SENT->value) {
+            return Response::redirect(url('candidate.offers.show', [$offerId]))->with('error', 'Offer is no longer available for acceptance.');
+        }
+
+        OfferRepository::accept($offerId, $actorId);
+
+        PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_ACCEPT->value, [
+            'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::ACCEPTED->value]
+        ]);
+
+        return Response::redirect(url('candidate.offers.show', [$offerId]))->with('success', 'You have accepted the offer.');
+    }
+
+    public function reject(Request $request, int $offerId): Response
+    {
+        if (!OfferPolicy::respond($offerId)) {
+            return Response::redirect(url('candidate.dashboard'))->with('error', 'Unauthorized');
+        }
+
+        $actorId = Auth::id();
+        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+
+        $offer = OfferRepository::find($offerId);
+        if (!$offer || $offer['status'] !== OfferStatus::SENT->value) {
+            return Response::redirect(url('candidate.offers.show', [$offerId]))->with('error', 'Offer is no longer available for rejection.');
+        }
+
+        OfferRepository::reject($offerId, $actorId);
+
+        PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_REJECT->value, [
+            'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::REJECTED->value]
+        ]);
+
+        return Response::redirect(url('candidate.offers.show', [$offerId]))->with('success', 'You have rejected the offer.');
+    }
+}

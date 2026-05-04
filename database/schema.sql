@@ -2,6 +2,10 @@ CREATE DATABASE IF NOT EXISTS srim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode
 USE srim;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS post_offer_audit_records;
+DROP TABLE IF EXISTS onboarding;
+DROP TABLE IF EXISTS offers;
+DROP TABLE IF EXISTS final_evaluations;
 DROP TABLE IF EXISTS interview_audit_records;
 DROP TABLE IF EXISTS interview_feedback;
 DROP TABLE IF EXISTS interviewers_assignment;
@@ -284,6 +288,81 @@ CREATE TABLE interview_audit_records (
   CONSTRAINT fk_interview_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
   KEY idx_interview_audit_interview (interview_id),
   KEY idx_interview_audit_action (action)
+) ENGINE=InnoDB;
+
+CREATE TABLE final_evaluations (
+  evaluation_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  aggregate_score DECIMAL(5,2) NULL,
+  recommendation VARCHAR(40) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'EVALUATED',
+  decision_notes TEXT NOT NULL,
+  partial_evidence_acknowledged BOOLEAN NOT NULL DEFAULT FALSE,
+  evaluated_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_evaluations_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_evaluations_evaluated_by FOREIGN KEY (evaluated_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_evaluations_application (application_id),
+  CONSTRAINT chk_eval_score CHECK (aggregate_score >= 0 AND aggregate_score <= 100)
+) ENGINE=InnoDB;
+
+CREATE TABLE offers (
+  offer_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  offer_sequence INT UNSIGNED NOT NULL,
+  replaces_offer_id BIGINT UNSIGNED NULL,
+  offer_type VARCHAR(40) NOT NULL,
+  ctc DECIMAL(12,2) NOT NULL,
+  bonus DECIMAL(12,2) NOT NULL DEFAULT 0,
+  stock_options DECIMAL(12,2) NOT NULL DEFAULT 0,
+  status VARCHAR(40) NOT NULL DEFAULT 'DRAFT',
+  expiry_date TIMESTAMP NOT NULL,
+  sent_at TIMESTAMP NULL,
+  accepted_at TIMESTAMP NULL,
+  rejected_at TIMESTAMP NULL,
+  expired_at TIMESTAMP NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_offers_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_offers_replaces FOREIGN KEY (replaces_offer_id) REFERENCES offers(offer_id) ON DELETE SET NULL,
+  CONSTRAINT fk_offers_created_by FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_offers_app_seq (application_id, offer_sequence),
+  CONSTRAINT chk_offer_ctc CHECK (ctc >= 0),
+  CONSTRAINT chk_offer_bonus CHECK (bonus >= 0),
+  CONSTRAINT chk_offer_stock CHECK (stock_options >= 0)
+) ENGINE=InnoDB;
+
+CREATE TABLE onboarding (
+  onboarding_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  offer_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'PENDING',
+  start_date DATE NULL,
+  documents_completed BOOLEAN NOT NULL DEFAULT FALSE,
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_onboarding_offer FOREIGN KEY (offer_id) REFERENCES offers(offer_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_onboarding_created_by FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_onboarding_offer (offer_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE post_offer_audit_records (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  offer_id BIGINT UNSIGNED NULL,
+  onboarding_id BIGINT UNSIGNED NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  action VARCHAR(60) NOT NULL,
+  changed_fields JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_po_audit_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_po_audit_offer FOREIGN KEY (offer_id) REFERENCES offers(offer_id) ON DELETE CASCADE,
+  CONSTRAINT fk_po_audit_onboarding FOREIGN KEY (onboarding_id) REFERENCES onboarding(onboarding_id) ON DELETE CASCADE,
+  CONSTRAINT fk_po_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_po_audit_application (application_id),
+  KEY idx_po_audit_action (action)
 ) ENGINE=InnoDB;
 
 INSERT INTO departments (name, description) VALUES
