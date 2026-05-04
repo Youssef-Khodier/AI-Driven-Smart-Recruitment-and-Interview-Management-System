@@ -71,6 +71,26 @@ class User extends Authenticatable
         return $this->hasMany(AccountAuditRecord::class, 'target_user_id', 'user_id');
     }
 
+    public function createdJobRequisitions(): HasMany
+    {
+        return $this->hasMany(JobRequisition::class, 'created_by', 'user_id');
+    }
+
+    public function approvedJobRequisitions(): HasMany
+    {
+        return $this->hasMany(JobRequisition::class, 'approved_by', 'user_id');
+    }
+
+    public function jobRequisitionStatusHistories(): HasMany
+    {
+        return $this->hasMany(JobRequisitionStatusHistory::class, 'actor_user_id', 'user_id');
+    }
+
+    public function applicationStatusHistories(): HasMany
+    {
+        return $this->hasMany(ApplicationStatusHistory::class, 'actor_user_id', 'user_id');
+    }
+
     public function isActive(): bool
     {
         return $this->status === AccountStatus::ACTIVE;

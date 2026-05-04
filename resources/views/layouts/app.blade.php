@@ -28,9 +28,12 @@
             @auth
                 @if(auth()->user()->hasRole(\App\Enums\UserRole::HR_ADMIN))
                     <a href="{{ route('hr.users.index') }}">Users</a>
+                    <a href="{{ route('hr.requisitions.index') }}">Requisitions</a>
                 @endif
                 @if(auth()->user()->hasRole(\App\Enums\UserRole::CANDIDATE))
                     <a href="{{ route('candidate.profile') }}">My Profile</a>
+                    <a href="{{ route('candidate.jobs.index') }}">Open Jobs</a>
+                    <a href="{{ route('candidate.applications.index') }}">My Applications</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" style="margin-left:auto;">
                     @csrf

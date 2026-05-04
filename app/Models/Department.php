@@ -33,4 +33,9 @@ class Department extends Model
     {
         return $this->hasMany(User::class, 'department_id', 'department_id');
     }
+
+    public function jobRequisitions(): HasMany
+    {
+        return $this->hasMany(JobRequisition::class, 'department_id', 'department_id');
+    }
 }
