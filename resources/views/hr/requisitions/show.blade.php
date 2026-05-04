@@ -15,7 +15,20 @@
             <a class="button" href="{{ route('hr.requisitions.edit', $requisition) }}">Edit</a>
         @endcan
         <a class="button" href="{{ route('hr.applications.index', $requisition) }}">Review applicants</a>
+        <a class="button" href="{{ route('hr.assessments.index', $requisition) }}">Manage assessments</a>
+        <a class="button" href="{{ route('hr.assessment-results.index', $requisition) }}">Assessment results</a>
     </p>
+
+    <h2>Assessments</h2>
+    @if ($requisition->assessments->isEmpty())
+        <p>No assessments configured for this job.</p>
+    @else
+        <ul>
+            @foreach ($requisition->assessments as $assessment)
+                <li><a href="{{ route('hr.assessments.show', $assessment) }}">{{ $assessment->title }}</a> ({{ $assessment->is_active ? 'Active' : 'Inactive' }})</li>
+            @endforeach
+        </ul>
+    @endif
 
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
         @can('submit', $requisition)

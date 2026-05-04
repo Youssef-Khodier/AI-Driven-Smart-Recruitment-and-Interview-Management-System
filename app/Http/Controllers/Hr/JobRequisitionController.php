@@ -64,7 +64,7 @@ class JobRequisitionController extends Controller
     {
         Gate::authorize('view', $requisition);
 
-        $requisition->load(['department', 'creator', 'approver', 'statusHistories.actor']);
+        $requisition->load(['department', 'creator', 'approver', 'assessments', 'statusHistories.actor']);
 
         return view('hr.requisitions.show', [
             'title' => $requisition->title,

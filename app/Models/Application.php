@@ -45,4 +45,9 @@ class Application extends Model
     {
         return $this->hasMany(ApplicationStatusHistory::class, 'application_id', 'application_id');
     }
+
+    public function candidateAssessments(): HasMany
+    {
+        return $this->hasMany(CandidateAssessment::class, 'application_id', 'application_id');
+    }
 }

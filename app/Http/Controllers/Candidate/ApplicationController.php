@@ -35,7 +35,7 @@ class ApplicationController extends Controller
 
         return view('candidate.applications.show', [
             'title' => 'Application Status',
-            'application' => $application->load(['jobRequisition.department', 'statusHistories.actor']),
+            'application' => $application->load(['jobRequisition.department', 'jobRequisition.assessments', 'candidateAssessments.assessment', 'statusHistories.actor']),
         ]);
     }
 

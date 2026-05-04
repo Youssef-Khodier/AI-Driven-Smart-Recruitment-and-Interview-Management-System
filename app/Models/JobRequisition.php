@@ -57,6 +57,11 @@ class JobRequisition extends Model
         return $this->hasMany(Application::class, 'job_id', 'job_id');
     }
 
+    public function assessments(): HasMany
+    {
+        return $this->hasMany(Assessment::class, 'job_id', 'job_id');
+    }
+
     public function statusHistories(): HasMany
     {
         return $this->hasMany(JobRequisitionStatusHistory::class, 'job_id', 'job_id');

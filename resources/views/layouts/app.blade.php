@@ -16,7 +16,8 @@
         .alert-error { background: #fdecec; color: #8f1f1f; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: .75rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
-        input, select { display: block; width: 100%; max-width: 32rem; padding: .65rem; margin: .25rem 0 1rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
+        input, select, textarea { display: block; width: 100%; max-width: 32rem; padding: .65rem; margin: .25rem 0 1rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
+        textarea { min-height: 7rem; }
         button, .button { display: inline-block; background: #1f5eff; color: #fff; border: 0; border-radius: .4rem; padding: .65rem 1rem; text-decoration: none; cursor: pointer; }
     </style>
 </head>
@@ -29,11 +30,13 @@
                 @if(auth()->user()->hasRole(\App\Enums\UserRole::HR_ADMIN))
                     <a href="{{ route('hr.users.index') }}">Users</a>
                     <a href="{{ route('hr.requisitions.index') }}">Requisitions</a>
+                    <a href="{{ route('hr.requisitions.index') }}">Assessment Setup</a>
                 @endif
                 @if(auth()->user()->hasRole(\App\Enums\UserRole::CANDIDATE))
                     <a href="{{ route('candidate.profile') }}">My Profile</a>
                     <a href="{{ route('candidate.jobs.index') }}">Open Jobs</a>
                     <a href="{{ route('candidate.applications.index') }}">My Applications</a>
+                    <a href="{{ route('candidate.applications.index') }}">My Assessments</a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}" style="margin-left:auto;">
                     @csrf
