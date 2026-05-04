@@ -1,0 +1,15 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+RewriteRule ^ index.php [L]
+
+<FilesMatch "^(\.env|composer\.(json|lock)|phpunit\.xml)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteRule ^(app|bootstrap|config|database|scripts|specs|storage|tests|vendor|\.git|\.specify|Diagrams)/ - [F,L]
+</IfModule>

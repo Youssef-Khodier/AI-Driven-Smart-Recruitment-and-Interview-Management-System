@@ -5,6 +5,12 @@ namespace App\Enums;
 enum AssessmentQuestionType: string
 {
     case MCQ = 'MCQ';
-    case THEORY = 'Theory';
-    case CODING_TEXT = 'Coding Text';
+    case CODING = 'CODING';
+    case THEORY = 'THEORY';
+    case OTHER = 'OTHER';
+
+    public static function values(): array
+    {
+        return array_map(fn (self $type): string => $type->value, self::cases());
+    }
 }

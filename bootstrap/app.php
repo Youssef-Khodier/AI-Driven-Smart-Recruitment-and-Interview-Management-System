@@ -1,23 +1,20 @@
 <?php
 
-use App\Http\Middleware\EnsureUserHasRole;
-use App\Http\Middleware\EnsureUserIsActive;
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
+use App\Core\App;
+use App\Core\Config;
+use App\Core\Database;
+use App\Core\Request;
+use App\Core\Router;
+use App\Core\Session;
 
-return Application::configure(basePath: dirname(__DIR__))
-    ->withRouting(
-        web: __DIR__.'/../routes/web.php',
-        commands: __DIR__.'/../routes/console.php',
-        health: '/up',
-    )
-    ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias([
-            'active' => EnsureUserIsActive::class,
-            'role' => EnsureUserHasRole::class,
-        ]);
-    })
-    ->withExceptions(function (Exceptions $exceptions): void {
-        //
-    })->create();
+require_once __DIR__ . '/autoload.php';
+
+$root = dirname(__DIR__);
+Config::load($root);
+Session::start();
+Database::configure(Config::database());
+
+$router = new Router();
+require $root . '/routes/web.php';
+
+return new App($router, Request::capture());

@@ -8,9 +8,10 @@ scope, read and respect the baseline materials in `Diagrams/`, including
 the SRS, database schema, ERD, use-case diagram, activity diagrams, class
 diagram, object diagram, and system architecture diagram.
 
-SRIM is governed as a Laravel PHP monolithic MVC application with Blade
-server-rendered pages, MySQL, Eloquent models, migrations, controllers,
-middleware, policies, sessions, CSRF protection, and server-side validation.
-Do not introduce REST APIs or a separated frontend unless the constitution
+SRIM is governed as a framework-free Vanilla PHP monolithic MVC application
+with server-rendered PHP templates, MySQL via PDO, plain SQL schema files,
+controllers, middleware-style guards, policies, native sessions, CSRF
+protection, and server-side validation. Do not introduce REST APIs, a
+separated frontend, or runtime framework dependencies unless the constitution
 is amended first.
 <!-- SPECKIT END -->

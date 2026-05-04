@@ -4,9 +4,14 @@ namespace App\Enums;
 
 enum AssessmentType: string
 {
-    case TECHNICAL = 'Technical';
-    case APTITUDE = 'Aptitude';
-    case CODING = 'Coding';
-    case THEORY = 'Theory';
-    case OTHER = 'Other';
+    case TECHNICAL = 'TECHNICAL';
+    case APTITUDE = 'APTITUDE';
+    case CODING = 'CODING';
+    case THEORY = 'THEORY';
+    case OTHER = 'OTHER';
+
+    public static function values(): array
+    {
+        return array_map(fn (self $type): string => $type->value, self::cases());
+    }
 }

@@ -1,0 +1,228 @@
+CREATE DATABASE IF NOT EXISTS srim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE srim;
+
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS assessment_integrity_events;
+DROP TABLE IF EXISTS submissions;
+DROP TABLE IF EXISTS candidate_assessment_questions;
+DROP TABLE IF EXISTS candidate_assessments;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS assessments;
+DROP TABLE IF EXISTS application_status_histories;
+DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS job_requisition_status_histories;
+DROP TABLE IF EXISTS job_requisitions;
+DROP TABLE IF EXISTS account_audit_records;
+DROP TABLE IF EXISTS candidates;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS departments;
+SET FOREIGN_KEY_CHECKS = 1;
+
+CREATE TABLE departments (
+  department_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL UNIQUE,
+  description TEXT NULL,
+  parent_department_id BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_departments_parent FOREIGN KEY (parent_department_id) REFERENCES departments(department_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE users (
+  user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  department_id BIGINT UNSIGNED NULL,
+  name VARCHAR(160) NOT NULL,
+  email VARCHAR(180) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(32) NOT NULL DEFAULT 'CANDIDATE',
+  status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
+  remember_token VARCHAR(100) NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_users_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE SET NULL,
+  KEY idx_users_role_status (role, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidates (
+  candidate_id BIGINT UNSIGNED PRIMARY KEY,
+  phone VARCHAR(40) NOT NULL,
+  current_title VARCHAR(160) NULL,
+  years_experience TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  location VARCHAR(160) NULL,
+  resume_url VARCHAR(2048) NULL,
+  skill_keywords TEXT NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_candidates_user FOREIGN KEY (candidate_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE account_audit_records (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  target_user_id BIGINT UNSIGNED NOT NULL,
+  action VARCHAR(48) NOT NULL,
+  old_values JSON NULL,
+  new_values JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_account_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  CONSTRAINT fk_account_audit_target FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE job_requisitions (
+  job_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  department_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(180) NOT NULL,
+  description TEXT NOT NULL,
+  requirements TEXT NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'DRAFT',
+  created_by BIGINT UNSIGNED NOT NULL,
+  approved_by BIGINT UNSIGNED NULL,
+  approved_at TIMESTAMP NULL,
+  opened_at TIMESTAMP NULL,
+  closed_at TIMESTAMP NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_jobs_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_jobs_created_by FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_jobs_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  KEY idx_jobs_status (status)
+) ENGINE=InnoDB;
+
+CREATE TABLE job_requisition_status_histories (
+  history_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id BIGINT UNSIGNED NOT NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  old_status VARCHAR(40) NULL,
+  new_status VARCHAR(40) NOT NULL,
+  reason TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_job_history_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_job_history_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE applications (
+  application_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  job_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'APPLIED',
+  match_score TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_applications_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_applications_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_applications_candidate_job (candidate_id, job_id),
+  KEY idx_applications_job_status (job_id, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE application_status_histories (
+  history_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  old_status VARCHAR(40) NULL,
+  new_status VARCHAR(40) NOT NULL,
+  reason TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_application_history_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_application_history_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE assessments (
+  assessment_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(180) NOT NULL,
+  description TEXT NULL,
+  type VARCHAR(40) NOT NULL DEFAULT 'TECHNICAL',
+  duration_minutes INT UNSIGNED NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_assessments_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  KEY idx_assessments_job_type (job_id, type)
+) ENGINE=InnoDB;
+
+CREATE TABLE questions (
+  question_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  assessment_id BIGINT UNSIGNED NOT NULL,
+  type VARCHAR(40) NOT NULL DEFAULT 'MCQ',
+  difficulty_level VARCHAR(20) NOT NULL DEFAULT 'MEDIUM',
+  question_text TEXT NOT NULL,
+  options JSON NULL,
+  correct_answer TEXT NULL,
+  points DECIMAL(6,2) NOT NULL DEFAULT 1,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_questions_assessment FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id) ON DELETE CASCADE,
+  KEY idx_questions_assessment_difficulty (assessment_id, difficulty_level)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidate_assessments (
+  ca_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  assessment_id BIGINT UNSIGNED NOT NULL,
+  start_time TIMESTAMP NULL,
+  end_time TIMESTAMP NULL,
+  expires_at TIMESTAMP NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'IN_PROGRESS',
+  score DECIMAL(6,3) NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_attempts_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_attempts_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_attempts_assessment FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id) ON DELETE CASCADE,
+  UNIQUE KEY uq_attempt_candidate_assessment (candidate_id, assessment_id),
+  KEY idx_attempt_application_status (application_id, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidate_assessment_questions (
+  attempt_question_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ca_id BIGINT UNSIGNED NOT NULL,
+  question_id BIGINT UNSIGNED NULL,
+  display_order INT UNSIGNED NOT NULL,
+  question_type VARCHAR(40) NOT NULL,
+  question_text TEXT NOT NULL,
+  options JSON NULL,
+  correct_answer TEXT NULL,
+  points DECIMAL(6,2) NOT NULL,
+  created_at TIMESTAMP NULL,
+  CONSTRAINT fk_attempt_questions_attempt FOREIGN KEY (ca_id) REFERENCES candidate_assessments(ca_id) ON DELETE CASCADE,
+  CONSTRAINT fk_attempt_questions_question FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE SET NULL,
+  UNIQUE KEY uq_attempt_question_order (ca_id, display_order),
+  UNIQUE KEY uq_attempt_question_source (ca_id, question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE submissions (
+  submission_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ca_id BIGINT UNSIGNED NOT NULL,
+  attempt_question_id BIGINT UNSIGNED NOT NULL,
+  question_id BIGINT UNSIGNED NULL,
+  answer_text LONGTEXT NULL,
+  saved_at TIMESTAMP NULL,
+  finalized_at TIMESTAMP NULL,
+  is_correct BOOLEAN NULL,
+  awarded_points DECIMAL(6,2) NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_submissions_attempt FOREIGN KEY (ca_id) REFERENCES candidate_assessments(ca_id) ON DELETE CASCADE,
+  CONSTRAINT fk_submissions_attempt_question FOREIGN KEY (attempt_question_id) REFERENCES candidate_assessment_questions(attempt_question_id) ON DELETE CASCADE,
+  CONSTRAINT fk_submissions_question FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE SET NULL,
+  UNIQUE KEY uq_submission_attempt_question (ca_id, attempt_question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE assessment_integrity_events (
+  event_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ca_id BIGINT UNSIGNED NOT NULL,
+  event_type VARCHAR(40) NOT NULL,
+  occurred_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  metadata JSON NULL,
+  created_at TIMESTAMP NULL,
+  CONSTRAINT fk_integrity_attempt FOREIGN KEY (ca_id) REFERENCES candidate_assessments(ca_id) ON DELETE CASCADE,
+  KEY idx_integrity_attempt_type (ca_id, event_type)
+) ENGINE=InnoDB;
+
+INSERT INTO departments (name, description) VALUES
+('Human Resources', 'Recruitment and HR operations'),
+('Engineering', 'Technical hiring department')
+ON DUPLICATE KEY UPDATE description = VALUES(description);

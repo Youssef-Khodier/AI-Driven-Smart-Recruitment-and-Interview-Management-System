@@ -2,39 +2,28 @@
 
 namespace App\Policies;
 
+use App\Enums\AccountStatus;
+use App\Enums\ApplicationStatus;
 use App\Enums\UserRole;
-use App\Models\Application;
-use App\Models\User;
 
-class ApplicationPolicy
+final class ApplicationPolicy
 {
-    public function before(User $user): ?bool
+    public function transition(array $user, array $application, string $nextStatus): bool
     {
-        return $user->isActive() ? null : false;
-    }
-
-    public function viewAny(User $user): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN) || $user->hasRole(UserRole::CANDIDATE);
-    }
-
-    public function view(User $user, Application $application): bool
-    {
-        if ($user->hasRole(UserRole::HR_ADMIN)) {
-            return true;
+        if (($user['role'] ?? null) !== UserRole::HR_ADMIN->value || ($user['status'] ?? null) !== AccountStatus::ACTIVE->value) {
+            return false;
         }
 
-        return $user->hasRole(UserRole::CANDIDATE)
-            && $user->candidate?->candidate_id === $application->candidate_id;
-    }
+        $allowed = [
+            ApplicationStatus::APPLIED->value => [ApplicationStatus::SCREENING->value, ApplicationStatus::REJECTED->value],
+            ApplicationStatus::SCREENING->value => [ApplicationStatus::ASSESSMENT->value, ApplicationStatus::INTERVIEW->value, ApplicationStatus::REJECTED->value],
+            ApplicationStatus::ASSESSMENT->value => [ApplicationStatus::INTERVIEW->value, ApplicationStatus::REJECTED->value],
+            ApplicationStatus::INTERVIEW->value => [ApplicationStatus::OFFER->value, ApplicationStatus::REJECTED->value],
+            ApplicationStatus::OFFER->value => [ApplicationStatus::HIRED->value, ApplicationStatus::REJECTED->value],
+            ApplicationStatus::REJECTED->value => [],
+            ApplicationStatus::HIRED->value => [],
+        ];
 
-    public function create(User $user): bool
-    {
-        return $user->hasRole(UserRole::CANDIDATE);
-    }
-
-    public function update(User $user, Application $application): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN);
+        return in_array($nextStatus, $allowed[$application['status']] ?? [], true);
     }
 }

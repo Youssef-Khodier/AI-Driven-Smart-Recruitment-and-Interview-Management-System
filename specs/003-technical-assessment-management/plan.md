@@ -5,18 +5,18 @@
 
 ## Summary
 
-Build the SRIM assessment and simulated proctoring vertical slice for HR-authored job assessments, MCQ/theory/coding-as-text question management, candidate assessment attempts for applications in `ASSESSMENT` status, randomized question snapshots, continuous answer saving, timeout expiry, deterministic simulated scoring, and HR review of scores plus focus-loss events. Delivery remains inside the existing Laravel monolithic MVC application using Blade pages, `routes/web.php`, form submissions, Eloquent models, migrations, policies, middleware, sessions, CSRF protection, server-side validation, and PHPUnit feature/model/policy tests.
+Build the SRIM assessment and simulated proctoring vertical slice for HR-authored job assessments, MCQ/theory/coding-as-text question management, candidate assessment attempts for applications in `ASSESSMENT` status, randomized question snapshots, continuous answer saving, timeout expiry, deterministic simulated scoring, and HR review of scores plus focus-loss events. Delivery now targets the Vanilla PHP monolithic MVC replacement using server-rendered PHP templates, `routes/web.php`, form submissions, PDO-backed models/repositories, SQL schema files, policies, middleware-style guards, sessions, CSRF protection, server-side validation, and PHP syntax/test evidence.
 
 ## Technical Context
 
-**Language/Version**: PHP 8.2+ with Laravel 12.x stable  
-**Primary Dependencies**: Laravel MVC, Blade, Eloquent, middleware, policies, sessions, CSRF, Form Request validation, existing RBAC foundation, existing requisition/application models, and PHPUnit via `php artisan test`  
-**Storage**: MySQL via Laravel migrations and Eloquent models; no file upload, external storage, real code execution storage, webcam media, or document storage is in scope  
-**Testing**: Laravel PHPUnit feature tests for HR and Candidate web flows, policy tests for role boundaries, validation tests for assessment/question forms, model relationship/state tests, timeout/scoring tests, and simulated proctoring event tests  
+**Language/Version**: PHP 8.2+ with no runtime framework dependency  
+**Primary Dependencies**: Vanilla PHP MVC, server-rendered PHP templates, PDO, middleware-style guards, policies, sessions, CSRF, server-side validation, existing RBAC foundation, existing requisition/application models, and syntax/test evidence via project scripts  
+**Storage**: MySQL via SQL schema files and PDO-backed models/repositories; no file upload, external storage, real code execution storage, webcam media, or document storage is in scope  
+**Testing**: PHP syntax checks and targeted PHP test/manual web-flow evidence for HR and Candidate flows, policy tests for role boundaries, validation tests for assessment/question forms, model relationship/state checks, timeout/scoring checks, and simulated proctoring event checks  
 **Target Platform**: Server-rendered web application in modern Chrome, Firefox, and Edge browsers  
-**Project Type**: Laravel monolithic MVC web application; no REST API, SPA, separated frontend, or mobile-native project  
+**Project Type**: Vanilla PHP monolithic MVC web application; no REST API, SPA, separated frontend, mobile-native project, or runtime framework dependency  
 **Performance Goals**: HR can create a 10-question assessment in under 5 minutes; candidate can complete a 10-question assessment in one session with at least 95% completion during acceptance testing; timeout enforcement passes in 100% of tested late submissions; HR can review 50 attempts for one job in under 30 seconds; simulated score is visible immediately after final submit or expiry review in at least 95% of tested cases  
-**Constraints**: Blade pages, `routes/web.php`, form submissions or narrowly scoped same-page progressive enhancement only, redirects, MySQL, sessions, CSRF, server-side validation, active-account middleware, role middleware/policies, no REST API, no real AI grading, no real code execution, no plagiarism engine, no webcam/video proctoring, no email links, no retakes or cool-down reuse in this phase  
+**Constraints**: Server-rendered PHP pages, `routes/web.php`, form submissions or narrowly scoped same-page progressive enhancement only, redirects, MySQL, sessions, CSRF, server-side validation, active-account guards, role guards/policies, no REST API, no runtime framework dependency, no real AI grading, no real code execution, no plagiarism engine, no webcam/video proctoring, no email links, no retakes or cool-down reuse in this phase  
 **Scale/Scope**: 3-person academic delivery; one working assessment vertical slice aligned to baseline SRIM assessment/proctoring use cases and sized around 50 attempts per job and 10+ questions per assessment for acceptance evidence
 
 ## Baseline Materials Review

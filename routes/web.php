@@ -1,95 +1,70 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\CandidateRegistrationController;
-use App\Http\Controllers\Candidate\ApplicationController as CandidateApplicationController;
-use App\Http\Controllers\Candidate\AssessmentController as CandidateAssessmentController;
-use App\Http\Controllers\Candidate\DashboardController as CandidateDashboardController;
-use App\Http\Controllers\Candidate\JobController as CandidateJobController;
-use App\Http\Controllers\Candidate\ProfileController as CandidateProfileController;
-use App\Http\Controllers\DashboardRedirectController;
-use App\Http\Controllers\Hr\DashboardController as HrDashboardController;
-use App\Http\Controllers\Hr\ApplicationController as HrApplicationController;
-use App\Http\Controllers\Hr\AssessmentController as HrAssessmentController;
-use App\Http\Controllers\Hr\AssessmentQuestionController as HrAssessmentQuestionController;
-use App\Http\Controllers\Hr\JobRequisitionController as HrJobRequisitionController;
-use App\Http\Controllers\Hr\UserAccessController as HrUserAccessController;
-use App\Http\Controllers\Hr\UserController as HrUserController;
-use App\Http\Controllers\Interviewer\DashboardController as InterviewerDashboardController;
-use Illuminate\Support\Facades\Route;
+use App\Controllers\AssessmentController;
+use App\Controllers\AuthController;
+use App\Controllers\CandidateController;
+use App\Controllers\DashboardController;
+use App\Controllers\HrController;
+use App\Core\Response;
+use App\Enums\JobRequisitionStatus;
 
-Route::view('/', 'welcome')->name('home');
+$router->get('/', fn () => Response::view('welcome', ['title' => 'Welcome']), 'home');
 
-Route::middleware('guest')->group(function (): void {
-    Route::get('/register', [CandidateRegistrationController::class, 'create'])->name('register');
-    Route::post('/register', [CandidateRegistrationController::class, 'store'])->name('register.store');
-    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
-});
+$router->get('/register', [AuthController::class, 'register'], 'register');
+$router->post('/register', [AuthController::class, 'storeRegistration'], 'register.store');
+$router->get('/login', [AuthController::class, 'login'], 'login');
+$router->post('/login', [AuthController::class, 'authenticate'], 'login.store');
+$router->post('/logout', [AuthController::class, 'logout'], 'logout');
 
-Route::middleware(['auth', 'active'])->group(function (): void {
-    Route::get('/dashboard', DashboardRedirectController::class)->name('dashboard');
-    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+$router->get('/dashboard', [DashboardController::class, 'redirectToDashboard'], 'dashboard');
+$router->get('/candidate/dashboard', [DashboardController::class, 'candidate'], 'candidate.dashboard');
+$router->get('/hr/dashboard', [DashboardController::class, 'hr'], 'hr.dashboard');
+$router->get('/interviewer/dashboard', [DashboardController::class, 'interviewer'], 'interviewer.dashboard');
 
-    Route::get('/candidate/dashboard', CandidateDashboardController::class)
-        ->middleware('role:CANDIDATE')
-        ->name('candidate.dashboard');
-    Route::get('/candidate/profile', CandidateProfileController::class)
-        ->middleware('role:CANDIDATE')
-        ->name('candidate.profile');
-    Route::put('/candidate/profile', [CandidateProfileController::class, 'update'])
-        ->middleware('role:CANDIDATE')
-        ->name('candidate.profile.update');
-    Route::middleware('role:CANDIDATE')->prefix('candidate')->name('candidate.')->group(function (): void {
-        Route::get('/jobs', [CandidateJobController::class, 'index'])->name('jobs.index');
-        Route::get('/jobs/{requisition}', [CandidateJobController::class, 'show'])->name('jobs.show');
-        Route::get('/applications', [CandidateApplicationController::class, 'index'])->name('applications.index');
-        Route::get('/applications/{application}', [CandidateApplicationController::class, 'show'])->name('applications.show');
-        Route::post('/jobs/{requisition}/applications', [CandidateApplicationController::class, 'store'])->name('applications.store');
-        Route::post('/applications/{application}/assessments/{assessment}/start', [CandidateAssessmentController::class, 'start'])->name('assessments.start');
-        Route::get('/assessments/{attempt}', [CandidateAssessmentController::class, 'show'])->name('assessments.show');
-        Route::put('/assessments/{attempt}/answers/{attemptQuestion}', [CandidateAssessmentController::class, 'saveAnswer'])->name('assessments.answers.update');
-        Route::post('/assessments/{attempt}/submit', [CandidateAssessmentController::class, 'submit'])->name('assessments.submit');
-        Route::post('/assessments/{attempt}/focus-events', [CandidateAssessmentController::class, 'recordFocusEvent'])->name('assessments.focus-events.store');
-        Route::get('/assessments/{attempt}/result', [CandidateAssessmentController::class, 'result'])->name('assessments.result');
-    });
+$router->get('/candidate/profile', [CandidateController::class, 'profile'], 'candidate.profile');
+$router->put('/candidate/profile', [CandidateController::class, 'updateProfile'], 'candidate.profile.update');
+$router->get('/candidate/jobs', [CandidateController::class, 'jobs'], 'candidate.jobs.index');
+$router->get('/candidate/jobs/{id}', [CandidateController::class, 'job'], 'candidate.jobs.show');
+$router->post('/candidate/jobs/{id}/applications', [CandidateController::class, 'apply'], 'candidate.applications.store');
+$router->get('/candidate/applications', [CandidateController::class, 'applications'], 'candidate.applications.index');
+$router->get('/candidate/applications/{id}', [CandidateController::class, 'application'], 'candidate.applications.show');
+$router->post('/candidate/applications/{application}/assessments/{assessment}/start', [AssessmentController::class, 'startCandidate'], 'candidate.assessments.start');
+$router->get('/candidate/assessments/{id}', [AssessmentController::class, 'showCandidate'], 'candidate.assessments.show');
+$router->put('/candidate/assessments/{id}/answers/{question}', [AssessmentController::class, 'saveAnswer'], 'candidate.assessments.answers.update');
+$router->post('/candidate/assessments/{id}/submit', [AssessmentController::class, 'submitCandidate'], 'candidate.assessments.submit');
+$router->post('/candidate/assessments/{id}/focus-events', [AssessmentController::class, 'focusEvent'], 'candidate.assessments.focus-events.store');
+$router->get('/candidate/assessments/{id}/result', [AssessmentController::class, 'resultCandidate'], 'candidate.assessments.result');
 
-    Route::middleware('role:HR_ADMIN')->prefix('hr')->name('hr.')->group(function (): void {
-        Route::get('/dashboard', HrDashboardController::class)->name('dashboard');
-        Route::get('/users', [HrUserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [HrUserController::class, 'create'])->name('users.create');
-        Route::post('/users', [HrUserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}/access', [HrUserAccessController::class, 'edit'])->name('users.access.edit');
-        Route::put('/users/{user}/access', [HrUserAccessController::class, 'update'])->name('users.access.update');
-        Route::get('/requisitions', [HrJobRequisitionController::class, 'index'])->name('requisitions.index');
-        Route::get('/requisitions/create', [HrJobRequisitionController::class, 'create'])->name('requisitions.create');
-        Route::post('/requisitions', [HrJobRequisitionController::class, 'store'])->name('requisitions.store');
-        Route::get('/requisitions/{requisition}', [HrJobRequisitionController::class, 'show'])->name('requisitions.show');
-        Route::get('/requisitions/{requisition}/edit', [HrJobRequisitionController::class, 'edit'])->name('requisitions.edit');
-        Route::put('/requisitions/{requisition}', [HrJobRequisitionController::class, 'update'])->name('requisitions.update');
-        Route::post('/requisitions/{requisition}/submit', [HrJobRequisitionController::class, 'submit'])->name('requisitions.submit');
-        Route::post('/requisitions/{requisition}/approve', [HrJobRequisitionController::class, 'approve'])->name('requisitions.approve');
-        Route::post('/requisitions/{requisition}/open', [HrJobRequisitionController::class, 'open'])->name('requisitions.open');
-        Route::post('/requisitions/{requisition}/close', [HrJobRequisitionController::class, 'close'])->name('requisitions.close');
-        Route::get('/requisitions/{requisition}/applications', [HrApplicationController::class, 'index'])->name('applications.index');
-        Route::put('/applications/{application}', [HrApplicationController::class, 'update'])->name('applications.update');
-        Route::get('/requisitions/{requisition}/assessments', [HrAssessmentController::class, 'index'])->name('assessments.index');
-        Route::get('/requisitions/{requisition}/assessments/create', [HrAssessmentController::class, 'create'])->name('assessments.create');
-        Route::post('/requisitions/{requisition}/assessments', [HrAssessmentController::class, 'store'])->name('assessments.store');
-        Route::get('/assessments/{assessment}', [HrAssessmentController::class, 'show'])->name('assessments.show');
-        Route::get('/assessments/{assessment}/edit', [HrAssessmentController::class, 'edit'])->name('assessments.edit');
-        Route::put('/assessments/{assessment}', [HrAssessmentController::class, 'update'])->name('assessments.update');
-        Route::post('/assessments/{assessment}/deactivate', [HrAssessmentController::class, 'deactivate'])->name('assessments.deactivate');
-        Route::get('/assessments/{assessment}/questions/create', [HrAssessmentQuestionController::class, 'create'])->name('assessment-questions.create');
-        Route::post('/assessments/{assessment}/questions', [HrAssessmentQuestionController::class, 'store'])->name('assessment-questions.store');
-        Route::get('/assessment-questions/{question}/edit', [HrAssessmentQuestionController::class, 'edit'])->name('assessment-questions.edit');
-        Route::put('/assessment-questions/{question}', [HrAssessmentQuestionController::class, 'update'])->name('assessment-questions.update');
-        Route::post('/assessment-questions/{question}/deactivate', [HrAssessmentQuestionController::class, 'deactivate'])->name('assessment-questions.deactivate');
-        Route::get('/requisitions/{requisition}/assessment-results', [HrAssessmentController::class, 'results'])->name('assessment-results.index');
-        Route::get('/candidate-assessments/{attempt}', [HrAssessmentController::class, 'attempt'])->name('candidate-assessments.show');
-    });
+$router->get('/hr/users', [HrController::class, 'users'], 'hr.users.index');
+$router->get('/hr/users/create', [HrController::class, 'createUser'], 'hr.users.create');
+$router->post('/hr/users', [HrController::class, 'storeUser'], 'hr.users.store');
+$router->get('/hr/users/{id}/access', [HrController::class, 'editAccess'], 'hr.users.access.edit');
+$router->put('/hr/users/{id}/access', [HrController::class, 'updateAccess'], 'hr.users.access.update');
 
-    Route::get('/interviewer/dashboard', InterviewerDashboardController::class)
-        ->middleware('role:INTERVIEWER')
-        ->name('interviewer.dashboard');
-});
+$router->get('/hr/requisitions', [HrController::class, 'requisitions'], 'hr.requisitions.index');
+$router->get('/hr/requisitions/create', [HrController::class, 'createRequisition'], 'hr.requisitions.create');
+$router->post('/hr/requisitions', [HrController::class, 'storeRequisition'], 'hr.requisitions.store');
+$router->get('/hr/requisitions/{id}', [HrController::class, 'showRequisition'], 'hr.requisitions.show');
+$router->get('/hr/requisitions/{id}/edit', [HrController::class, 'editRequisition'], 'hr.requisitions.edit');
+$router->put('/hr/requisitions/{id}', [HrController::class, 'updateRequisition'], 'hr.requisitions.update');
+$router->post('/hr/requisitions/{id}/submit', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::PENDING->value), 'hr.requisitions.submit');
+$router->post('/hr/requisitions/{id}/approve', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::APPROVED->value), 'hr.requisitions.approve');
+$router->post('/hr/requisitions/{id}/open', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::OPEN->value), 'hr.requisitions.open');
+$router->post('/hr/requisitions/{id}/close', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::CLOSED->value), 'hr.requisitions.close');
+$router->get('/hr/requisitions/{id}/applications', [HrController::class, 'applications'], 'hr.applications.index');
+$router->put('/hr/applications/{id}', [HrController::class, 'updateApplication'], 'hr.applications.update');
+
+$router->get('/hr/requisitions/{id}/assessments', [AssessmentController::class, 'index'], 'hr.assessments.index');
+$router->get('/hr/requisitions/{id}/assessments/create', [AssessmentController::class, 'create'], 'hr.assessments.create');
+$router->post('/hr/requisitions/{id}/assessments', [AssessmentController::class, 'store'], 'hr.assessments.store');
+$router->get('/hr/assessments/{id}', [AssessmentController::class, 'show'], 'hr.assessments.show');
+$router->get('/hr/assessments/{id}/edit', [AssessmentController::class, 'edit'], 'hr.assessments.edit');
+$router->put('/hr/assessments/{id}', [AssessmentController::class, 'update'], 'hr.assessments.update');
+$router->post('/hr/assessments/{id}/deactivate', [AssessmentController::class, 'deactivate'], 'hr.assessments.deactivate');
+$router->get('/hr/assessments/{id}/questions/create', [AssessmentController::class, 'createQuestion'], 'hr.assessment-questions.create');
+$router->post('/hr/assessments/{id}/questions', [AssessmentController::class, 'storeQuestion'], 'hr.assessment-questions.store');
+$router->get('/hr/assessment-questions/{id}/edit', [AssessmentController::class, 'editQuestion'], 'hr.assessment-questions.edit');
+$router->put('/hr/assessment-questions/{id}', [AssessmentController::class, 'updateQuestion'], 'hr.assessment-questions.update');
+$router->post('/hr/assessment-questions/{id}/deactivate', [AssessmentController::class, 'deactivateQuestion'], 'hr.assessment-questions.deactivate');
+$router->get('/hr/requisitions/{id}/assessment-results', [AssessmentController::class, 'results'], 'hr.assessment-results.index');
+$router->get('/hr/candidate-assessments/{id}', [AssessmentController::class, 'reviewAttempt'], 'hr.candidate-assessments.show');

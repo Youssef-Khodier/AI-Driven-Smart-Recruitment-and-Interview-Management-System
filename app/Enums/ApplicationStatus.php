@@ -4,11 +4,16 @@ namespace App\Enums;
 
 enum ApplicationStatus: string
 {
-    case APPLIED = 'Applied';
-    case SCREENING = 'Screening';
-    case ASSESSMENT = 'Assessment';
-    case INTERVIEW = 'Interview';
-    case OFFER = 'Offer';
-    case REJECTED = 'Rejected';
-    case HIRED = 'Hired';
+    case APPLIED = 'APPLIED';
+    case SCREENING = 'SCREENING';
+    case ASSESSMENT = 'ASSESSMENT';
+    case INTERVIEW = 'INTERVIEW';
+    case OFFER = 'OFFER';
+    case REJECTED = 'REJECTED';
+    case HIRED = 'HIRED';
+
+    public static function values(): array
+    {
+        return array_map(fn (self $status): string => $status->value, self::cases());
+    }
 }

@@ -1,0 +1,10 @@
+<h1><?= e($assessment['title']) ?></h1>
+<p><strong>Job:</strong> <?= e($assessment['job_title']) ?> | <strong>Type:</strong> <?= e($assessment['type']) ?> | <strong>Duration:</strong> <?= e($assessment['duration_minutes']) ?> min | <strong>Status:</strong> <?= $assessment['is_active'] ? 'Active' : 'Inactive' ?></p>
+<p class="actions"><a class="button" href="<?= e(url('hr.assessments.edit', [$assessment['assessment_id']])) ?>">Edit assessment</a><a class="button" href="<?= e(url('hr.assessment-questions.create', [$assessment['assessment_id']])) ?>">Add question</a><a class="button" href="<?= e(url('hr.assessment-results.index', [$assessment['job_id']])) ?>">Review results</a></p>
+<?php if ($assessment['is_active']): ?><form method="POST" action="<?= e(url('hr.assessments.deactivate', [$assessment['assessment_id']])) ?>"><?= csrf_field() ?><button type="submit">Deactivate</button></form><?php endif; ?>
+<h2>Questions</h2>
+<table><thead><tr><th>Type</th><th>Difficulty</th><th>Question</th><th>Points</th><th>Active</th><th></th></tr></thead><tbody>
+<?php foreach ($questions as $question): ?><tr><td><?= e($question['type']) ?></td><td><?= e($question['difficulty_level']) ?></td><td><?= e(str_limit($question['question_text'], 140)) ?></td><td><?= e($question['points']) ?></td><td><?= $question['is_active'] ? 'Yes' : 'No' ?></td><td><a href="<?= e(url('hr.assessment-questions.edit', [$question['question_id']])) ?>">Edit</a> <form class="inline" method="POST" action="<?= e(url('hr.assessment-questions.deactivate', [$question['question_id']])) ?>"><?= csrf_field() ?><button type="submit">Deactivate</button></form></td></tr><?php endforeach; ?>
+</tbody></table>
+<h2>Attempts</h2>
+<table><tr><th>Candidate</th><th>Status</th><th>Score</th><th></th></tr><?php foreach ($attempts as $attempt): ?><tr><td><?= e($attempt['name']) ?><br><span class="muted"><?= e($attempt['email']) ?></span></td><td><?= e($attempt['status']) ?></td><td><?= e($attempt['score'] ?? '-') ?></td><td><a href="<?= e(url('hr.candidate-assessments.show', [$attempt['ca_id']])) ?>">Review</a></td></tr><?php endforeach; ?></table>

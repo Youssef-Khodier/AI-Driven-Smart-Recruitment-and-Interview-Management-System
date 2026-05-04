@@ -2,70 +2,40 @@
 
 namespace App\Policies;
 
+use App\Enums\AccountStatus;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\UserRole;
-use App\Models\JobRequisition;
-use App\Models\User;
 
-class JobRequisitionPolicy
+final class JobRequisitionPolicy
 {
-    public function before(User $user): ?bool
+    public function update(array $user, array $requisition): bool
     {
-        return $user->isActive() ? null : false;
-    }
-
-    public function viewAny(User $user): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN) || $user->hasRole(UserRole::CANDIDATE);
-    }
-
-    public function view(User $user, JobRequisition $jobRequisition): bool
-    {
-        if ($user->hasRole(UserRole::HR_ADMIN)) {
-            return true;
-        }
-
-        return $user->hasRole(UserRole::CANDIDATE)
-            && $jobRequisition->status === JobRequisitionStatus::OPEN;
-    }
-
-    public function create(User $user): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN);
-    }
-
-    public function update(User $user, JobRequisition $jobRequisition): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN)
-            && in_array($jobRequisition->status, [
-                JobRequisitionStatus::DRAFT,
-                JobRequisitionStatus::PENDING_APPROVAL,
-                JobRequisitionStatus::APPROVED,
+        return $this->isHrAdmin($user)
+            && in_array($requisition['status'], [
+                JobRequisitionStatus::DRAFT->value,
+                JobRequisitionStatus::PENDING->value,
+                JobRequisitionStatus::APPROVED->value,
             ], true);
     }
 
-    public function submit(User $user, JobRequisition $jobRequisition): bool
+    public function transition(array $user, array $requisition, string $nextStatus): bool
     {
-        return $user->hasRole(UserRole::HR_ADMIN)
-            && $jobRequisition->status === JobRequisitionStatus::DRAFT;
+        if (! $this->isHrAdmin($user)) {
+            return false;
+        }
+
+        return match ($nextStatus) {
+            JobRequisitionStatus::PENDING->value => $requisition['status'] === JobRequisitionStatus::DRAFT->value,
+            JobRequisitionStatus::APPROVED->value => $requisition['status'] === JobRequisitionStatus::PENDING->value
+                && (int) $requisition['created_by'] !== (int) $user['user_id'],
+            JobRequisitionStatus::OPEN->value => $requisition['status'] === JobRequisitionStatus::APPROVED->value,
+            JobRequisitionStatus::CLOSED->value => in_array($requisition['status'], [JobRequisitionStatus::APPROVED->value, JobRequisitionStatus::OPEN->value], true),
+            default => false,
+        };
     }
 
-    public function approve(User $user, JobRequisition $jobRequisition): bool
+    private function isHrAdmin(array $user): bool
     {
-        return $user->hasRole(UserRole::HR_ADMIN)
-            && $jobRequisition->status === JobRequisitionStatus::PENDING_APPROVAL
-            && $jobRequisition->created_by !== $user->user_id;
-    }
-
-    public function open(User $user, JobRequisition $jobRequisition): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN)
-            && $jobRequisition->status === JobRequisitionStatus::APPROVED;
-    }
-
-    public function close(User $user, JobRequisition $jobRequisition): bool
-    {
-        return $user->hasRole(UserRole::HR_ADMIN)
-            && in_array($jobRequisition->status, [JobRequisitionStatus::APPROVED, JobRequisitionStatus::OPEN], true);
+        return ($user['role'] ?? null) === UserRole::HR_ADMIN->value && ($user['status'] ?? null) === AccountStatus::ACTIVE->value;
     }
 }
