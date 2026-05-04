@@ -40,7 +40,7 @@ final class HrController extends Controller
             'name' => ['required', ['max', 160]],
             'email' => ['required', 'email', ['max', 180]],
             'password' => ['required', ['min', 8]],
-            'role' => ['required', ['in', [UserRole::HR_ADMIN->value, UserRole::INTERVIEWER->value]]],
+            'role' => ['required', ['in', [UserRole::HR_ADMIN->value, UserRole::INTERVIEWER->value, UserRole::JUNIOR_STAFF->value]]],
             'department_id' => [],
         ]);
 

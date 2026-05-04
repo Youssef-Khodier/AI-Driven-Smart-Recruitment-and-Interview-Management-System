@@ -2,6 +2,10 @@ CREATE DATABASE IF NOT EXISTS srim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode
 USE srim;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS interview_audit_records;
+DROP TABLE IF EXISTS interview_feedback;
+DROP TABLE IF EXISTS interviewers_assignment;
+DROP TABLE IF EXISTS interviews;
 DROP TABLE IF EXISTS assessment_integrity_events;
 DROP TABLE IF EXISTS submissions;
 DROP TABLE IF EXISTS candidate_assessment_questions;
@@ -220,6 +224,66 @@ CREATE TABLE assessment_integrity_events (
   created_at TIMESTAMP NULL,
   CONSTRAINT fk_integrity_attempt FOREIGN KEY (ca_id) REFERENCES candidate_assessments(ca_id) ON DELETE CASCADE,
   KEY idx_integrity_attempt_type (ca_id, event_type)
+) ENGINE=InnoDB;
+
+-- Schema Verification:
+-- interviews requires indexes on application_id, scheduled_at, and status for conflict detection.
+-- interviewers_assignment requires unique key on interview_id + interviewer_id.
+CREATE TABLE interviews (
+  interview_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  interview_type VARCHAR(40) NOT NULL,
+  scheduled_at TIMESTAMP NOT NULL,
+  duration_minutes INT UNSIGNED NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'SCHEDULED',
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_interviews_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_interviews_created_by FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_interviews_application (application_id),
+  KEY idx_interviews_scheduled_at (scheduled_at),
+  KEY idx_interviews_status (status)
+) ENGINE=InnoDB;
+
+CREATE TABLE interviewers_assignment (
+  assignment_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  interview_id BIGINT UNSIGNED NOT NULL,
+  interviewer_id BIGINT UNSIGNED NOT NULL,
+  role_in_panel VARCHAR(40) NOT NULL,
+  is_shadowing BOOLEAN NOT NULL DEFAULT FALSE,
+  CONSTRAINT fk_assignment_interview FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  CONSTRAINT fk_assignment_interviewer FOREIGN KEY (interviewer_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_assignment_interview_user (interview_id, interviewer_id),
+  KEY idx_assignment_interviewer (interviewer_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE interview_feedback (
+  feedback_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  interview_id BIGINT UNSIGNED NOT NULL,
+  interviewer_id BIGINT UNSIGNED NOT NULL,
+  technical_score DECIMAL(4,2) NOT NULL,
+  communication_score DECIMAL(4,2) NOT NULL,
+  culture_fit_score DECIMAL(4,2) NOT NULL,
+  overall_score DECIMAL(4,2) NOT NULL,
+  comments TEXT NOT NULL,
+  submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_feedback_interview FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  CONSTRAINT fk_feedback_interviewer FOREIGN KEY (interviewer_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_feedback_interview_user (interview_id, interviewer_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE interview_audit_records (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  interview_id BIGINT UNSIGNED NOT NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  action VARCHAR(48) NOT NULL,
+  changed_fields JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_interview_audit_interview FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  CONSTRAINT fk_interview_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_interview_audit_interview (interview_id),
+  KEY idx_interview_audit_action (action)
 ) ENGINE=InnoDB;
 
 INSERT INTO departments (name, description) VALUES

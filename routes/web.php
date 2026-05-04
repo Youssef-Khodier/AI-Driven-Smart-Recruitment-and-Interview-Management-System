@@ -5,6 +5,8 @@ use App\Controllers\AuthController;
 use App\Controllers\CandidateController;
 use App\Controllers\DashboardController;
 use App\Controllers\HrController;
+use App\Controllers\HrInterviewController;
+use App\Controllers\InterviewerInterviewController;
 use App\Core\Response;
 use App\Enums\JobRequisitionStatus;
 
@@ -68,3 +70,17 @@ $router->put('/hr/assessment-questions/{id}', [AssessmentController::class, 'upd
 $router->post('/hr/assessment-questions/{id}/deactivate', [AssessmentController::class, 'deactivateQuestion'], 'hr.assessment-questions.deactivate');
 $router->get('/hr/requisitions/{id}/assessment-results', [AssessmentController::class, 'results'], 'hr.assessment-results.index');
 $router->get('/hr/candidate-assessments/{id}', [AssessmentController::class, 'reviewAttempt'], 'hr.candidate-assessments.show');
+
+$router->get('/hr/interviews', [HrInterviewController::class, 'index'], 'hr.interviews.index');
+$router->get('/hr/applications/{id}/interviews/create', [HrInterviewController::class, 'create'], 'hr.interviews.create');
+$router->post('/hr/applications/{id}/interviews', [HrInterviewController::class, 'store'], 'hr.interviews.store');
+$router->get('/hr/interviews/{id}', [HrInterviewController::class, 'show'], 'hr.interviews.show');
+$router->get('/hr/interviews/{id}/edit', [HrInterviewController::class, 'edit'], 'hr.interviews.edit');
+$router->put('/hr/interviews/{id}', [HrInterviewController::class, 'update'], 'hr.interviews.update');
+$router->post('/hr/interviews/{id}/cancel', [HrInterviewController::class, 'cancel'], 'hr.interviews.cancel');
+$router->post('/hr/interviews/{id}/complete', [HrInterviewController::class, 'complete'], 'hr.interviews.complete');
+
+$router->get('/interviewer/interviews', [InterviewerInterviewController::class, 'index'], 'interviewer.interviews.index');
+$router->get('/interviewer/interviews/{id}', [InterviewerInterviewController::class, 'show'], 'interviewer.interviews.show');
+$router->get('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'feedback'], 'interviewer.interviews.feedback.create');
+$router->post('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'storeFeedback'], 'interviewer.interviews.feedback.store');
