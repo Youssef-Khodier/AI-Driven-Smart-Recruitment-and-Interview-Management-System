@@ -34,4 +34,9 @@ class Candidate extends Model
     {
         return $this->hasMany(Application::class, 'candidate_id', 'candidate_id');
     }
+
+    public function candidateAssessments(): HasMany
+    {
+        return $this->hasMany(CandidateAssessment::class, 'candidate_id', 'candidate_id');
+    }
 }

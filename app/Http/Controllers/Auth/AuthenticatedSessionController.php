@@ -40,7 +40,7 @@ class AuthenticatedSessionController extends Controller
             ]);
         }
 
-        return redirect()->intended(route(RoleDashboard::routeNameFor($user)));
+        return redirect()->route(RoleDashboard::routeNameFor($user));
     }
 
     public function destroy(): RedirectResponse
