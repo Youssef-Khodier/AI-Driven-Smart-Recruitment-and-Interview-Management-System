@@ -115,6 +115,14 @@ framework code, Blade templates, Eloquent models, migrations, Form Requests, and
 Artisan commands are migration sources only and MUST be replaced by framework-free
 equivalents before the rewrite is considered complete.
 
+## Tailwind CSS Amendment
+
+The team approved the use of Tailwind CSS for styling the application's user interface,
+superseding the initial preference for strictly Vanilla CSS. Tailwind CSS will be used
+to implement the SRIM Design System tokens (colors, typography, spacing) across all
+server-rendered PHP templates. This exception allows the team to rapidly integrate the
+generated UI screens while maintaining the monolithic Vanilla PHP architecture.
+
 ## Development Workflow
 
 Each feature MUST follow this order: read the relevant `Diagrams/` materials, write or
@@ -156,4 +164,4 @@ checkpoint. Any violation MUST be documented with either a correction before
 implementation or a team-approved exception that explains why the simpler compliant
 alternative was not used.
 
-**Version**: 2.0.0 | **Ratified**: 2026-05-03 | **Last Amended**: 2026-05-04
+**Version**: 2.1.0 | **Ratified**: 2026-05-03 | **Last Amended**: 2026-05-05

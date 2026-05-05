@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Application Detail - Elena Rostova - SRIM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-fixed": "#271902",
+                        "on-secondary-fixed-variant": "#003ab2",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#bdc6e0",
+                        "status-closed-bg": "#1e293b",
+                        "inverse-on-surface": "#f3f0f2",
+                        "tertiary": "#0f0800",
+                        "role-admin": "#7c3aed",
+                        "on-secondary-fixed": "#001550",
+                        "border-base": "#e2e8f0",
+                        "warning": "#d97706",
+                        "on-primary": "#ffffff",
+                        "status-active-text": "#166534",
+                        "primary-fixed": "#d9e2fc",
+                        "on-primary-fixed": "#121b2e",
+                        "info-bg": "#eff6ff",
+                        "outline": "#76777d",
+                        "surface-container": "#f0edef",
+                        "surface-tint": "#555e74",
+                        "success-bg": "#e8f7ef",
+                        "text-muted": "#64748b",
+                        "bg-main": "#f5f7fb",
+                        "warning-bg": "#fef3c7",
+                        "card-surface": "#ffffff",
+                        "status-draft-text": "#475569",
+                        "surface-bright": "#fbf8fa",
+                        "outline-variant": "#c6c6cd",
+                        "primary-fixed-dim": "#bdc6e0",
+                        "primary": "#01081a",
+                        "info": "#2563eb",
+                        "secondary-fixed": "#dce1ff",
+                        "error-container": "#ffdad6",
+                        "surface-variant": "#e4e2e3",
+                        "status-closed-text": "#ffffff",
+                        "secondary": "#0046d2",
+                        "on-primary-container": "#7f879f",
+                        "secondary-container": "#1d5dfe",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#564426",
+                        "on-error-container": "#93000a",
+                        "on-secondary-container": "#eeefff",
+                        "surface-container-lowest": "#ffffff",
+                        "status-approved-bg": "#3b82f6",
+                        "on-surface": "#1b1b1d",
+                        "error": "#dc2626",
+                        "status-draft-bg": "#94a3b8",
+                        "tertiary-container": "#2c1e04",
+                        "on-background": "#1b1b1d",
+                        "inverse-surface": "#303032",
+                        "error-bg": "#fdecec",
+                        "background": "#fbf8fa",
+                        "status-active-bg": "#22c55e",
+                        "status-approved-text": "#1e40af",
+                        "on-tertiary-container": "#9b8561",
+                        "surface-container-low": "#f6f3f5",
+                        "surface-container-high": "#eae7e9",
+                        "status-pending-bg": "#f59e0b",
+                        "surface-container-highest": "#e4e2e3",
+                        "surface": "#fbf8fa",
+                        "secondary-fixed-dim": "#b6c4ff",
+                        "success": "#16a34a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#fadfb5",
+                        "on-primary-fixed-variant": "#3e475b",
+                        "text-body": "#172033",
+                        "tertiary-fixed-dim": "#ddc39b",
+                        "primary-container": "#172033",
+                        "on-surface-variant": "#45474c",
+                        "surface-dim": "#dcd9db",
+                        "status-pending-text": "#92400e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "2rem",
+                        "md": "1rem",
+                        "lg": "1.5rem",
+                        "sm": "0.5rem",
+                        "xs": "0.25rem"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "body": ["Inter"],
+                        "mono": ["monospace"],
+                        "h1": ["Inter"],
+                        "h2": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["1.1rem", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "body": ["0.95rem", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "mono": ["0.85rem", {"fontWeight": "400"}],
+                        "h1": ["1.75rem", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "h2": ["1.25rem", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label": ["0.8rem", {"letterSpacing": "0.05em", "fontWeight": "500"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .shadow-ambient { box-shadow: 0 10px 30px rgba(23, 32, 51, 0.08); }
+        .shadow-ambient-hover { box-shadow: 0 15px 40px rgba(23, 32, 51, 0.12); }
+    </style>
+</head>
+<body class="bg-bg-main text-text-body font-body text-body antialiased">
+<!-- TopAppBar -->
+<header class="bg-card-surface border-b border-border-base sticky top-0 z-50 flex justify-between items-center px-8 h-16 w-full shadow-sm">
+<div class="flex items-center gap-8">
+<div class="text-xl font-black text-primary-container">SRIM Recruitment</div>
+<nav class="hidden md:flex gap-6 h-full items-center">
+<a class="font-inter text-sm font-medium text-text-muted hover:text-info hover:bg-surface-container-low transition-all duration-200 h-full flex items-center px-2" href="#">Dashboard</a>
+<a class="font-inter text-sm font-medium text-text-muted hover:text-info hover:bg-surface-container-low transition-all duration-200 h-full flex items-center px-2" href="#">Jobs</a>
+<a class="font-inter text-sm font-medium text-info border-b-2 border-info h-full flex items-center px-2 active:scale-95 cursor-pointer" href="#">Candidates</a>
+<a class="font-inter text-sm font-medium text-text-muted hover:text-info hover:bg-surface-container-low transition-all duration-200 h-full flex items-center px-2" href="#">Interviews</a>
+<a class="font-inter text-sm font-medium text-text-muted hover:text-info hover:bg-surface-container-low transition-all duration-200 h-full flex items-center px-2" href="#">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-sm">search</span>
+<input class="pl-9 pr-4 py-2 bg-surface-container-low border-transparent focus:border-info focus:ring-info/15 rounded-full text-sm w-64 transition-all" placeholder="Search..." type="text"/>
+</div>
+<button class="p-2 text-text-muted hover:bg-surface-container-low rounded-full transition-colors active:scale-95 cursor-pointer"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-text-muted hover:bg-surface-container-low rounded-full transition-colors active:scale-95 cursor-pointer"><span class="material-symbols-outlined">help</span></button>
+<button class="p-2 text-text-muted hover:bg-surface-container-low rounded-full transition-colors active:scale-95 cursor-pointer"><span class="material-symbols-outlined">settings</span></button>
+<img alt="User Profile" class="w-8 h-8 rounded-full border border-border-base cursor-pointer" data-alt="A professional headshot of a corporate user, warm lighting, smiling, modern office background, high resolution, corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAop-LB5hCm6207STtmXOM8X2IPq6ujFF5MnCvfiXwG9DCj5GEcH0FBHTPzjaC3Gqfi9Q5zGcBwaSmJEyaDGf82GGsPj1_IQQzZMislCRAdzobrknAf2FDxjYB_LfS0yw3MR5WuXkwoNnYPRAEhdXTII8LZDpUGx7WHPbvpo0ZtWcgEtrp-l5crAQuGehBegznW28QPpqiigx3z1jQ3ZwumwrVjo1FJmGrdkwCutx-I4hU5BAPe7oPa08ave59vvlNAoqeAXDk_aVjA"/>
+</div>
+</header>
+<main class="max-w-[1100px] mx-auto py-8 px-4 md:px-8">
+<!-- Breadcrumbs -->
+<nav aria-label="Breadcrumb" class="flex items-center text-sm text-text-muted mb-6">
+<ol class="inline-flex items-center space-x-2">
+<li class="inline-flex items-center">
+<a class="hover:text-info transition-colors" href="#">Job Requisitions</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<a class="hover:text-info transition-colors" href="#">Senior Full Stack Developer</a>
+</div>
+</li>
+<li aria-current="page">
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<span class="text-text-body font-medium">Elena Rostova</span>
+</div>
+</li>
+</ol>
+</nav>
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<h1 class="font-h1 text-h1 text-primary-container flex items-center gap-4">
+                    Elena Rostova
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-info-bg text-info border border-info/20 tracking-wide uppercase">TECHNICAL INTERVIEW</span>
+</h1>
+<p class="text-text-muted mt-1 font-body text-body">Applied 12 days ago • Source: LinkedIn</p>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="px-4 py-2 border border-border-base text-text-body rounded-DEFAULT hover:bg-surface-container-low transition-colors duration-200 font-medium text-sm flex-1 md:flex-none">Reject</button>
+<button class="px-4 py-2 border border-info text-info rounded-DEFAULT hover:bg-info-bg transition-colors duration-200 font-medium text-sm flex-1 md:flex-none">Schedule Interview</button>
+<button class="px-6 py-2 bg-info text-on-primary rounded-DEFAULT hover:bg-secondary transition-all duration-200 font-medium text-sm shadow-sm hover:shadow flex-1 md:flex-none">Move to Next Stage</button>
+</div>
+</div>
+<!-- Main Content (Two Columns) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column (Candidate Profile & Details) -->
+<div class="lg:col-span-1 space-y-6">
+<!-- Profile Summary Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1">
+<div class="flex flex-col items-center text-center mb-6">
+<img alt="Elena Rostova" class="w-24 h-24 rounded-full border-4 border-surface-container mb-4" data-alt="A professional headshot of a female software developer, natural lighting, confident expression, modern minimalist background, corporate recruitment aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCODOKhJ64XsovWq64EziLQAp4WC1CsF0p_knSz1QfEaue3gA3mioRonVnrzxWL3mj5ldtLlzA1bHyMHQCfi85n2rB4wL6wrDS7UhmouLKkHQgAAQwtZvY8OZfCHcSBpoGS2CqoG0AxH7DLIQpqwy4rJTKtCph9jt1nlwuQJw0oCr7TtgHHwHr2MlunVc6KbKH-j_CQFJ7uRZ71-QNgzTJwhafraK1sPqWsbdeSd9JZAxnUkZRRwRFOLVS8W9wL_HsdTOSp3j--9Csu"/>
+<h2 class="font-h2 text-h2 text-primary-container">Elena Rostova</h2>
+<p class="text-text-muted font-body text-body">Senior Software Engineer at TechCorp</p>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-text-muted w-5">mail</span>
+<a class="text-info hover:underline" href="mailto:elena.r@example.com">elena.r@example.com</a>
+</div>
+<div class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-text-muted w-5">phone</span>
+<span class="text-text-body">+1 (555) 123-4567</span>
+</div>
+<div class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-text-muted w-5">location_on</span>
+<span class="text-text-body">San Francisco, CA (Remote)</span>
+</div>
+<div class="flex items-center gap-3 text-sm">
+<span class="material-symbols-outlined text-text-muted w-5">link</span>
+<a class="text-info hover:underline" href="#">linkedin.com/in/elenarostova</a>
+</div>
+</div>
+</div>
+<!-- Experience & Skills Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1">
+<h3 class="font-h3 text-h3 text-primary-container mb-4">Experience &amp; Skills</h3>
+<div class="mb-4">
+<p class="text-sm text-text-muted mb-2">Total Experience: <span class="font-medium text-text-body">8 Years</span></p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">React</span>
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">Node.js</span>
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">TypeScript</span>
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">AWS</span>
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">GraphQL</span>
+<span class="px-3 py-1 bg-surface-container-low text-text-body rounded-full text-xs border border-border-base">PostgreSQL</span>
+</div>
+</div>
+<!-- Attachments Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1">
+<h3 class="font-h3 text-h3 text-primary-container mb-4">Attachments</h3>
+<div class="space-y-3">
+<a class="flex items-center justify-between p-3 border border-border-base rounded-DEFAULT hover:border-info transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error">picture_as_pdf</span>
+<div>
+<p class="text-sm font-medium text-text-body group-hover:text-info transition-colors">Elena_Rostova_Resume.pdf</p>
+<p class="text-xs text-text-muted">1.2 MB</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted group-hover:text-info">download</span>
+</a>
+<a class="flex items-center justify-between p-3 border border-border-base rounded-DEFAULT hover:border-info transition-colors group" href="#">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-info">language</span>
+<div>
+<p class="text-sm font-medium text-text-body group-hover:text-info transition-colors">Portfolio Website</p>
+<p class="text-xs text-text-muted">External Link</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-muted group-hover:text-info">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Right Column (Application Flow & Feedback) -->
+<div class="lg:col-span-2 space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- AI Match Score Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1 flex flex-col items-center justify-center">
+<h3 class="font-h3 text-h3 text-primary-container mb-2 text-center w-full">AI Match Score</h3>
+<p class="text-sm text-text-muted text-center mb-6">Compared to role requirements</p>
+<div class="relative w-32 h-32 flex items-center justify-center">
+<!-- Circular Progress SVG -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 100 100">
+<circle cx="50" cy="50" fill="none" r="45" stroke="#f0edef" stroke-width="8"></circle>
+<circle class="transition-all duration-1000 ease-out" cx="50" cy="50" fill="none" r="45" stroke="#16a34a" stroke-dasharray="282.7" stroke-dashoffset="22.6" stroke-width="8"></circle>
+</svg>
+<div class="absolute flex flex-col items-center justify-center">
+<span class="text-3xl font-bold text-success">92%</span>
+</div>
+</div>
+<div class="mt-6 w-full text-sm text-text-muted bg-success-bg p-3 rounded-DEFAULT border border-success/20 text-center">
+<span class="font-medium text-success block mb-1">Excellent Fit</span>
+                            Strong match on core tech stack (React, Node).
+                        </div>
+</div>
+<!-- Interview Feedback Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1">
+<h3 class="font-h3 text-h3 text-primary-container mb-4">Latest Feedback</h3>
+<div class="mb-4 pb-4 border-b border-border-base">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h4 class="font-medium text-sm text-text-body">Initial Screening</h4>
+<p class="text-xs text-text-muted">Conducted by Sarah Jenkins</p>
+</div>
+<div class="flex text-warning">
+<span class="material-symbols-outlined text-sm" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm">star_half</span>
+</div>
+</div>
+<p class="text-sm text-text-body bg-surface-container-low p-3 rounded-DEFAULT">
+                                "Excellent communication skills. Solid understanding of our domain. Passed basic technical screen with flying colors. Highly recommend moving to technical interview."
+                            </p>
+</div>
+<div>
+<h4 class="font-medium text-sm text-text-body mb-2">Technical Interview (Current)</h4>
+<textarea class="w-full h-24 p-3 border border-border-base rounded-DEFAULT text-sm focus:border-info focus:ring-info/15 transition-all bg-card-surface" placeholder="Add notes for this stage..."></textarea>
+<div class="flex justify-end mt-2">
+<button class="px-3 py-1 bg-surface-container-low text-text-body text-xs font-medium rounded hover:bg-border-base transition-colors">Save Draft</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Application Timeline Card -->
+<div class="bg-card-surface rounded-lg shadow-ambient hover:shadow-ambient-hover transition-all duration-300 p-lg border border-border-base/50 transform hover:-translate-y-1">
+<h3 class="font-h3 text-h3 text-primary-container mb-6">Application Timeline</h3>
+<div class="relative">
+<!-- Vertical Line -->
+<div class="absolute left-[15px] top-4 bottom-4 w-[2px] bg-border-base"></div>
+<div class="space-y-6">
+<!-- Stage 1: Applied -->
+<div class="relative flex gap-4">
+<div class="w-8 h-8 rounded-full bg-success-bg border-2 border-success flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-success text-sm">check</span>
+</div>
+<div>
+<h4 class="text-sm font-medium text-text-body">Applied</h4>
+<p class="text-xs text-text-muted mt-1">Oct 12, 2023 at 10:42 AM</p>
+</div>
+</div>
+<!-- Stage 2: Initial Screening -->
+<div class="relative flex gap-4">
+<div class="absolute left-[15px] top-[-24px] h-6 w-[2px] bg-success"></div> <!-- override connecting line -->
+<div class="w-8 h-8 rounded-full bg-success-bg border-2 border-success flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-success text-sm">check</span>
+</div>
+<div>
+<h4 class="text-sm font-medium text-text-body">Initial Screening</h4>
+<p class="text-xs text-text-muted mt-1">Oct 15, 2023 • Completed by Sarah Jenkins</p>
+</div>
+</div>
+<!-- Stage 3: Technical Interview (Current) -->
+<div class="relative flex gap-4">
+<div class="absolute left-[15px] top-[-24px] h-6 w-[2px] bg-success"></div> <!-- override connecting line -->
+<div class="w-8 h-8 rounded-full bg-info-bg border-2 border-info flex items-center justify-center z-10 shrink-0 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]">
+<span class="w-2 h-2 rounded-full bg-info"></span>
+</div>
+<div class="flex-1 bg-info-bg/30 p-4 rounded-DEFAULT border border-info/20">
+<div class="flex justify-between items-start">
+<div>
+<h4 class="text-sm font-medium text-info">Technical Interview</h4>
+<p class="text-xs text-text-muted mt-1">Pending scheduling</p>
+</div>
+<span class="px-2 py-1 bg-surface-container-lowest text-info text-[10px] font-bold uppercase rounded border border-info/20">Current</span>
+</div>
+<div class="mt-3">
+<button class="text-xs font-medium text-info hover:underline">Schedule Now</button>
+</div>
+</div>
+</div>
+<!-- Stage 4: Final Evaluation -->
+<div class="relative flex gap-4 opacity-50">
+<div class="w-8 h-8 rounded-full bg-surface-container border-2 border-border-base flex items-center justify-center z-10 shrink-0">
+</div>
+<div>
+<h4 class="text-sm font-medium text-text-body">Final Evaluation</h4>
+<p class="text-xs text-text-muted mt-1">Not started</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

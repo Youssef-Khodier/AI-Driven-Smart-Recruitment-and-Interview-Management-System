@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Application Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#2c1e04",
+                        "warning-bg": "#fef3c7",
+                        "status-active-text": "#166534",
+                        "inverse-primary": "#bdc6e0",
+                        "on-primary-container": "#7f879f",
+                        "info-bg": "#eff6ff",
+                        "error": "#dc2626",
+                        "secondary-container": "#1d5dfe",
+                        "error-bg": "#fdecec",
+                        "on-secondary": "#ffffff",
+                        "card-surface": "#ffffff",
+                        "status-draft-bg": "#94a3b8",
+                        "status-closed-text": "#ffffff",
+                        "inverse-on-surface": "#f3f0f2",
+                        "on-secondary-container": "#eeefff",
+                        "surface-variant": "#e4e2e3",
+                        "surface-tint": "#555e74",
+                        "primary-fixed": "#d9e2fc",
+                        "status-approved-bg": "#3b82f6",
+                        "success": "#16a34a",
+                        "on-secondary-fixed": "#001550",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#1b1b1d",
+                        "status-draft-text": "#475569",
+                        "surface-container": "#f0edef",
+                        "status-active-bg": "#22c55e",
+                        "surface-bright": "#fbf8fa",
+                        "role-admin": "#7c3aed",
+                        "on-secondary-fixed-variant": "#003ab2",
+                        "surface-container-highest": "#e4e2e3",
+                        "surface-container-high": "#eae7e9",
+                        "success-bg": "#e8f7ef",
+                        "status-closed-bg": "#1e293b",
+                        "border-base": "#e2e8f0",
+                        "warning": "#d97706",
+                        "info": "#2563eb",
+                        "primary": "#01081a",
+                        "bg-main": "#f5f7fb",
+                        "outline-variant": "#c6c6cd",
+                        "on-primary-fixed": "#121b2e",
+                        "on-tertiary": "#ffffff",
+                        "primary-fixed-dim": "#bdc6e0",
+                        "on-error-container": "#93000a",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1b1b1d",
+                        "outline": "#76777d",
+                        "text-muted": "#64748b",
+                        "tertiary-fixed-dim": "#ddc39b",
+                        "surface-container-low": "#f6f3f5",
+                        "secondary-fixed": "#dce1ff",
+                        "surface-dim": "#dcd9db",
+                        "on-error": "#ffffff",
+                        "secondary": "#0046d2",
+                        "tertiary": "#0f0800",
+                        "inverse-surface": "#303032",
+                        "status-approved-text": "#1e40af",
+                        "surface": "#fbf8fa",
+                        "tertiary-fixed": "#fadfb5",
+                        "background": "#fbf8fa",
+                        "text-body": "#172033",
+                        "secondary-fixed-dim": "#b6c4ff",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#172033",
+                        "on-tertiary-container": "#9b8561",
+                        "on-surface-variant": "#45474c",
+                        "status-pending-text": "#92400e",
+                        "status-pending-bg": "#f59e0b",
+                        "on-primary-fixed-variant": "#3e475b",
+                        "on-tertiary-fixed-variant": "#564426",
+                        "on-tertiary-fixed": "#271902"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "0.5rem",
+                        "xl": "2rem",
+                        "lg": "1.5rem",
+                        "xs": "0.25rem",
+                        "md": "1rem"
+                    },
+                    "fontFamily": {
+                        "h3": ["Inter"],
+                        "h1": ["Inter"],
+                        "h2": ["Inter"],
+                        "label": ["Inter"],
+                        "mono": ["monospace"],
+                        "body": ["Inter"]
+                    },
+                    "fontSize": {
+                        "h3": ["1.1rem", {"lineHeight": "1.4", "fontWeight": "600"}],
+                        "h1": ["1.75rem", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "h2": ["1.25rem", {"lineHeight": "1.3", "fontWeight": "600"}],
+                        "label": ["0.8rem", {"letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "mono": ["0.85rem", {"fontWeight": "400"}],
+                        "body": ["0.95rem", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-bg-main min-h-screen text-text-body font-body text-body pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 font-sans Inter antialiased fixed top-0 w-full z-50 shadow-[0_10px_30px_rgba(23,32,51,0.08)]">
+<div class="max-w-[1100px] mx-auto px-6 flex justify-between items-center h-16 border-b border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-8">
+<div class="text-xl font-black tracking-tight text-slate-900 dark:text-white">SRIM</div>
+<nav class="hidden md:flex gap-6 h-full">
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform flex items-center h-full" href="#">Dashboard</a>
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform flex items-center h-full" href="#">My Profile</a>
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform flex items-center h-full" href="#">Open Jobs</a>
+<a class="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 py-4 font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform flex items-center h-full" href="#">My Applications</a>
+</nav>
+</div>
+<div class="flex items-center gap-4 text-blue-600 dark:text-blue-400">
+<button class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+<button class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform p-2 rounded-full hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">account_circle</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="max-w-[1100px] mx-auto px-4 md:px-6 pt-24 pb-12">
+<!-- Header & Actions -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+<div>
+<div class="flex items-center gap-2 text-text-muted font-body text-body mb-2">
+<a class="hover:text-secondary transition-colors" href="#">My Applications</a>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-text-body">App-2023-084</span>
+</div>
+<h1 class="font-h1 text-h1 text-primary">Senior Frontend Engineer</h1>
+<p class="font-body text-body text-text-muted mt-1">Tech Solutions Inc. • San Francisco, CA (Hybrid)</p>
+</div>
+<div class="flex gap-3 w-full md:w-auto">
+<button class="flex-1 md:flex-none px-4 py-2 rounded border border-border-base text-text-body font-label text-label hover:bg-surface-container transition-all duration-200">Withdraw</button>
+<button class="flex-1 md:flex-none px-4 py-2 rounded bg-secondary text-on-secondary font-label text-label hover:bg-on-secondary-fixed-variant transition-all duration-200">Contact Recruiter</button>
+</div>
+</div>
+<!-- Stepper Card -->
+<div class="bg-card-surface rounded-xl shadow-[0_10px_30px_rgba(23,32,51,0.08)] p-lg mb-8">
+<h2 class="font-h3 text-h3 text-primary mb-6">Application Progress</h2>
+<div class="relative">
+<!-- Progress Line Background -->
+<div class="absolute top-5 left-8 right-8 h-1 bg-surface-container rounded-full z-0"></div>
+<!-- Progress Line Active -->
+<div class="absolute top-5 left-8 w-[50%] h-1 bg-secondary rounded-full z-0 transition-all duration-500"></div>
+<div class="relative z-10 flex justify-between">
+<!-- Step 1: Applied (Completed) -->
+<div class="flex flex-col items-center gap-2 w-24">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label text-label text-primary text-center">Applied</span>
+<span class="font-mono text-mono text-text-muted text-[0.7rem]">Oct 12</span>
+</div>
+<!-- Step 2: Screening (Completed) -->
+<div class="flex flex-col items-center gap-2 w-24">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-sm">check</span>
+</div>
+<span class="font-label text-label text-primary text-center">Screening</span>
+<span class="font-mono text-mono text-text-muted text-[0.7rem]">Oct 15</span>
+</div>
+<!-- Step 3: Technical (Active) -->
+<div class="flex flex-col items-center gap-2 w-24">
+<div class="w-10 h-10 rounded-full bg-card-surface border-2 border-secondary text-secondary flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined text-sm">code</span>
+</div>
+<span class="font-label text-label text-secondary text-center font-bold">Technical</span>
+<span class="font-mono text-mono text-secondary text-[0.7rem] bg-info-bg px-2 py-0.5 rounded-full mt-1">Pending</span>
+</div>
+<!-- Step 4: Final (Upcoming) -->
+<div class="flex flex-col items-center gap-2 w-24">
+<div class="w-10 h-10 rounded-full bg-surface-container text-text-muted flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">groups</span>
+</div>
+<span class="font-label text-label text-text-muted text-center">Final</span>
+</div>
+<!-- Step 5: Offer (Upcoming) -->
+<div class="flex flex-col items-center gap-2 w-24">
+<div class="w-10 h-10 rounded-full bg-surface-container text-text-muted flex items-center justify-center">
+<span class="material-symbols-outlined text-sm">celebration</span>
+</div>
+<span class="font-label text-label text-text-muted text-center">Offer</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Content Column -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<!-- Next Steps Action Box -->
+<div class="bg-info-bg border-l-4 border-secondary rounded-r-xl p-lg shadow-[0_10px_30px_rgba(23,32,51,0.08)]">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-secondary/10 rounded-full text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">assignment_late</span>
+</div>
+<div class="flex-1">
+<h3 class="font-h2 text-h2 text-primary mb-2">Take Technical Assessment</h3>
+<p class="font-body text-body text-text-body mb-4">Please complete the coding challenge on HackerRank. The assessment will take approximately 90 minutes. Ensure you have a stable internet connection.</p>
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded bg-secondary text-on-secondary font-label text-label hover:bg-on-secondary-fixed-variant transition-all duration-200">Start Assessment</button>
+</div>
+</div>
+<div class="text-right">
+<div class="font-label text-label text-warning mb-1">Due Date</div>
+<div class="font-h3 text-h3 text-primary">Oct 20</div>
+<div class="font-body text-body text-text-muted">11:59 PM</div>
+</div>
+</div>
+</div>
+<!-- Job Information Card -->
+<div class="bg-card-surface rounded-xl shadow-[0_10px_30px_rgba(23,32,51,0.08)] p-lg">
+<h2 class="font-h3 text-h3 text-primary mb-4 pb-2 border-b border-border-base">Job Information</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<div class="font-label text-label text-text-muted mb-1">Department</div>
+<div class="font-body text-body text-primary">Engineering</div>
+</div>
+<div>
+<div class="font-label text-label text-text-muted mb-1">Employment Type</div>
+<div class="font-body text-body text-primary">Full-time, Permanent</div>
+</div>
+<div>
+<div class="font-label text-label text-text-muted mb-1">Target Salary</div>
+<div class="font-body text-body text-primary">$130,000 - $160,000</div>
+</div>
+<div>
+<div class="font-label text-label text-text-muted mb-1">Hiring Manager</div>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center text-xs">SM</div>
+<span class="font-body text-body text-primary">Sarah Miller</span>
+</div>
+</div>
+</div>
+<div class="mt-6">
+<div class="font-label text-label text-text-muted mb-2">Description Snippet</div>
+<p class="font-body text-body text-text-body">We are looking for an experienced Frontend Engineer to join our core product team. You will be responsible for building responsive, accessible, and highly performant user interfaces using React and Tailwind CSS. The ideal candidate...</p>
+<a class="inline-block mt-2 font-label text-label text-secondary hover:underline" href="#">View Full Description</a>
+</div>
+</div>
+</div>
+<!-- Sidebar Column -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+<!-- Application Summary -->
+<div class="bg-card-surface rounded-xl shadow-[0_10px_30px_rgba(23,32,51,0.08)] p-lg">
+<h2 class="font-h3 text-h3 text-primary mb-4 pb-2 border-b border-border-base">Your Application</h2>
+<ul class="flex flex-col gap-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-text-muted">description</span>
+<div class="flex-1">
+<div class="font-label text-label text-primary">Resume.pdf</div>
+<div class="font-mono text-mono text-text-muted text-xs">Uploaded Oct 12</div>
+</div>
+<button class="text-secondary hover:bg-info-bg p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-text-muted">work</span>
+<div class="flex-1">
+<div class="font-label text-label text-primary">Portfolio Link</div>
+<div class="font-mono text-mono text-text-muted text-xs">github.com/johndoe</div>
+</div>
+<button class="text-secondary hover:bg-info-bg p-1 rounded transition-colors">
+<span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</li>
+</ul>
+</div>
+<!-- Timeline / Activity -->
+<div class="bg-card-surface rounded-xl shadow-[0_10px_30px_rgba(23,32,51,0.08)] p-lg">
+<h2 class="font-h3 text-h3 text-primary mb-4 pb-2 border-b border-border-base">Activity</h2>
+<div class="relative border-l border-border-base ml-3 pl-5 flex flex-col gap-6">
+<!-- Event 1 -->
+<div class="relative">
+<div class="absolute -left-[27px] w-3 h-3 rounded-full bg-secondary"></div>
+<div class="font-label text-label text-primary">Technical Assessment Assigned</div>
+<div class="font-body text-body text-text-muted text-sm mt-1">Oct 16, 10:30 AM</div>
+</div>
+<!-- Event 2 -->
+<div class="relative">
+<div class="absolute -left-[27px] w-3 h-3 rounded-full bg-surface-container border border-outline"></div>
+<div class="font-label text-label text-primary">Screening Call Completed</div>
+<div class="font-body text-body text-text-muted text-sm mt-1">Oct 15, 2:00 PM</div>
+</div>
+<!-- Event 3 -->
+<div class="relative">
+<div class="absolute -left-[27px] w-3 h-3 rounded-full bg-surface-container border border-outline"></div>
+<div class="font-label text-label text-primary">Application Submitted</div>
+<div class="font-body text-body text-text-muted text-sm mt-1">Oct 12, 9:15 AM</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-t-lg z-50 border-t border-slate-100 dark:border-slate-800 shadow-[0_-5px_15px_rgba(23,32,51,0.05)]">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 0;">dashboard</span>
+<span class="text-[10px] font-medium Inter">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 0;">search</span>
+<span class="text-[10px] font-medium Inter">Jobs</span>
+</a>
+<a class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="text-[10px] font-medium Inter">Apps</span>
+</a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="text-[10px] font-medium Inter">Profile</span>
+</a>
+</nav>
+</body></html>

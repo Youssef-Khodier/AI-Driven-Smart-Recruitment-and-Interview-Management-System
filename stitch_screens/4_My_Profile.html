@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Profile - SRIM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#2c1e04",
+                      "warning-bg": "#fef3c7",
+                      "status-active-text": "#166534",
+                      "inverse-primary": "#bdc6e0",
+                      "on-primary-container": "#7f879f",
+                      "info-bg": "#eff6ff",
+                      "error": "#dc2626",
+                      "secondary-container": "#1d5dfe",
+                      "error-bg": "#fdecec",
+                      "on-secondary": "#ffffff",
+                      "card-surface": "#ffffff",
+                      "status-draft-bg": "#94a3b8",
+                      "status-closed-text": "#ffffff",
+                      "inverse-on-surface": "#f3f0f2",
+                      "on-secondary-container": "#eeefff",
+                      "surface-variant": "#e4e2e3",
+                      "surface-tint": "#555e74",
+                      "primary-fixed": "#d9e2fc",
+                      "status-approved-bg": "#3b82f6",
+                      "success": "#16a34a",
+                      "on-secondary-fixed": "#001550",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#1b1b1d",
+                      "status-draft-text": "#475569",
+                      "surface-container": "#f0edef",
+                      "status-active-bg": "#22c55e",
+                      "surface-bright": "#fbf8fa",
+                      "role-admin": "#7c3aed",
+                      "on-secondary-fixed-variant": "#003ab2",
+                      "surface-container-highest": "#e4e2e3",
+                      "surface-container-high": "#eae7e9",
+                      "success-bg": "#e8f7ef",
+                      "status-closed-bg": "#1e293b",
+                      "border-base": "#e2e8f0",
+                      "warning": "#d97706",
+                      "info": "#2563eb",
+                      "primary": "#01081a",
+                      "bg-main": "#f5f7fb",
+                      "outline-variant": "#c6c6cd",
+                      "on-primary-fixed": "#121b2e",
+                      "on-tertiary": "#ffffff",
+                      "primary-fixed-dim": "#bdc6e0",
+                      "on-error-container": "#93000a",
+                      "error-container": "#ffdad6",
+                      "on-surface": "#1b1b1d",
+                      "outline": "#76777d",
+                      "text-muted": "#64748b",
+                      "tertiary-fixed-dim": "#ddc39b",
+                      "surface-container-low": "#f6f3f5",
+                      "secondary-fixed": "#dce1ff",
+                      "surface-dim": "#dcd9db",
+                      "on-error": "#ffffff",
+                      "secondary": "#0046d2",
+                      "tertiary": "#0f0800",
+                      "inverse-surface": "#303032",
+                      "status-approved-text": "#1e40af",
+                      "surface": "#fbf8fa",
+                      "tertiary-fixed": "#fadfb5",
+                      "background": "#fbf8fa",
+                      "text-body": "#172033",
+                      "secondary-fixed-dim": "#b6c4ff",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#172033",
+                      "on-tertiary-container": "#9b8561",
+                      "on-surface-variant": "#45474c",
+                      "status-pending-text": "#92400e",
+                      "status-pending-bg": "#f59e0b",
+                      "on-primary-fixed-variant": "#3e475b",
+                      "on-tertiary-fixed-variant": "#564426",
+                      "on-tertiary-fixed": "#271902"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "0.5rem",
+                      "xl": "2rem",
+                      "lg": "1.5rem",
+                      "xs": "0.25rem",
+                      "md": "1rem"
+              },
+              "fontFamily": {
+                      "h3": ["Inter"],
+                      "h1": ["Inter"],
+                      "h2": ["Inter"],
+                      "label": ["Inter"],
+                      "mono": ["monospace"],
+                      "body": ["Inter"]
+              },
+              "fontSize": {
+                      "h3": ["1.1rem", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "h1": ["1.75rem", {"lineHeight": "1.2", "fontWeight": "700"}],
+                      "h2": ["1.25rem", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "label": ["0.8rem", {"letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "mono": ["0.85rem", {"fontWeight": "400"}],
+                      "body": ["0.95rem", {"lineHeight": "1.5", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-bg-main font-body text-body text-on-surface antialiased min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 font-sans Inter antialiased fixed top-0 w-full z-50 border-b border-slate-100 dark:border-slate-800 shadow-[0_10px_30px_rgba(23,32,51,0.08)] hidden md:block">
+<div class="max-w-[1100px] mx-auto px-6 flex justify-between items-center h-16">
+<div class="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                SRIM
+            </div>
+<nav class="flex space-x-8 h-full items-end">
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform" href="#">
+                    Dashboard
+                </a>
+<a class="text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 py-4 font-semibold hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform" href="#">
+                    My Profile
+                </a>
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform" href="#">
+                    Open Jobs
+                </a>
+<a class="text-slate-500 dark:text-slate-400 py-4 font-medium hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 cursor-pointer active:scale-95 transition-transform" href="#">
+                    My Applications
+                </a>
+</nav>
+<div class="flex items-center space-x-4 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined cursor-pointer active:scale-95 transition-transform hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">notifications</span>
+<span class="material-symbols-outlined cursor-pointer active:scale-95 transition-transform hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200">account_circle</span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 md:pb-24 px-4 md:px-6">
+<div class="max-w-[36rem] mx-auto">
+<div class="mb-6">
+<h1 class="font-h1 text-h1 text-on-background">Profile Settings</h1>
+<p class="font-body text-body text-text-muted mt-1">Manage your personal information and professional summary.</p>
+</div>
+<!-- Profile Form Card -->
+<div class="bg-card-surface rounded-xl shadow-[0_10px_30px_rgba(23,32,51,0.08)] p-6 md:p-lg">
+<form class="space-y-6">
+<!-- Avatar Section -->
+<div class="flex items-center space-x-6 pb-6 border-b border-border-base">
+<div class="h-20 w-20 rounded-full bg-surface-container overflow-hidden shrink-0 border border-outline-variant shadow-sm relative group cursor-pointer">
+<img alt="Profile" class="h-full w-full object-cover" data-alt="A professional corporate headshot of a confident individual, well-lit with soft, bright natural light. The background is a clean, neutral out-of-focus office setting, fitting a modern digital SaaS platform aesthetic. The colors are crisp and vibrant, complementing a light-mode interface with subtle blue accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB73T1wpP7Cs3XKggDXka_R3nRGWLNHJAzjIH-hFxsgLEKs3sl9M_CVY8KoFTjysP4UGpwYwIiC2u6TiODNkM1slb81uG962Syt1OF_9-zJUzWgjqr5_lK7xCjsLVMdnHVGhX1XxRfE7NFYvCM-62J6-zSdujCa5LxxGhde9tx64JSW0yKKVLSCZ9JnIiBgmfznwqrEEnmWF1GkBYM7OvZfgChSRwr8Kmik_aXQiKi8T2v-YKE7EbZ3mgGRwYcxsAr4mOTa9Vwh4FTs"/>
+<div class="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-on-primary">photo_camera</span>
+</div>
+</div>
+<div>
+<button class="font-label text-label text-info hover:text-info/80 transition-colors border border-info rounded-DEFAULT px-4 py-2 font-medium" type="button">
+                                Change Photo
+                            </button>
+<p class="font-label text-label text-text-muted mt-2 text-xs">JPG, GIF or PNG. Max size of 800K</p>
+</div>
+</div>
+<!-- Personal Information -->
+<div class="space-y-4">
+<h2 class="font-h3 text-h3 text-on-surface">Personal Information</h2>
+<div>
+<label class="block font-label text-label text-on-surface-variant mb-1" for="fullName">Full Name</label>
+<input class="w-full rounded-DEFAULT border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body text-body text-on-surface placeholder:text-text-muted focus:border-info focus:outline-none focus:ring-[3px] focus:ring-info/15 transition-all" id="fullName" type="text" value="Alex Mitchell"/>
+</div>
+<div>
+<label class="block font-label text-label text-on-surface-variant mb-1" for="email">Email Address</label>
+<input class="w-full rounded-DEFAULT border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body text-body text-on-surface placeholder:text-text-muted focus:border-info focus:outline-none focus:ring-[3px] focus:ring-info/15 transition-all" id="email" type="email" value="alex.mitchell@example.com"/>
+</div>
+<div>
+<label class="block font-label text-label text-on-surface-variant mb-1" for="phone">Phone Number</label>
+<input class="w-full rounded-DEFAULT border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body text-body text-on-surface placeholder:text-text-muted focus:border-info focus:outline-none focus:ring-[3px] focus:ring-info/15 transition-all" id="phone" type="tel" value="+1 (555) 019-2834"/>
+</div>
+</div>
+<!-- Professional Summary -->
+<div class="pt-2">
+<label class="block font-h3 text-h3 text-on-surface mb-2" for="summary">Professional Summary</label>
+<p class="font-body text-body text-text-muted mb-3 text-sm">Briefly describe your career goals and key achievements.</p>
+<textarea class="w-full rounded-DEFAULT border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body text-body text-on-surface placeholder:text-text-muted focus:border-info focus:outline-none focus:ring-[3px] focus:ring-info/15 transition-all resize-none" id="summary" rows="4">Senior Product Designer with 8+ years of experience specializing in enterprise SaaS platforms. Proven track record of translating complex workflows into intuitive, high-fidelity interfaces. Passionate about design systems and accessible AI integrations.</textarea>
+</div>
+<!-- Skills -->
+<div class="pt-2">
+<label class="block font-h3 text-h3 text-on-surface mb-2" for="skills">Skills</label>
+<div class="flex flex-wrap gap-2 mb-3">
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label text-label border border-primary-fixed-dim">
+                                UI/UX Design
+                                <span class="material-symbols-outlined text-[14px] ml-1 cursor-pointer hover:text-error">close</span>
+</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label text-label border border-primary-fixed-dim">
+                                Design Systems
+                                <span class="material-symbols-outlined text-[14px] ml-1 cursor-pointer hover:text-error">close</span>
+</span>
+<span class="inline-flex items-center px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed font-label text-label border border-primary-fixed-dim">
+                                Figma
+                                <span class="material-symbols-outlined text-[14px] ml-1 cursor-pointer hover:text-error">close</span>
+</span>
+</div>
+<div class="relative">
+<input class="w-full rounded-DEFAULT border border-outline-variant bg-surface-container-lowest px-3 py-2 font-body text-body text-on-surface placeholder:text-text-muted focus:border-info focus:outline-none focus:ring-[3px] focus:ring-info/15 transition-all" id="skills" placeholder="Add a skill..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-info hover:text-info/80 font-label text-label font-medium" type="button">Add</button>
+</div>
+</div>
+<!-- Resume Upload -->
+<div class="pt-2 pb-4">
+<h2 class="font-h3 text-h3 text-on-surface mb-2">Resume</h2>
+<div class="border-2 border-dashed border-outline-variant rounded-lg p-6 flex flex-col items-center justify-center bg-surface-container-lowest hover:bg-info-bg hover:border-info/50 transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-4xl text-text-muted mb-2">upload_file</span>
+<p class="font-body text-body text-on-surface font-medium">Click to upload or drag and drop</p>
+<p class="font-label text-label text-text-muted mt-1 text-xs">PDF, DOCX up to 5MB</p>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex justify-end pt-4 border-t border-border-base">
+<button class="font-label text-label font-medium px-4 py-2 text-on-surface-variant hover:bg-surface-container rounded-DEFAULT transition-colors mr-2" type="button">
+                            Cancel
+                        </button>
+<button class="bg-info text-on-secondary font-label text-label font-medium px-6 py-2 rounded-DEFAULT hover:bg-info/90 transition-all shadow-sm active:scale-95" type="button">
+                            Save Changes
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md fixed bottom-0 w-full z-50 rounded-t-lg border-t border-slate-100 dark:border-slate-800 shadow-[0_-5px_15px_rgba(23,32,51,0.05)] md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-2 pb-safe">
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all text-[10px] font-medium Inter" href="#">
+<span class="material-symbols-outlined mb-1 text-[20px]">dashboard</span>
+            Dashboard
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all text-[10px] font-medium Inter" href="#">
+<span class="material-symbols-outlined mb-1 text-[20px]">search</span>
+            Jobs
+        </a>
+<a class="flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all text-[10px] font-medium Inter" href="#">
+<span class="material-symbols-outlined mb-1 text-[20px]">assignment</span>
+            Apps
+        </a>
+<a class="flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-xl px-3 py-1 hover:bg-slate-50 dark:hover:bg-slate-800 tap-highlight-transparent active:scale-90 transition-all text-[10px] font-medium Inter" href="#">
+<span class="material-symbols-outlined fill mb-1 text-[20px]">person</span>
+            Profile
+        </a>
+</nav>
+</body></html>
