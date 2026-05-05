@@ -46,4 +46,15 @@
             </div>
         </a>
     </div>
+
+    <div class="bg-card-surface border border-border-base rounded-xl p-6 shadow-ambient flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h2 class="text-xl font-semibold text-primary">Compliance Notification Checks</h2>
+            <p class="text-sm text-text-muted mt-1">Run missing-feedback reminders and offer-expiry alerts manually. Duplicate notifications are skipped.</p>
+        </div>
+        <form method="POST" action="<?= e(url('hr.checks.run')) ?>">
+            <?= csrf_field() ?>
+            <button type="submit" class="bg-primary text-white px-5 py-2.5 rounded-lg font-semibold hover:bg-primary-container">Run Checks</button>
+        </form>
+    </div>
 </div>

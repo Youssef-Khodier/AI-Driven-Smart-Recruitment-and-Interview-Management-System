@@ -2,6 +2,7 @@ CREATE DATABASE IF NOT EXISTS srim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode
 USE srim;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS post_offer_audit_records;
 DROP TABLE IF EXISTS onboarding;
 DROP TABLE IF EXISTS offers;
@@ -51,6 +52,23 @@ CREATE TABLE users (
   KEY idx_users_role_status (role, status)
 ) ENGINE=InnoDB;
 
+CREATE TABLE notifications (
+  notification_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(220) NOT NULL,
+  message TEXT NOT NULL,
+  type VARCHAR(80) NOT NULL,
+  reference_id BIGINT UNSIGNED NULL,
+  reference_type VARCHAR(40) NULL,
+  is_read BOOLEAN NOT NULL DEFAULT FALSE,
+  read_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_notifications_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+  KEY idx_notifications_user_read (user_id, is_read),
+  KEY idx_notifications_reference (reference_type, reference_id),
+  KEY idx_notifications_type_created (type, created_at)
+) ENGINE=InnoDB;
+
 CREATE TABLE candidates (
   candidate_id BIGINT UNSIGNED PRIMARY KEY,
   phone VARCHAR(40) NOT NULL,
@@ -67,13 +85,16 @@ CREATE TABLE candidates (
 CREATE TABLE account_audit_records (
   audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   actor_user_id BIGINT UNSIGNED NOT NULL,
-  target_user_id BIGINT UNSIGNED NOT NULL,
+  target_user_id BIGINT UNSIGNED NULL,
   action VARCHAR(48) NOT NULL,
   old_values JSON NULL,
   new_values JSON NOT NULL,
+  -- For retention audits (CANDIDATE_DELETED / CANDIDATE_ANONYMIZED):
+  -- new_values contains the snapshot or redaction details.
+  -- target_user_id becomes NULL upon candidate hard deletion to preserve audit evidence.
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_account_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-  CONSTRAINT fk_account_audit_target FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+  CONSTRAINT fk_account_audit_target FOREIGN KEY (target_user_id) REFERENCES users(user_id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE job_requisitions (

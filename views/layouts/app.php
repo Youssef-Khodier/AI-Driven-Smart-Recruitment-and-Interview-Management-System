@@ -141,6 +141,9 @@
                 <?php if ($user['role'] === 'HR_ADMIN'): ?>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.users.index')) ?>">Users</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.requisitions.index')) ?>">Requisitions</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.reports.pipeline')) ?>">Reports</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.audit-log.index')) ?>">Audit</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.data-retention.index')) ?>">Retention</a>
                 <?php endif; ?>
                 <?php if ($user['role'] === 'CANDIDATE'): ?>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('candidate.profile')) ?>">My Profile</a>
@@ -153,6 +156,13 @@
     
     <div class="flex items-center gap-4">
         <?php if ($user = auth_user()): ?>
+            <?php $unreadCount = \App\Repositories\NotificationRepository::unreadCount((int) $user['user_id']); ?>
+            <a href="<?= e(url('notifications.index')) ?>" class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors" title="Notifications">
+                <span class="material-symbols-outlined text-[20px]">notifications</span>
+                <?php if ($unreadCount > 0): ?>
+                    <span class="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-error text-white text-[11px] leading-5 text-center font-semibold"><?= e(min($unreadCount, 99)) ?></span>
+                <?php endif; ?>
+            </a>
             <span class="hidden md:inline text-sm text-text-muted mr-2"><?= e($user['name']) ?></span>
             <form method="POST" action="<?= e(url('logout')) ?>" class="inline m-0">
                 <?= csrf_field() ?>

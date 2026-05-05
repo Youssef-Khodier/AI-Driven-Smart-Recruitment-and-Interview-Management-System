@@ -14,6 +14,7 @@ use App\Enums\JobRequisitionStatus;
 use App\Enums\UserRole;
 use App\Policies\ApplicationPolicy;
 use App\Policies\JobRequisitionPolicy;
+use App\Repositories\NotificationRepository;
 
 final class HrController extends Controller
 {
@@ -249,6 +250,7 @@ final class HrController extends Controller
 
         Database::update('applications', ['status' => $data['status'], 'updated_at' => date('Y-m-d H:i:s')], 'application_id = ?', [(int) $id]);
         Database::insert('application_status_histories', ['application_id' => $id, 'actor_user_id' => $actor['user_id'], 'old_status' => $application['status'], 'new_status' => $data['status'], 'reason' => $data['reason'] ?? null, 'created_at' => date('Y-m-d H:i:s')]);
+        NotificationRepository::createApplicationStatusNotification((int) $id, $data['status']);
         Session::flash('status', 'Application status updated.');
 
         return $this->redirect(url('hr.applications.index', [$application['job_id']]));

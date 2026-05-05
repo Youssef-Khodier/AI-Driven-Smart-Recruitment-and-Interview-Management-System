@@ -73,9 +73,9 @@ final class OfferRepository
         });
     }
 
-    public static function enforceExpiryForOffer(int $offerId, int $actorUserId): void
+    public static function enforceExpiryForOffer(int $offerId, int $actorUserId): bool
     {
-        Database::transaction(function () use ($offerId, $actorUserId) {
+        return Database::transaction(function () use ($offerId, $actorUserId): bool {
             $offer = self::find($offerId);
             if ($offer && $offer['status'] === OfferStatus::SENT->value && strtotime($offer['expiry_date']) < time()) {
                 Database::update('offers', [
@@ -89,7 +89,11 @@ final class OfferRepository
                 PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorUserId, PostOfferAuditAction::OFFER_EXPIRE->value, [
                     'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::EXPIRED->value]
                 ]);
+
+                return true;
             }
+
+            return false;
         });
     }
 

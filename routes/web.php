@@ -5,8 +5,13 @@ use App\Controllers\AuthController;
 use App\Controllers\CandidateController;
 use App\Controllers\DashboardController;
 use App\Controllers\HrController;
+use App\Controllers\HrAuditLogController;
+use App\Controllers\HrComplianceCheckController;
+use App\Controllers\HrDataRetentionController;
+use App\Controllers\HrReportController;
 use App\Controllers\HrInterviewController;
 use App\Controllers\InterviewerInterviewController;
+use App\Controllers\NotificationController;
 use App\Core\Response;
 use App\Enums\JobRequisitionStatus;
 
@@ -22,6 +27,10 @@ $router->get('/dashboard', [DashboardController::class, 'redirectToDashboard'], 
 $router->get('/candidate/dashboard', [DashboardController::class, 'candidate'], 'candidate.dashboard');
 $router->get('/hr/dashboard', [DashboardController::class, 'hr'], 'hr.dashboard');
 $router->get('/interviewer/dashboard', [DashboardController::class, 'interviewer'], 'interviewer.dashboard');
+
+$router->get('/notifications', [NotificationController::class, 'index'], 'notifications.index');
+$router->post('/notifications/{id}/read', [NotificationController::class, 'markRead'], 'notifications.read');
+$router->post('/notifications/read-all', [NotificationController::class, 'markAllRead'], 'notifications.read-all');
 
 $router->get('/candidate/profile', [CandidateController::class, 'profile'], 'candidate.profile');
 $router->put('/candidate/profile', [CandidateController::class, 'updateProfile'], 'candidate.profile.update');
@@ -46,6 +55,14 @@ $router->get('/hr/users/create', [HrController::class, 'createUser'], 'hr.users.
 $router->post('/hr/users', [HrController::class, 'storeUser'], 'hr.users.store');
 $router->get('/hr/users/{id}/access', [HrController::class, 'editAccess'], 'hr.users.access.edit');
 $router->put('/hr/users/{id}/access', [HrController::class, 'updateAccess'], 'hr.users.access.update');
+
+$router->post('/hr/checks/run', [HrComplianceCheckController::class, 'run'], 'hr.checks.run');
+$router->get('/hr/reports/pipeline', [HrReportController::class, 'pipeline'], 'hr.reports.pipeline');
+$router->get('/hr/reports/time-to-hire', [HrReportController::class, 'timeToHire'], 'hr.reports.time-to-hire');
+$router->get('/hr/audit-log', [HrAuditLogController::class, 'index'], 'hr.audit-log.index');
+$router->get('/hr/data-retention', [HrDataRetentionController::class, 'index'], 'hr.data-retention.index');
+$router->post('/hr/data-retention/{candidate}/anonymize', [HrDataRetentionController::class, 'anonymize'], 'hr.data-retention.anonymize');
+$router->post('/hr/data-retention/{candidate}/delete', [HrDataRetentionController::class, 'delete'], 'hr.data-retention.delete');
 
 $router->get('/hr/requisitions', [HrController::class, 'requisitions'], 'hr.requisitions.index');
 $router->get('/hr/requisitions/create', [HrController::class, 'createRequisition'], 'hr.requisitions.create');

@@ -21,6 +21,7 @@ final class Config
             'FIRST_HR_ADMIN_NAME' => 'SRIM HR Admin',
             'FIRST_HR_ADMIN_EMAIL' => 'hr.admin@example.com',
             'FIRST_HR_ADMIN_PASSWORD' => 'password',
+            'CANDIDATE_RETENTION_DAYS' => '365',
         ];
 
         $env = $root . '/.env';
