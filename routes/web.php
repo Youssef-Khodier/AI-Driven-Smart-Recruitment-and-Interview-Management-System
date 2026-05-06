@@ -43,9 +43,12 @@ $router->post('/candidate/applications/{application}/assessments/{assessment}/st
 $router->get('/candidate/assessments/{id}', [AssessmentController::class, 'showCandidate'], 'candidate.assessments.show');
 $router->put('/candidate/assessments/{id}/answers/{question}', [AssessmentController::class, 'saveAnswer'], 'candidate.assessments.answers.update');
 $router->post('/candidate/assessments/{id}/heartbeat', [AssessmentController::class, 'heartbeat'], 'candidate.assessments.heartbeat');
-$router->post('/candidate/assessments/{id}/submit', [AssessmentController::class, 'submitCandidate'], 'candidate.assessments.submit');
-$router->post('/candidate/assessments/{id}/focus-events', [AssessmentController::class, 'focusEvent'], 'candidate.assessments.focus-events.store');
 $router->get('/candidate/assessments/{id}/result', [AssessmentController::class, 'resultCandidate'], 'candidate.assessments.result');
+
+$router->get('/candidate/interviews/{id}', [\App\Controllers\CandidateInterviewController::class, 'show'], 'candidate.interviews.show');
+$router->get('/candidate/interviews/{id}/workspace', [\App\Controllers\CandidateInterviewController::class, 'workspace'], 'candidate.interviews.workspace');
+$router->post('/candidate/interviews/{id}/workspace', [\App\Controllers\CandidateInterviewController::class, 'saveWorkspace'], 'candidate.interviews.workspace.save');
+
 
 $router->get('/candidate/offers/{id}', [\App\Controllers\CandidateOfferController::class, 'show'], 'candidate.offers.show');
 $router->post('/candidate/offers/{id}/accept', [\App\Controllers\CandidateOfferController::class, 'accept'], 'candidate.offers.accept');
@@ -123,14 +126,21 @@ $router->post('/hr/assessment-questions/{id}/deactivate', [AssessmentController:
 $router->get('/hr/requisitions/{id}/assessment-results', [AssessmentController::class, 'results'], 'hr.assessment-results.index');
 $router->get('/hr/candidate-assessments/{id}', [AssessmentController::class, 'reviewAttempt'], 'hr.candidate-assessments.show');
 
-$router->get('/hr/interviews', [HrInterviewController::class, 'index'], 'hr.interviews.index');
 $router->get('/hr/applications/{id}/interviews/create', [HrInterviewController::class, 'create'], 'hr.interviews.create');
+$router->post('/hr/applications/{id}/interviews/recommendations', [HrInterviewController::class, 'recommendPanel'], 'hr.interviews.recommendations');
 $router->post('/hr/applications/{id}/interviews', [HrInterviewController::class, 'store'], 'hr.interviews.store');
 $router->get('/hr/interviews/{id}', [HrInterviewController::class, 'show'], 'hr.interviews.show');
 $router->get('/hr/interviews/{id}/edit', [HrInterviewController::class, 'edit'], 'hr.interviews.edit');
 $router->put('/hr/interviews/{id}', [HrInterviewController::class, 'update'], 'hr.interviews.update');
 $router->post('/hr/interviews/{id}/cancel', [HrInterviewController::class, 'cancel'], 'hr.interviews.cancel');
 $router->post('/hr/interviews/{id}/complete', [HrInterviewController::class, 'complete'], 'hr.interviews.complete');
+$router->post('/hr/interviews/{id}/briefing/refresh', [HrInterviewController::class, 'refreshBriefing'], 'hr.interviews.briefing.refresh');
+$router->get('/hr/interviews/{id}/workspace', [HrInterviewController::class, 'workspace'], 'hr.interviews.workspace');
+$router->post('/hr/interviews/{id}/workspace', [HrInterviewController::class, 'saveWorkspace'], 'hr.interviews.workspace.save');
+$router->get('/hr/interviews/{id}/extensions/{request}', [HrInterviewController::class, 'showExtension'], 'hr.interviews.extensions.show');
+$router->post('/hr/interviews/{id}/extensions/{request}/approve', [HrInterviewController::class, 'approveExtension'], 'hr.interviews.extensions.approve');
+$router->post('/hr/interviews/{id}/extensions/{request}/deny', [HrInterviewController::class, 'denyExtension'], 'hr.interviews.extensions.deny');
+$router->get('/hr/interviews/{id}/audit', [HrInterviewController::class, 'audit'], 'hr.interviews.audit');
 
 $router->get('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'show'], 'hr.evaluations.show');
 $router->post('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'store'], 'hr.evaluations.store');
@@ -149,5 +159,9 @@ $router->put('/hr/onboarding/{id}', [\App\Controllers\HrOnboardingController::cl
 
 $router->get('/interviewer/interviews', [InterviewerInterviewController::class, 'index'], 'interviewer.interviews.index');
 $router->get('/interviewer/interviews/{id}', [InterviewerInterviewController::class, 'show'], 'interviewer.interviews.show');
+$router->get('/interviewer/interviews/{id}/workspace', [InterviewerInterviewController::class, 'workspace'], 'interviewer.interviews.workspace');
+$router->post('/interviewer/interviews/{id}/workspace', [InterviewerInterviewController::class, 'saveWorkspace'], 'interviewer.interviews.workspace.save');
+$router->post('/interviewer/interviews/{id}/extensions', [InterviewerInterviewController::class, 'requestExtension'], 'interviewer.interviews.extensions.store');
+$router->post('/interviewer/interviews/{id}/extensions/{request}/cancel', [InterviewerInterviewController::class, 'cancelExtension'], 'interviewer.interviews.extensions.cancel');
 $router->get('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'feedback'], 'interviewer.interviews.feedback.create');
 $router->post('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'storeFeedback'], 'interviewer.interviews.feedback.store');

@@ -4,6 +4,7 @@ namespace App\Enums;
 
 enum InterviewAssignmentRole: string
 {
+    case HR_REPRESENTATIVE = 'HR_REPRESENTATIVE';
     case PANEL_LEAD = 'PANEL_LEAD';
     case INTERVIEWER = 'INTERVIEWER';
     case OBSERVER = 'OBSERVER';

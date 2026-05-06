@@ -24,6 +24,29 @@ final class InterviewRepository
         );
     }
 
+    public static function findForCandidate(int $interviewId, int $candidateId): ?array
+    {
+        return Database::fetch(
+            "SELECT i.*, a.candidate_id, j.title AS job_title 
+             FROM interviews i
+             JOIN applications a ON a.application_id = i.application_id
+             JOIN job_requisitions j ON j.job_id = a.job_id
+             WHERE i.interview_id = ? AND a.candidate_id = ?",
+            [$interviewId, $candidateId]
+        );
+    }
+
+    public static function effectiveDurationMinutes(array $interview): int
+    {
+        return (int)($interview['duration_minutes'] ?? 0) + (int)($interview['extended_duration_minutes'] ?? 0);
+    }
+
+    public static function checkCandidateOwnership(int $applicationId, int $candidateId): bool
+    {
+        $app = Database::fetch("SELECT application_id FROM applications WHERE application_id = ? AND candidate_id = ?", [$applicationId, $candidateId]);
+        return $app !== false;
+    }
+
     public static function activePanelUsers(): array
     {
         return Database::fetchAll(
