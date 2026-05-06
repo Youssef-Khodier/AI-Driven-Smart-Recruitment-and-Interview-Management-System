@@ -12,6 +12,8 @@ use App\Controllers\HrReportController;
 use App\Controllers\HrInterviewController;
 use App\Controllers\InterviewerInterviewController;
 use App\Controllers\NotificationController;
+use App\Controllers\HrGovernanceController;
+use App\Controllers\HrScreeningController;
 use App\Core\Response;
 use App\Enums\JobRequisitionStatus;
 
@@ -48,6 +50,8 @@ $router->get('/candidate/assessments/{id}/result', [AssessmentController::class,
 $router->get('/candidate/interviews/{id}', [\App\Controllers\CandidateInterviewController::class, 'show'], 'candidate.interviews.show');
 $router->get('/candidate/interviews/{id}/workspace', [\App\Controllers\CandidateInterviewController::class, 'workspace'], 'candidate.interviews.workspace');
 $router->post('/candidate/interviews/{id}/workspace', [\App\Controllers\CandidateInterviewController::class, 'saveWorkspace'], 'candidate.interviews.workspace.save');
+$router->get('/candidate/interviews/{id}/sentiment', [\App\Controllers\CandidateSentimentController::class, 'create'], 'candidate.interviews.sentiment.create');
+$router->post('/candidate/interviews/{id}/sentiment', [\App\Controllers\CandidateSentimentController::class, 'store'], 'candidate.interviews.sentiment.store');
 
 
 $router->get('/candidate/offers/{id}', [\App\Controllers\CandidateOfferController::class, 'show'], 'candidate.offers.show');
@@ -63,6 +67,7 @@ $router->put('/hr/users/{id}/access', [HrController::class, 'updateAccess'], 'hr
 $router->post('/hr/checks/run', [HrComplianceCheckController::class, 'run'], 'hr.checks.run');
 $router->get('/hr/reports/pipeline', [HrReportController::class, 'pipeline'], 'hr.reports.pipeline');
 $router->get('/hr/reports/time-to-hire', [HrReportController::class, 'timeToHire'], 'hr.reports.time-to-hire');
+$router->get('/hr/feedback-governance', [\App\Controllers\HrFeedbackGovernanceController::class, 'index'], 'hr.feedback-governance.index');
 $router->get('/hr/audit-log', [HrAuditLogController::class, 'index'], 'hr.audit-log.index');
 $router->get('/hr/data-retention', [HrDataRetentionController::class, 'index'], 'hr.data-retention.index');
 $router->post('/hr/data-retention/{candidate}/anonymize', [HrDataRetentionController::class, 'anonymize'], 'hr.data-retention.anonymize');
@@ -144,6 +149,8 @@ $router->get('/hr/interviews/{id}/audit', [HrInterviewController::class, 'audit'
 
 $router->get('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'show'], 'hr.evaluations.show');
 $router->post('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'store'], 'hr.evaluations.store');
+$router->get('/hr/applications/{id}/governance', [\App\Controllers\HrFeedbackGovernanceController::class, 'show'], 'hr.governance.show');
+$router->post('/hr/flags/{id}/resolve', [\App\Controllers\HrFeedbackGovernanceController::class, 'resolveFlag'], 'hr.flags.resolve');
 
 $router->get('/hr/offers', [\App\Controllers\HrOfferController::class, 'index'], 'hr.offers.index');
 $router->get('/hr/applications/{id}/offers/create', [\App\Controllers\HrOfferController::class, 'create'], 'hr.offers.create');
@@ -165,3 +172,25 @@ $router->post('/interviewer/interviews/{id}/extensions', [InterviewerInterviewCo
 $router->post('/interviewer/interviews/{id}/extensions/{request}/cancel', [InterviewerInterviewController::class, 'cancelExtension'], 'interviewer.interviews.extensions.cancel');
 $router->get('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'feedback'], 'interviewer.interviews.feedback.create');
 $router->post('/interviewer/interviews/{id}/feedback', [InterviewerInterviewController::class, 'storeFeedback'], 'interviewer.interviews.feedback.store');
+
+$router->get('/candidate/onboarding', [\App\Controllers\CandidateOnboardingController::class, 'index'], 'candidate.onboarding.index');
+$router->get('/candidate/onboarding/{id}', [\App\Controllers\CandidateOnboardingController::class, 'show'], 'candidate.onboarding.show');
+$router->post('/candidate/onboarding/{id}/complete-task', [\App\Controllers\CandidateOnboardingController::class, 'completeTask'], 'candidate.onboarding.complete-task');
+
+$router->get('/hr/referrals', [\App\Controllers\HrReferralController::class, 'index'], 'hr.referrals.index');
+$router->get('/hr/applications/{id}/referral', [\App\Controllers\HrReferralController::class, 'create'], 'hr.referrals.create');
+$router->post('/hr/applications/{id}/referral', [\App\Controllers\HrReferralController::class, 'store'], 'hr.referrals.store');
+$router->post('/hr/referrals/{id}/approve-reward', [\App\Controllers\HrReferralController::class, 'approveReward'], 'hr.referrals.approve-reward');
+$router->post('/hr/referrals/{id}/reject-reward', [\App\Controllers\HrReferralController::class, 'rejectReward'], 'hr.referrals.reject-reward');
+$router->post('/hr/referrals/{id}/mark-paid', [\App\Controllers\HrReferralController::class, 'markPaid'], 'hr.referrals.mark-paid');
+
+$router->get('/hr/applications/{id}/background-checks', [\App\Controllers\HrBackgroundCheckController::class, 'index'], 'hr.background-checks.index');
+$router->post('/hr/applications/{id}/background-checks', [\App\Controllers\HrBackgroundCheckController::class, 'request'], 'hr.background-checks.request');
+$router->post('/hr/background-checks/{id}/in-progress', [\App\Controllers\HrBackgroundCheckController::class, 'markInProgress'], 'hr.background-checks.in-progress');
+$router->post('/hr/background-checks/{id}/complete', [\App\Controllers\HrBackgroundCheckController::class, 'complete'], 'hr.background-checks.complete');
+$router->post('/hr/background-checks/{id}/cancel', [\App\Controllers\HrBackgroundCheckController::class, 'cancel'], 'hr.background-checks.cancel');
+
+$router->post('/hr/offers/{id}/generate-letter', [\App\Controllers\HrOfferController::class, 'generateLetter'], 'hr.offers.generate-letter');
+$router->get('/hr/offers/{id}/letter', [\App\Controllers\HrOfferController::class, 'viewLetter'], 'hr.offers.letter');
+
+$router->get('/hr/reports/bottlenecks', [HrReportController::class, 'bottlenecks'], 'hr.reports.bottlenecks');

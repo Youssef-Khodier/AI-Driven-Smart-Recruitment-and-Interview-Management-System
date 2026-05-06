@@ -17,4 +17,9 @@ final class ReportPolicy
     {
         return $this->viewPipeline($user);
     }
+
+    public function viewFeedbackGovernance(array $user): bool
+    {
+        return $this->viewPipeline($user);
+    }
 }

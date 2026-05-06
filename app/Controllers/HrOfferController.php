@@ -196,4 +196,54 @@ final class HrOfferController extends Controller
 
         return Response::redirect(url('hr.offers.show', [$offerId]))->with('success', 'Offer sent to candidate.');
     }
-}
+
+    public function generateLetter(Request $request, int $offerId): Response
+    {
+        if (!OfferPolicy::create()) {
+            return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
+        }
+
+        $offer = Database::fetch(
+            'SELECT o.*, a.job_id, j.title as job_title, d.name as department_name,
+                    c.candidate_id, u.name as candidate_name
+             FROM offers o
+             JOIN applications a ON o.application_id = a.application_id
+             JOIN job_requisitions j ON a.job_id = j.job_id
+             JOIN departments d ON j.department_id = d.department_id
+             JOIN candidates c ON a.candidate_id = c.candidate_id
+             JOIN users u ON c.candidate_id = u.user_id
+             WHERE o.offer_id = ?',
+            [$offerId]
+        );
+
+        if (!$offer) {
+            return Response::redirect(url('hr.offers.index'))->with('error', 'Offer not found');
+        }
+
+        $actorId = Auth::id();
+        $service = new \App\Services\OfferLetterTemplateService();
+        $service->generateAndStore($offerId, $offer, $actorId);
+
+        return Response::redirect(url('hr.offers.letter', [$offerId]))->with('success', 'Offer letter generated.');
+    }
+
+    public function viewLetter(Request $request, int $offerId): Response
+    {
+        if (!OfferPolicy::view($offerId)) {
+            return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
+        }
+
+        $service = new \App\Services\OfferLetterTemplateService();
+        $letter = $service->getLatestLetter($offerId);
+
+        if (!$letter) {
+            return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'No letter has been generated yet.');
+        }
+
+        return Response::view('hr/offers/letter', [
+            'title' => 'Offer Letter',
+            'offerId' => $offerId,
+            'letter' => $letter,
+        ]);
+    }
+}

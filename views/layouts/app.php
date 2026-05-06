@@ -158,6 +158,7 @@
                 <?php if ($user['role'] === 'INTERVIEWER' || $user['role'] === 'JUNIOR_STAFF'): ?>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('interviewer.interviews.index')) ?>">My Interviews</a>
             <?php endif; ?>
+            <?php endif; ?>
         </nav>
     </div>
     

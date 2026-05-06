@@ -16,4 +16,39 @@ final class FinalEvaluationPolicy
     {
         return Auth::hasRole(UserRole::HR_ADMIN->value);
     }
+
+    public static function viewGovernance(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function recalculateGovernance(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function reviewFlags(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function resolveFlag(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function viewDebrief(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function completeDebrief(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
+
+    public static function maintainBenchmarks(): bool
+    {
+        return Auth::hasRole(UserRole::HR_ADMIN->value);
+    }
 }

@@ -2,6 +2,18 @@ CREATE DATABASE IF NOT EXISTS srim CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode
 USE srim;
 
 SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS feedback_governance_audit_records;
+DROP TABLE IF EXISTS competency_gap_snapshots;
+DROP TABLE IF EXISTS job_competency_benchmarks;
+DROP TABLE IF EXISTS evaluation_debrief_records;
+DROP TABLE IF EXISTS candidate_interview_sentiment;
+DROP TABLE IF EXISTS feedback_concern_flags;
+DROP TABLE IF EXISTS compliance_audit_events;
+DROP TABLE IF EXISTS archive_actions;
+DROP TABLE IF EXISTS compliance_run_check_findings;
+DROP TABLE IF EXISTS compliance_run_check_batches;
+DROP TABLE IF EXISTS candidate_demographics;
+DROP TABLE IF EXISTS normalized_evaluation_snapshots;
 DROP TABLE IF EXISTS notifications;
 DROP TABLE IF EXISTS post_offer_audit_records;
 DROP TABLE IF EXISTS onboarding;
@@ -123,9 +135,12 @@ CREATE TABLE job_requisitions (
   closed_at TIMESTAMP NULL,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
+  archived_at TIMESTAMP NULL,
+  archived_by BIGINT UNSIGNED NULL,
   CONSTRAINT fk_jobs_department FOREIGN KEY (department_id) REFERENCES departments(department_id) ON DELETE RESTRICT,
   CONSTRAINT fk_jobs_created_by FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
   CONSTRAINT fk_jobs_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  CONSTRAINT fk_jobs_archived_by FOREIGN KEY (archived_by) REFERENCES users(user_id) ON DELETE SET NULL,
   KEY idx_jobs_status (status)
 ) ENGINE=InnoDB;
 
@@ -234,7 +249,10 @@ CREATE TABLE applications (
   applied_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
+  archived_at TIMESTAMP NULL,
+  archived_by BIGINT UNSIGNED NULL,
   CONSTRAINT fk_applications_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_apps_archived_by FOREIGN KEY (archived_by) REFERENCES users(user_id) ON DELETE SET NULL,
   CONSTRAINT fk_applications_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
   UNIQUE KEY uq_applications_candidate_job (candidate_id, job_id),
   KEY idx_applications_job_status (job_id, status)
@@ -699,4 +717,268 @@ CREATE TABLE candidate_merge_log (
   CONSTRAINT fk_merge_log_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE SET NULL,
   CONSTRAINT chk_candidate_merge_not_same CHECK (primary_candidate_id <> duplicate_candidate_id),
   UNIQUE KEY uq_candidate_merge_pair (primary_candidate_id, duplicate_candidate_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE normalized_evaluation_snapshots (
+  snapshot_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  interview_id BIGINT UNSIGNED NULL,
+  calculated_by BIGINT UNSIGNED NULL,
+  raw_score_summary JSON NOT NULL,
+  normalized_score_summary JSON NOT NULL,
+  aggregate_score DECIMAL(5,2) NOT NULL,
+  recommendation VARCHAR(40) NOT NULL,
+  normalization_status VARCHAR(40) NOT NULL,
+  fallback_reasons JSON NULL,
+  included_feedback_count INT UNSIGNED NOT NULL DEFAULT 0,
+  missing_feedback_count INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_snapshots_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_snapshots_interview FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE SET NULL,
+  CONSTRAINT fk_snapshots_user FOREIGN KEY (calculated_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  KEY idx_snapshots_application (application_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE feedback_concern_flags (
+  flag_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  interview_id BIGINT UNSIGNED NULL,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  category VARCHAR(60) NOT NULL,
+  severity VARCHAR(40) NOT NULL,
+  explanation TEXT NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'OPEN',
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  resolved_by BIGINT UNSIGNED NULL,
+  resolved_at TIMESTAMP NULL,
+  resolution_rationale TEXT NULL,
+  CONSTRAINT fk_concern_flags_app FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_concern_flags_int FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE SET NULL,
+  CONSTRAINT fk_concern_flags_cand FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_concern_flags_creator FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_concern_flags_resolver FOREIGN KEY (resolved_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_concern_flags_app_status (application_id, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidate_interview_sentiment (
+  sentiment_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  application_id BIGINT UNSIGNED NOT NULL,
+  interview_id BIGINT UNSIGNED NOT NULL,
+  rating TINYINT UNSIGNED NOT NULL,
+  comment TEXT NULL,
+  submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_sentiment_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_sentiment_app FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_sentiment_interview FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  UNIQUE KEY uq_sentiment_candidate_interview (candidate_id, interview_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE evaluation_debrief_records (
+  debrief_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  interview_id BIGINT UNSIGNED NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'PENDING',
+  participants JSON NULL,
+  consensus_level VARCHAR(40) NULL,
+  dissent_notes TEXT NULL,
+  final_recommendation VARCHAR(40) NULL,
+  rationale TEXT NULL,
+  next_action VARCHAR(60) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_by BIGINT UNSIGNED NULL,
+  completed_at TIMESTAMP NULL,
+  CONSTRAINT fk_debriefs_app FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_debriefs_int FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  CONSTRAINT fk_debriefs_completer FOREIGN KEY (completed_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_debrief_interview (interview_id),
+  KEY idx_debriefs_app_status (application_id, status)
+) ENGINE=InnoDB;
+
+CREATE TABLE job_competency_benchmarks (
+  benchmark_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id BIGINT UNSIGNED NOT NULL,
+  competency VARCHAR(120) NOT NULL,
+  benchmark_score DECIMAL(5,2) NOT NULL,
+  weight DECIMAL(5,2) NULL,
+  source VARCHAR(80) NULL,
+  updated_by BIGINT UNSIGNED NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_benchmarks_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE CASCADE,
+  CONSTRAINT fk_benchmarks_updater FOREIGN KEY (updated_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  UNIQUE KEY uq_benchmark_job_competency (job_id, competency),
+  CONSTRAINT chk_benchmark_score CHECK (benchmark_score >= 0 AND benchmark_score <= 10)
+) ENGINE=InnoDB;
+
+CREATE TABLE competency_gap_snapshots (
+  gap_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  snapshot_id BIGINT UNSIGNED NOT NULL,
+  benchmark_id BIGINT UNSIGNED NOT NULL,
+  competency VARCHAR(120) NOT NULL,
+  candidate_score DECIMAL(5,2) NOT NULL,
+  benchmark_score DECIMAL(5,2) NOT NULL,
+  gap_ratio DECIMAL(5,2) NOT NULL,
+  severity VARCHAR(40) NOT NULL,
+  CONSTRAINT fk_gap_snapshots_snapshot FOREIGN KEY (snapshot_id) REFERENCES normalized_evaluation_snapshots(snapshot_id) ON DELETE CASCADE,
+  CONSTRAINT fk_gap_snapshots_benchmark FOREIGN KEY (benchmark_id) REFERENCES job_competency_benchmarks(benchmark_id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE feedback_governance_audit_records (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  actor_user_id BIGINT UNSIGNED NULL,
+  actor_role VARCHAR(60) NULL,
+  application_id BIGINT UNSIGNED NULL,
+  interview_id BIGINT UNSIGNED NULL,
+  entity_type VARCHAR(60) NOT NULL,
+  entity_id BIGINT UNSIGNED NOT NULL,
+  action VARCHAR(80) NOT NULL,
+  old_values JSON NULL,
+  new_values JSON NULL,
+  reason TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_fg_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+  CONSTRAINT fk_fg_audit_app FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_fg_audit_int FOREIGN KEY (interview_id) REFERENCES interviews(interview_id) ON DELETE CASCADE,
+  KEY idx_fg_audit_action (action),
+  KEY idx_fg_audit_created (created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidate_demographics (
+  demographic_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  gender_category VARCHAR(80) NULL,
+  ethnicity_category VARCHAR(80) NULL,
+  disability_category VARCHAR(80) NULL,
+  veteran_status_category VARCHAR(80) NULL,
+  consent_flag BOOLEAN NOT NULL DEFAULT FALSE,
+  withdrawn_at TIMESTAMP NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_cand_demographics_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  UNIQUE KEY uq_cand_demographics_candidate (candidate_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE compliance_run_check_batches (
+  batch_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  check_type VARCHAR(60) NOT NULL,
+  selected_scope JSON NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'STARTED',
+  total_findings INT UNSIGNED NOT NULL DEFAULT 0,
+  new_notifications INT UNSIGNED NOT NULL DEFAULT 0,
+  duplicate_notifications_skipped INT UNSIGNED NOT NULL DEFAULT 0,
+  archive_recommendations INT UNSIGNED NOT NULL DEFAULT 0,
+  blocked_actions INT UNSIGNED NOT NULL DEFAULT 0,
+  summary_message TEXT NULL,
+  started_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP NULL,
+  CONSTRAINT fk_crc_batches_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE compliance_run_check_findings (
+  finding_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  batch_id BIGINT UNSIGNED NOT NULL,
+  finding_type VARCHAR(60) NOT NULL,
+  severity VARCHAR(40) NOT NULL,
+  entity_type VARCHAR(60) NOT NULL,
+  entity_id BIGINT UNSIGNED NOT NULL,
+  candidate_id BIGINT UNSIGNED NULL,
+  responsible_user_id BIGINT UNSIGNED NULL,
+  due_date TIMESTAMP NULL,
+  recommended_action VARCHAR(80) NULL,
+  existing_notification_id BIGINT UNSIGNED NULL,
+  created_notification_id BIGINT UNSIGNED NULL,
+  archive_eligibility_status VARCHAR(40) NULL,
+  reason TEXT NULL,
+  resolved_marker BOOLEAN NOT NULL DEFAULT FALSE,
+  detected_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_crc_findings_batch FOREIGN KEY (batch_id) REFERENCES compliance_run_check_batches(batch_id) ON DELETE CASCADE,
+  CONSTRAINT fk_crc_findings_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE SET NULL,
+  CONSTRAINT fk_crc_findings_responsible FOREIGN KEY (responsible_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+  CONSTRAINT fk_crc_findings_exist_notif FOREIGN KEY (existing_notification_id) REFERENCES notifications(notification_id) ON DELETE SET NULL,
+  CONSTRAINT fk_crc_findings_new_notif FOREIGN KEY (created_notification_id) REFERENCES notifications(notification_id) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE archive_actions (
+  archive_action_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  entity_type VARCHAR(60) NOT NULL,
+  entity_id BIGINT UNSIGNED NOT NULL,
+  action_status VARCHAR(40) NOT NULL,
+  reason TEXT NOT NULL,
+  eligibility_snapshot JSON NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  previous_active_status VARCHAR(40) NULL,
+  new_archive_status VARCHAR(40) NULL,
+  affected_record_summary JSON NULL,
+  action_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_archive_actions_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE compliance_audit_events (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  actor_role VARCHAR(60) NULL,
+  entity_type VARCHAR(60) NOT NULL,
+  entity_id BIGINT UNSIGNED NULL,
+  action VARCHAR(80) NOT NULL,
+  old_values JSON NULL,
+  new_values JSON NULL,
+  reason TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_comp_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
+
+CREATE TABLE background_checks (
+  background_check_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  check_type VARCHAR(60) NOT NULL,
+  status VARCHAR(40) NOT NULL DEFAULT 'REQUESTED',
+  result_notes TEXT NULL,
+  requested_by BIGINT UNSIGNED NOT NULL,
+  requested_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at TIMESTAMP NULL,
+  completed_by BIGINT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_bgcheck_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_bgcheck_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_bgcheck_requested_by FOREIGN KEY (requested_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_bgcheck_completed_by FOREIGN KEY (completed_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  KEY idx_bgcheck_app_type (application_id, check_type),
+  KEY idx_bgcheck_status (status)
+) ENGINE=InnoDB;
+
+CREATE TABLE referrals (
+  referral_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  application_id BIGINT UNSIGNED NOT NULL,
+  candidate_id BIGINT UNSIGNED NOT NULL,
+  referrer_user_id BIGINT UNSIGNED NULL,
+  referrer_name VARCHAR(255) NULL,
+  referrer_email VARCHAR(255) NULL,
+  referral_source VARCHAR(120) NOT NULL DEFAULT 'INTERNAL',
+  notes TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_referral_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
+  CONSTRAINT fk_referral_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_referral_referrer FOREIGN KEY (referrer_user_id) REFERENCES users(user_id) ON DELETE SET NULL,
+  UNIQUE KEY uq_referral_application (application_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE referral_rewards (
+  reward_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  referral_id BIGINT UNSIGNED NOT NULL,
+  reward_status VARCHAR(60) NOT NULL DEFAULT 'PENDING',
+  reward_amount DECIMAL(10,2) NULL,
+  reward_type VARCHAR(60) NULL DEFAULT 'MONETARY',
+  approved_by BIGINT UNSIGNED NULL,
+  approved_at TIMESTAMP NULL,
+  paid_at TIMESTAMP NULL,
+  notes TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reward_referral FOREIGN KEY (referral_id) REFERENCES referrals(referral_id) ON DELETE CASCADE,
+  CONSTRAINT fk_reward_approved_by FOREIGN KEY (approved_by) REFERENCES users(user_id) ON DELETE SET NULL,
+  UNIQUE KEY uq_reward_referral (referral_id)
 ) ENGINE=InnoDB;

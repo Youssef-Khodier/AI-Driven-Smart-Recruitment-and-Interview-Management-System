@@ -37,4 +37,21 @@ final class InterviewFeedbackPolicy
     {
         return (new InterviewPolicy())->view($user, $interview);
     }
+
+    public function createFlag(array $user, array $interview, ?array $assignment): bool
+    {
+        if (($user['status'] ?? null) !== AccountStatus::ACTIVE->value) {
+            return false;
+        }
+
+        if (!$assignment) {
+            return false;
+        }
+
+        if (!in_array($assignment['role_in_panel'], InterviewAssignmentRole::officialScorerValues())) {
+            return false;
+        }
+
+        return true;
+    }
 }

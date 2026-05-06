@@ -37,4 +37,20 @@ final class HrReportController extends Controller
             'departments' => ReportRepository::timeToHireByDepartment(),
         ]);
     }
+
+    public function bottlenecks(Request $request): Response
+    {
+        $user = $this->requireRole(UserRole::HR_ADMIN->value);
+        if (! (new ReportPolicy())->viewPipeline($user)) {
+            throw new HttpException(403, 'You are not authorized to view reports.');
+        }
+
+        return $this->view('hr/reports/bottlenecks', [
+            'title' => 'Pipeline Bottleneck Analysis',
+            'stageDurations' => ReportRepository::averageStageDurations(),
+            'conversionRates' => ReportRepository::stageConversionRates(),
+            'bottlenecks' => ReportRepository::identifyBottlenecks(),
+        ]);
+    }
 }
+

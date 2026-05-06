@@ -18,6 +18,9 @@
         "db:seed": [
             "@php scripts/db.php seed"
         ],
+        "db:seed-mock": [
+            "@php scripts/mock_seed.php"
+        ],
         "test": [
             "@php scripts/check.php"
         ]
