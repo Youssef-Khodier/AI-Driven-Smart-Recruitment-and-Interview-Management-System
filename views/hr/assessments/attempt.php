@@ -53,6 +53,18 @@
                             <td class="px-4 py-4 text-primary align-top max-w-xs break-words"><?= nl2br(e($question['question_text'])) ?></td>
                             <td class="px-4 py-4 text-text-muted align-top">
                                 <div class="bg-surface-container-low p-3 rounded border border-border-base whitespace-pre-wrap max-h-48 overflow-y-auto"><?= nl2br(e($question['answer_text'] ?? '')) ?></div>
+                                <?php if (($question['code_output'] ?? '') !== ''): ?>
+                                    <div class="mt-2 bg-white p-2 rounded border border-border-base font-mono text-xs whitespace-pre-wrap">Output: <?= nl2br(e($question['code_output'])) ?></div>
+                                    <div class="mt-1 text-xs text-text-muted">Simulated hidden-output match: <?= $question['output_matched'] === null ? 'not checked' : ($question['output_matched'] ? 'matched' : 'not matched') ?></div>
+                                <?php endif; ?>
+                                <?php if ($question['plagiarism_score'] !== null): ?>
+                                    <div class="mt-1 text-xs text-warning flex items-center gap-1">
+                                        Simulated plagiarism similarity: <?= e($question['plagiarism_score']) ?>%
+                                        <?php if ((float)$question['plagiarism_score'] >= 80): ?>
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-error-bg text-error border border-error/20">HR REVIEW REQUIRED</span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </td>
                             <td class="px-4 py-4 text-center align-top">
                                 <?php if ($question['is_correct'] === null): ?>

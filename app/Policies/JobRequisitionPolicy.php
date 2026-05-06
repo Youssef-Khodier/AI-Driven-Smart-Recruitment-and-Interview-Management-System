@@ -15,6 +15,7 @@ final class JobRequisitionPolicy
                 JobRequisitionStatus::DRAFT->value,
                 JobRequisitionStatus::PENDING->value,
                 JobRequisitionStatus::APPROVED->value,
+                JobRequisitionStatus::REJECTED->value,
             ], true);
     }
 
@@ -25,9 +26,7 @@ final class JobRequisitionPolicy
         }
 
         return match ($nextStatus) {
-            JobRequisitionStatus::PENDING->value => $requisition['status'] === JobRequisitionStatus::DRAFT->value,
-            JobRequisitionStatus::APPROVED->value => $requisition['status'] === JobRequisitionStatus::PENDING->value
-                && (int) $requisition['created_by'] !== (int) $user['user_id'],
+            JobRequisitionStatus::PENDING->value => in_array($requisition['status'], [JobRequisitionStatus::DRAFT->value, JobRequisitionStatus::REJECTED->value], true),
             JobRequisitionStatus::OPEN->value => $requisition['status'] === JobRequisitionStatus::APPROVED->value,
             JobRequisitionStatus::CLOSED->value => in_array($requisition['status'], [JobRequisitionStatus::APPROVED->value, JobRequisitionStatus::OPEN->value], true),
             default => false,

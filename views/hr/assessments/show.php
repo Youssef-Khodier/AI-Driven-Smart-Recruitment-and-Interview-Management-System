@@ -41,6 +41,24 @@
         </a>
     </div>
 
+    <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-5 grid gap-4 md:grid-cols-2">
+        <div>
+            <h2 class="text-lg font-bold text-primary mb-2">Question-Bank Rules</h2>
+            <div class="flex flex-wrap gap-2 text-sm">
+                <?php foreach (['EASY', 'MEDIUM', 'HARD'] as $level): ?>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-surface-container-low border border-border-base text-primary">
+                        <?= e($level) ?>: <?= e($rules[$level] ?? 0) ?> questions
+                    </span>
+                <?php endforeach; ?>
+            </div>
+            <p class="text-xs text-text-muted mt-3">Retake cool-down: <?= e($assessment['cooldown_months'] ?? 6) ?> month(s).</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+            <h2 class="text-sm font-semibold text-blue-900 mb-1">Dynamic Difficulty Suggestion</h2>
+            <p class="text-sm text-blue-800"><?= e($difficultySuggestion) ?></p>
+        </div>
+    </div>
+
     <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base overflow-hidden">
         <div class="px-6 py-4 border-b border-border-base flex items-center gap-2">
             <span class="material-symbols-outlined text-secondary">format_list_numbered</span>

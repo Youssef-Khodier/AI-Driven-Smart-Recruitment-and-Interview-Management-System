@@ -6,6 +6,21 @@
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <!-- Dashboard Nav Cards -->
+        <?php if ($user['is_department_head'] ?? false): ?>
+        <a href="<?= e(url('hr.approvals.index')) ?>" class="bg-card-surface p-6 rounded-xl shadow-ambient hover-lift border border-border-base flex flex-col justify-between group h-full">
+            <div class="p-3 bg-red-100 rounded-lg text-red-700 w-fit mb-4 group-hover:bg-red-200 transition-colors flex items-center gap-2">
+                <span class="material-symbols-outlined">fact_check</span>
+                <?php if ($pendingApprovalsCount > 0): ?>
+                    <span class="bg-error text-white text-xs font-bold px-2 py-0.5 rounded-full"><?= e($pendingApprovalsCount) ?></span>
+                <?php endif; ?>
+            </div>
+            <div>
+                <p class="font-semibold text-primary text-lg group-hover:text-red-700 transition-colors">Pending Approvals</p>
+                <p class="text-sm text-text-muted mt-1">Review requisitions awaiting your approval</p>
+            </div>
+        </a>
+        <?php endif; ?>
+
         <a href="<?= e(url('hr.requisitions.index')) ?>" class="bg-card-surface p-6 rounded-xl shadow-ambient hover-lift border border-border-base flex flex-col justify-between group h-full">
             <div class="p-3 bg-info-bg rounded-lg text-info w-fit mb-4 group-hover:bg-blue-200 transition-colors">
                 <span class="material-symbols-outlined">folder_open</span>

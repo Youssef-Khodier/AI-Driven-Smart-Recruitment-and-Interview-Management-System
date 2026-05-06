@@ -38,6 +38,23 @@
                 <label class="block text-sm font-medium text-primary mb-1">Duration minutes</label>
                 <input type="number" min="1" name="duration_minutes" value="<?= e($assessment['duration_minutes'] ?? 60) ?>" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
             </div>
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">Retake cool-down months</label>
+                <input type="number" min="0" name="cooldown_months" value="<?= e($assessment['cooldown_months'] ?? 6) ?>" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+            </div>
+        </div>
+
+        <div class="bg-surface-container-low rounded-lg border border-border-base p-4">
+            <h2 class="text-sm font-semibold text-primary mb-3">Question-bank rules</h2>
+            <p class="text-xs text-text-muted mb-4">Candidates receive randomized questions by difficulty tier. Use 0 for a tier that should not be included.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <?php foreach (['EASY' => 'Easy', 'MEDIUM' => 'Medium', 'HARD' => 'Hard'] as $level => $label): ?>
+                    <div>
+                        <label class="block text-sm font-medium text-primary mb-1"><?= e($label) ?> count</label>
+                        <input type="number" min="0" name="rule_<?= strtolower($level) ?>" value="<?= e($rules[$level] ?? 0) ?>" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+                    </div>
+                <?php endforeach; ?>
+            </div>
         </div>
 
         <div class="flex items-center gap-2 pt-2 border-t border-border-base mt-2">

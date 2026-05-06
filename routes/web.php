@@ -42,6 +42,7 @@ $router->get('/candidate/applications/{id}', [CandidateController::class, 'appli
 $router->post('/candidate/applications/{application}/assessments/{assessment}/start', [AssessmentController::class, 'startCandidate'], 'candidate.assessments.start');
 $router->get('/candidate/assessments/{id}', [AssessmentController::class, 'showCandidate'], 'candidate.assessments.show');
 $router->put('/candidate/assessments/{id}/answers/{question}', [AssessmentController::class, 'saveAnswer'], 'candidate.assessments.answers.update');
+$router->post('/candidate/assessments/{id}/heartbeat', [AssessmentController::class, 'heartbeat'], 'candidate.assessments.heartbeat');
 $router->post('/candidate/assessments/{id}/submit', [AssessmentController::class, 'submitCandidate'], 'candidate.assessments.submit');
 $router->post('/candidate/assessments/{id}/focus-events', [AssessmentController::class, 'focusEvent'], 'candidate.assessments.focus-events.store');
 $router->get('/candidate/assessments/{id}/result', [AssessmentController::class, 'resultCandidate'], 'candidate.assessments.result');
@@ -71,11 +72,41 @@ $router->get('/hr/requisitions/{id}', [HrController::class, 'showRequisition'], 
 $router->get('/hr/requisitions/{id}/edit', [HrController::class, 'editRequisition'], 'hr.requisitions.edit');
 $router->put('/hr/requisitions/{id}', [HrController::class, 'updateRequisition'], 'hr.requisitions.update');
 $router->post('/hr/requisitions/{id}/submit', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::PENDING->value), 'hr.requisitions.submit');
-$router->post('/hr/requisitions/{id}/approve', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::APPROVED->value), 'hr.requisitions.approve');
+$router->get('/hr/approvals', [HrGovernanceController::class, 'approvalQueue'], 'hr.approvals.index');
+$router->get('/hr/requisitions/{id}/review', [HrGovernanceController::class, 'approveForm'], 'hr.approvals.form');
+$router->post('/hr/requisitions/{id}/approve', [HrGovernanceController::class, 'approveRequisition'], 'hr.requisitions.approve');
+$router->post('/hr/requisitions/{id}/reject', [HrGovernanceController::class, 'rejectRequisition'], 'hr.requisitions.reject');
+
+$router->get('/hr/requisitions/{id}/versions', [HrGovernanceController::class, 'versionHistory'], 'hr.requisitions.versions.index');
+$router->get('/hr/requisitions/{id}/versions/compare', [HrGovernanceController::class, 'compareVersions'], 'hr.requisitions.versions.compare');
+$router->get('/hr/requisitions/{id}/versions/{versionId}', [HrGovernanceController::class, 'showVersion'], 'hr.requisitions.versions.show');
+
+$router->get('/hr/requisitions/{id}/publish', [HrGovernanceController::class, 'publishForm'], 'hr.requisitions.publish.form');
+$router->post('/hr/requisitions/{id}/publish', [HrGovernanceController::class, 'publishRequisition'], 'hr.requisitions.publish.store');
+$router->post('/hr/requisitions/{id}/unpublish', [HrGovernanceController::class, 'unpublishRequisition'], 'hr.requisitions.publish.unpublish');
+$router->get('/hr/requisitions/{id}/sync-history', [HrGovernanceController::class, 'syncHistory'], 'hr.requisitions.sync-history');
+
+$router->get('/hr/requisitions/{id}/governance-audit', [HrGovernanceController::class, 'governanceAudit'], 'hr.requisitions.governance-audit');
+
+$router->get('/hr/department-heads', [HrGovernanceController::class, 'departmentHeads'], 'hr.department-heads.index');
+$router->post('/hr/department-heads', [HrGovernanceController::class, 'assignDepartmentHead'], 'hr.department-heads.store');
+$router->post('/hr/department-heads/{id}/remove', [HrGovernanceController::class, 'removeDepartmentHead'], 'hr.department-heads.destroy');
+
 $router->post('/hr/requisitions/{id}/open', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::OPEN->value), 'hr.requisitions.open');
 $router->post('/hr/requisitions/{id}/close', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::CLOSED->value), 'hr.requisitions.close');
 $router->get('/hr/requisitions/{id}/applications', [HrController::class, 'applications'], 'hr.applications.index');
 $router->put('/hr/applications/{id}', [HrController::class, 'updateApplication'], 'hr.applications.update');
+
+$router->get('/hr/requisitions/{id}/screening', [HrScreeningController::class, 'config'], 'hr.screening.config');
+$router->post('/hr/requisitions/{id}/screening', [HrScreeningController::class, 'storeConfig'], 'hr.screening.config.store');
+$router->post('/hr/requisitions/{id}/screening/recalculate', [HrScreeningController::class, 'recalculate'], 'hr.screening.recalculate');
+$router->get('/hr/requisitions/{id}/shortlist', [HrScreeningController::class, 'shortlist'], 'hr.screening.shortlist');
+$router->get('/hr/requisitions/{id}/triage', [HrScreeningController::class, 'triagePreview'], 'hr.screening.triage');
+$router->post('/hr/requisitions/{id}/triage', [HrScreeningController::class, 'executeTriage'], 'hr.screening.triage.execute');
+$router->get('/hr/requisitions/{id}/duplicates', [HrScreeningController::class, 'duplicates'], 'hr.screening.duplicates');
+$router->get('/hr/requisitions/{id}/duplicates/resolve', [HrScreeningController::class, 'resolveDuplicate'], 'hr.screening.duplicates.resolve.form');
+$router->post('/hr/requisitions/{id}/duplicates/resolve', [HrScreeningController::class, 'resolveDuplicate'], 'hr.screening.duplicates.resolve');
+$router->get('/hr/requisitions/{id}/screening/audit', [HrScreeningController::class, 'audit'], 'hr.screening.audit');
 
 $router->get('/hr/requisitions/{id}/assessments', [AssessmentController::class, 'index'], 'hr.assessments.index');
 $router->get('/hr/requisitions/{id}/assessments/create', [AssessmentController::class, 'create'], 'hr.assessments.create');

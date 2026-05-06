@@ -54,7 +54,7 @@ final class AuditLogRepository
 
     public static function entities(): array
     {
-        return ['ACCOUNT', 'INTERVIEW', 'POST_OFFER', 'APPLICATION_STATUS', 'JOB_REQUISITION_STATUS'];
+        return ['ACCOUNT', 'INTERVIEW', 'POST_OFFER', 'APPLICATION_STATUS', 'JOB_REQUISITION_STATUS', 'SCREENING', 'REQUISITION_GOVERNANCE'];
     }
 
     public static function formatSummary(?string $raw, string $action): string
@@ -122,6 +122,16 @@ final class AuditLogRepository
                     'JOB_REQUISITION_STATUS' AS entity_type, jsh.job_id AS entity_id, CONCAT('STATUS_', jsh.new_status) AS action,
                     JSON_OBJECT('status', JSON_OBJECT('old', jsh.old_status, 'new', jsh.new_status), 'reason', jsh.reason) AS raw_summary
                 FROM job_requisition_status_histories jsh
-                JOIN users actor ON actor.user_id = jsh.actor_user_id";
+                JOIN users actor ON actor.user_id = jsh.actor_user_id
+                UNION ALL
+                SELECT sar.created_at AS occurred_at, sar.actor_user_id, actor.name AS actor_name, actor.email AS actor_email,
+                    'SCREENING' AS entity_type, COALESCE(sar.entity_id, sar.job_id) AS entity_id, sar.action, COALESCE(sar.new_values, sar.old_values) AS raw_summary
+                FROM screening_audit_records sar
+                JOIN users actor ON actor.user_id = sar.actor_user_id
+                UNION ALL
+                SELECT rga.created_at AS occurred_at, rga.actor_user_id, actor.name AS actor_name, actor.email AS actor_email,
+                    'REQUISITION_GOVERNANCE' AS entity_type, rga.job_id AS entity_id, rga.action, COALESCE(rga.new_values, rga.old_values) AS raw_summary
+                FROM requisition_governance_audit rga
+                JOIN users actor ON actor.user_id = rga.actor_user_id";
     }
 }

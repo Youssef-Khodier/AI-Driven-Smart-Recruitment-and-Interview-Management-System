@@ -24,6 +24,62 @@ final class SimulatedMatchScorer
         return min(100, $keywordScore + $experienceScore);
     }
 
+    public function scoreWeighted(array $skills, array $candidate): array
+    {
+        $breakdown = [
+            'skills' => [],
+            'raw_skill_score' => 0.0,
+            'experience_bonus' => 0.0,
+            'total_score' => 0
+        ];
+
+        $rawScore = 0.0;
+        foreach ($skills as $skill) {
+            $evidenceField = $skill['evidence_field'] ?? 'skill_keywords';
+            $evidenceText = '';
+            if ($evidenceField === 'skill_keywords') {
+                $evidenceText = ($candidate['current_title'] ?? '') . ' ' . ($candidate['skill_keywords'] ?? '') . ' ' . ($candidate['resume_url'] ?? '');
+            } else {
+                $evidenceText = (string) ($candidate[$evidenceField] ?? '');
+            }
+
+            $profileKeywords = $this->keywords($evidenceText);
+            $skillNameWords = $this->keywords($skill['skill_name']);
+
+            $found = false;
+            if (!empty($skillNameWords)) {
+                $found = count(array_intersect($skillNameWords, $profileKeywords)) > 0;
+            }
+            if (!$found && stripos($evidenceText, $skill['skill_name']) !== false) {
+                $found = true;
+            }
+
+            $skillScore = $found ? 1.0 : 0.0;
+            $contribution = (float)$skill['weight'] * $skillScore;
+            $rawScore += $contribution;
+
+            $breakdown['skills'][] = [
+                'name' => $skill['skill_name'],
+                'weight' => (float)$skill['weight'],
+                'score' => $skillScore,
+                'contribution' => $contribution,
+                'evidence' => $evidenceField,
+                'found' => $found
+            ];
+        }
+
+        $yearsExp = (int)($candidate['years_experience'] ?? 0);
+        $experienceBonus = min(10.0, $yearsExp * 2.0);
+
+        $totalScore = min(100, (int)round($rawScore + $experienceBonus));
+
+        $breakdown['raw_skill_score'] = $rawScore;
+        $breakdown['experience_bonus'] = $experienceBonus;
+        $breakdown['total_score'] = $totalScore;
+
+        return ['total' => $totalScore, 'breakdown' => $breakdown];
+    }
+
     private function keywords(string $text): array
     {
         $words = preg_split('/[^a-z0-9+#.]+/i', strtolower($text)) ?: [];

@@ -54,6 +54,18 @@
             <textarea name="correct_answer" rows="3" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm font-mono text-xs"><?= e($question['correct_answer'] ?? old('correct_answer')) ?></textarea>
         </div>
 
+        <div>
+            <label class="block text-sm font-medium text-primary mb-1">Hidden expected outputs (simulated, one per line)</label>
+            <textarea name="expected_outputs" rows="3" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm font-mono text-xs"><?= e(implode("\n", array_column($expectedOutputs ?? [], 'expected_output'))) ?></textarea>
+            <p class="text-xs text-text-muted mt-1">Used only for local simulated code-output validation. Candidates cannot see these records.</p>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-primary mb-1">Common answers for simulated plagiarism comparison (one per line)</label>
+            <textarea name="common_answers" rows="3" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm font-mono text-xs"><?= e(implode("\n", array_column($commonAnswers ?? [], 'answer_text'))) ?></textarea>
+            <p class="text-xs text-text-muted mt-1">Stored locally and compared with simple text similarity; no external plagiarism service is used.</p>
+        </div>
+
         <div class="flex items-center gap-2 pt-2 border-t border-border-base mt-2">
             <input type="checkbox" id="is_active" name="is_active" value="1"<?= checked($question['is_active'] ?? true) ?> class="h-4 w-4 text-secondary focus:ring-secondary border-border-base rounded">
             <label for="is_active" class="text-sm font-medium text-primary cursor-pointer select-none">Active (included in assessment)</label>

@@ -32,7 +32,13 @@ final class DashboardController extends Controller
     {
         $user = $this->requireRole(UserRole::HR_ADMIN->value);
 
-        return $this->view('hr/dashboard', ['title' => 'HR Dashboard', 'user' => $user]);
+        $pendingApprovalsCount = 0;
+        if ($user['is_department_head'] ?? false) {
+            $repo = new \App\Repositories\GovernanceRepository();
+            $pendingApprovalsCount = count($repo->getPendingApprovals($user['department_id']));
+        }
+
+        return $this->view('hr/dashboard', ['title' => 'HR Dashboard', 'user' => $user, 'pendingApprovalsCount' => $pendingApprovalsCount]);
     }
 
     public function interviewer(Request $request): Response

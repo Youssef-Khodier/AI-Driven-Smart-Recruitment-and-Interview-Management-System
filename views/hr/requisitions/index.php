@@ -32,13 +32,28 @@
                     <td class="px-6 py-4 font-medium text-primary"><?= e($row['title']) ?></td>
                     <td class="px-6 py-4 text-text-muted"><?= e($row['department_name']) ?></td>
                     <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $row['status'] === 'OPEN' ? 'bg-success-bg text-success' : ($row['status'] === 'DRAFT' ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800') ?>">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $row['status'] === 'OPEN' ? 'bg-success-bg text-success' : ($row['status'] === 'DRAFT' ? 'bg-gray-100 text-gray-800' : ($row['status'] === 'REJECTED' ? 'bg-error text-white' : 'bg-blue-100 text-blue-800')) ?>">
                             <?= e($row['status']) ?>
                         </span>
                     </td>
                     <td class="px-6 py-4 text-text-muted"><?= e($row['creator_name']) ?></td>
                     <td class="px-6 py-4 text-right">
                         <a class="inline-flex items-center justify-center px-3 py-1.5 border border-outline-variant rounded-md shadow-sm text-xs font-medium text-primary bg-white hover:bg-surface-container-low transition-colors" href="<?= e(url('hr.requisitions.show', [$row['job_id']])) ?>">
+                            View
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            <?php if (empty($requisitions)): ?>
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-text-muted">No job requisitions found.</td>
+                </tr>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+ef="<?= e(url('hr.requisitions.show', [$row['job_id']])) ?>">
                             View
                         </a>
                     </td>

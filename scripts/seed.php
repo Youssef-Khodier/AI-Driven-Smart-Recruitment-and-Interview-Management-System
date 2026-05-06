@@ -29,3 +29,29 @@ if (! $existing) {
 } else {
     print "First HR admin already exists: {$email}\n";
 }
+
+
+// ---------------------------------------------------------
+// Feature 008: Screening & Shortlisting Seed Data
+// ---------------------------------------------------------
+$hrUser = \App\Core\Database::fetch('SELECT user_id FROM users WHERE role = ? LIMIT 1', ['HR_ADMIN']);
+$job = \App\Core\Database::fetch('SELECT job_id FROM job_requisitions LIMIT 1');
+
+if ($hrUser && $job) {
+    $configRepo = new \App\Repositories\ScreeningConfigRepository();
+    $skills = [
+        ['skill_name' => 'PHP', 'weight' => 40, 'evidence_field' => 'skill_keywords'],
+        ['skill_name' => 'MySQL', 'weight' => 30, 'evidence_field' => 'skill_keywords'],
+        ['skill_name' => 'JavaScript', 'weight' => 20, 'evidence_field' => 'skill_keywords'],
+        ['skill_name' => 'Software Architecture', 'weight' => 10, 'evidence_field' => 'skill_keywords']
+    ];
+    $thresholds = [
+        ['min_score' => 0, 'max_score' => 39, 'target_status' => 'REJECTED'],
+        ['min_score' => 40, 'max_score' => 59, 'target_status' => 'SCREENING'],
+        ['min_score' => 60, 'max_score' => 79, 'target_status' => 'ASSESSMENT'],
+        ['min_score' => 80, 'max_score' => 100, 'target_status' => 'INTERVIEW']
+    ];
+    $configRepo->saveConfig($job['job_id'], $hrUser['user_id'], $skills, $thresholds);
+    echo 'Screening and shortlisting seed data created successfully.\n';
+}
+

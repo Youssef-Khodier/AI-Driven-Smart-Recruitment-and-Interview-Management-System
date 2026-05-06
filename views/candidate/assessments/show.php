@@ -6,6 +6,7 @@
                 <div class="flex flex-wrap items-center gap-4 text-sm text-text-muted">
                     <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">work</span> <strong>Job:</strong> <?= e($attempt['job_title']) ?></span>
                     <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">timer</span> <strong>Expires:</strong> <?= e($attempt['expires_at']) ?></span>
+                    <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">schedule</span> <strong>Remaining:</strong> <span id="remaining-timer"><?= e($attempt['remaining_seconds'] ?? '') ?></span>s</span>
                 </div>
             </div>
             
@@ -43,6 +44,11 @@
                         <div class="space-y-3">
                             <label class="block text-sm font-medium text-primary">Your Answer</label>
                             <textarea name="answer_text" rows="5" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm"><?= e($question['answer_text'] ?? '') ?></textarea>
+                            <?php if ($question['question_type'] === 'CODING'): ?>
+                                <label class="block text-sm font-medium text-primary mt-3">Simulated code output</label>
+                                <textarea name="code_output" rows="3" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm font-mono text-xs"><?= e($question['code_output'] ?? '') ?></textarea>
+                                <p class="text-xs text-text-muted">Output is compared locally against hidden expected-output records; no code is executed.</p>
+                            <?php endif; ?>
                             <div class="flex justify-end">
                                 <button type="submit" class="bg-white border border-outline-variant text-primary px-4 py-2 rounded-md hover:bg-surface-container-highest transition-colors text-sm font-medium flex items-center gap-2">
                                     <span class="material-symbols-outlined text-[18px]">save</span> Save answer
@@ -64,3 +70,34 @@
         </div>
     </div>
 </div>
+
+<form id="heartbeat-form" method="POST" action="<?= e(url('candidate.assessments.heartbeat', [$attempt['ca_id']])) ?>" class="hidden">
+    <?= csrf_field() ?>
+    <input type="hidden" name="remaining_seconds" id="remaining-seconds" value="<?= e($attempt['remaining_seconds'] ?? max(0, strtotime($attempt['expires_at']) - time())) ?>">
+</form>
+
+<script>
+(() => {
+    const form = document.getElementById('heartbeat-form');
+    const input = document.getElementById('remaining-seconds');
+    const label = document.getElementById('remaining-timer');
+    let remaining = Number(input.value || 0);
+
+    const sendHeartbeat = () => {
+        input.value = String(Math.max(0, remaining));
+        fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' }).catch(() => {});
+    };
+
+    label.textContent = String(remaining);
+    const tick = window.setInterval(() => {
+        remaining = Math.max(0, remaining - 1);
+        input.value = String(remaining);
+        label.textContent = String(remaining);
+        if (remaining % 30 === 0) sendHeartbeat();
+        if (remaining === 0) {
+            window.clearInterval(tick);
+            form.submit();
+        }
+    }, 1000);
+})();
+</script>

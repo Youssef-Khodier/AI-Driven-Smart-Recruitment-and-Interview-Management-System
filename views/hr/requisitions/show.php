@@ -31,16 +31,74 @@
             <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.assessment-results.index', [$requisition['job_id']])) ?>">
                 <span class="material-symbols-outlined text-[18px]">analytics</span> Assessment results
             </a>
+            <?php if (in_array($requisition['status'], ['APPROVED', 'OPEN']) && \App\Policies\ScreeningPolicy::canConfigure()): ?>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.screening.config', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">rule_settings</span> Configure screening
+            </a>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.screening.shortlist', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">view_list</span> View Shortlist
+            </a>
+            <?php endif; ?>
+            <?php if (\App\Policies\ScreeningPolicy::canManageDuplicates()): ?>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.screening.duplicates', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">find_replace</span> Check Duplicates
+            </a>
+            <?php endif; ?>
+            <?php if (\App\Policies\ScreeningPolicy::canViewAudit()): ?>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.screening.audit', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">history</span> Screening Audit
+            </a>
+            <?php endif; ?>
+            <?php if ((new \App\Policies\GovernancePolicy())->viewGovernance(\App\Core\Auth::user())): ?>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.requisitions.governance-audit', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">policy</span> Governance Audit
+            </a>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.requisitions.versions.index', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">history_edu</span> Version History (<?= e($versionCount) ?>)
+            </a>
+            <a class="inline-flex items-center justify-center px-4 py-2 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors gap-2" href="<?= e(url('hr.requisitions.sync-history', [$requisition['job_id']])) ?>">
+                <span class="material-symbols-outlined text-[18px]">sync</span> Sync History
+            </a>
+            <?php endif; ?>
         </div>
         <div class="flex flex-wrap gap-2 border-t sm:border-t-0 sm:border-l border-border-base pt-3 sm:pt-0 sm:pl-4 w-full sm:w-auto">
-            <?php foreach ([['submit','Submit for approval'],['approve','Approve'],['open','Open'],['close','Close']] as [$action,$label]): ?>
-                <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.' . $action, [$requisition['job_id']])) ?>">
+            <?php if (in_array($requisition['status'], ['DRAFT', 'REJECTED'])): ?>
+                <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.submit', [$requisition['job_id']])) ?>">
                     <?= csrf_field() ?>
-                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white <?= $action === 'close' ? 'bg-error hover:bg-red-700' : 'bg-secondary hover:bg-blue-800' ?> transition-colors shadow-sm">
-                        <?= e($label) ?>
+                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-secondary hover:bg-blue-800 transition-colors shadow-sm">
+                        Submit for approval
                     </button>
                 </form>
-            <?php endforeach; ?>
+            <?php endif; ?>
+            <?php if ($requisition['status'] === 'APPROVED'): ?>
+                <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.open', [$requisition['job_id']])) ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-secondary hover:bg-blue-800 transition-colors shadow-sm">
+                        Open
+                    </button>
+                </form>
+            <?php endif; ?>
+            <?php if ($requisition['status'] === 'OPEN'): ?>
+                <a href="<?= e(url('hr.requisitions.publish.form', [$requisition['job_id']])) ?>" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-secondary hover:bg-blue-800 transition-colors shadow-sm">
+                    Publish to Job Boards
+                </a>
+            <?php endif; ?>
+            <?php if (in_array($requisition['status'], ['OPEN', 'APPROVED'])): ?>
+                <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.close', [$requisition['job_id']])) ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-error hover:bg-red-700 transition-colors shadow-sm">
+                        Close
+                    </button>
+                </form>
+            <?php endif; ?>
+            <?php if ($requisition['status'] === 'CLOSED' && count((new \App\Repositories\GovernanceRepository())->getPublishedPlatforms($requisition['job_id'])) > 0): ?>
+                <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.publish.unpublish', [$requisition['job_id']])) ?>">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-error hover:bg-red-700 transition-colors shadow-sm">
+                        Unpublish
+                    </button>
+                </form>
+            <?php endif; ?>
         </div>
     </div>
 
@@ -53,6 +111,43 @@
                 
                 <h2 class="text-lg font-semibold text-primary mt-6 mb-3 border-b border-border-base pb-2">Requirements</h2>
                 <div class="text-primary leading-relaxed whitespace-pre-wrap"><?= nl2br(e($requisition['requirements'])) ?></div>
+            </div>
+
+            <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base overflow-hidden">
+                <div class="p-6 border-b border-border-base">
+                    <h2 class="text-lg font-semibold text-primary m-0 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-secondary">fact_check</span> Approval History
+                    </h2>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead class="bg-surface-container-lowest text-text-muted uppercase tracking-wider border-b border-border-base">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Step</th>
+                                <th class="px-6 py-3 font-medium">Approver</th>
+                                <th class="px-6 py-3 font-medium">Decision</th>
+                                <th class="px-6 py-3 font-medium">Comments</th>
+                                <th class="px-6 py-3 font-medium text-right">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border-base">
+                            <?php foreach ($approvalHistory as $index => $step): ?>
+                            <tr class="hover:bg-surface-container-lowest transition-colors">
+                                <td class="px-6 py-3 text-text-muted">#<?= count($approvalHistory) - $index ?></td>
+                                <td class="px-6 py-3 text-primary"><?= e($step['approver_name']) ?></td>
+                                <td class="px-6 py-3 font-medium">
+                                    <span class="<?= $step['decision'] === 'APPROVED' ? 'text-success' : 'text-error' ?>"><?= e($step['decision']) ?></span>
+                                </td>
+                                <td class="px-6 py-3 text-text-muted max-w-xs truncate" title="<?= e($step['comments'] ?? '') ?>"><?= e($step['comments'] ?? '-') ?></td>
+                                <td class="px-6 py-3 text-text-muted text-right whitespace-nowrap"><?= e(date('M d, Y H:i', strtotime($step['created_at']))) ?></td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($approvalHistory)): ?>
+                                <tr><td colspan="5" class="px-6 py-4 text-center text-text-muted italic">No approvals recorded.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
             <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base overflow-hidden">

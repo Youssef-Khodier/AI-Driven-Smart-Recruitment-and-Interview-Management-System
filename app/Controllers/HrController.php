@@ -168,8 +168,11 @@ final class HrController extends Controller
         $requisition = $this->findRequisition((int) $id);
         $assessments = Database::fetchAll('SELECT * FROM assessments WHERE job_id = ? ORDER BY created_at DESC', [$id]);
         $history = Database::fetchAll('SELECT h.*, u.name AS actor_name FROM job_requisition_status_histories h JOIN users u ON u.user_id = h.actor_user_id WHERE h.job_id = ? ORDER BY h.created_at DESC', [$id]);
+        $repo = new \App\Repositories\GovernanceRepository();
+        $approvalHistory = $repo->getApprovalHistory((int) $id);
+        $versionCount = count($repo->getVersionHistory((int) $id));
 
-        return $this->view('hr/requisitions/show', compact('requisition', 'assessments', 'history') + ['title' => $requisition['title']]);
+        return $this->view('hr/requisitions/show', compact('requisition', 'assessments', 'history', 'approvalHistory', 'versionCount') + ['title' => $requisition['title']]);
     }
 
     public function editRequisition(Request $request, string $id): Response
@@ -193,8 +196,20 @@ final class HrController extends Controller
             'requirements' => ['required'],
         ]);
         $data['updated_at'] = date('Y-m-d H:i:s');
+
+        $flashMessage = 'Requisition updated.';
+        if ($requisition['status'] === JobRequisitionStatus::APPROVED->value) {
+            if ($requisition['description'] !== $data['description'] || $requisition['requirements'] !== $data['requirements']) {
+                $repo = new \App\Repositories\GovernanceRepository();
+                $repo->createTemplateVersion((int)$id, $data['description'], $data['requirements'], (int)$actor['user_id']);
+                
+                $data['status'] = JobRequisitionStatus::DRAFT->value;
+                $flashMessage = 'Requisition updated. Status reset to Draft because description or requirements changed.';
+            }
+        }
+
         Database::update('job_requisitions', $data, 'job_id = ?', [(int) $id]);
-        Session::flash('status', 'Requisition updated.');
+        Session::flash('status', $flashMessage);
 
         return $this->redirect(url('hr.requisitions.show', [$id]));
     }
@@ -209,10 +224,6 @@ final class HrController extends Controller
 
         $now = date('Y-m-d H:i:s');
         $updates = ['status' => $status, 'updated_at' => $now];
-        if ($status === JobRequisitionStatus::APPROVED->value) {
-            $updates['approved_by'] = $actor['user_id'];
-            $updates['approved_at'] = $now;
-        }
         if ($status === JobRequisitionStatus::OPEN->value) {
             $updates['opened_at'] = $now;
         }
@@ -221,6 +232,19 @@ final class HrController extends Controller
         }
         Database::update('job_requisitions', $updates, 'job_id = ?', [(int) $id]);
         $this->recordJobStatus((int) $id, (int) $actor['user_id'], $requisition['status'], $status, 'Status changed by HR.');
+        
+        $repo = new \App\Repositories\GovernanceRepository();
+        if ($status === JobRequisitionStatus::PENDING->value) {
+            $repo->createTemplateVersion((int)$id, $requisition['description'], $requisition['requirements'], (int)$actor['user_id']);
+            
+            $action = $requisition['status'] === JobRequisitionStatus::REJECTED->value ? \App\Enums\GovernanceAuditAction::REQUISITION_RESUBMITTED->value : \App\Enums\GovernanceAuditAction::REQUISITION_SUBMITTED->value;
+            $repo->recordGovernanceAudit((int) $id, (int) $actor['user_id'], $action, ['status' => $requisition['status']], ['status' => $status]);
+        } elseif ($status === JobRequisitionStatus::OPEN->value) {
+            $repo->recordGovernanceAudit((int) $id, (int) $actor['user_id'], \App\Enums\GovernanceAuditAction::REQUISITION_OPENED->value, ['status' => $requisition['status']], ['status' => $status]);
+        } elseif ($status === JobRequisitionStatus::CLOSED->value) {
+            $repo->recordGovernanceAudit((int) $id, (int) $actor['user_id'], \App\Enums\GovernanceAuditAction::REQUISITION_CLOSED->value, ['status' => $requisition['status']], ['status' => $status]);
+        }
+        
         Session::flash('status', 'Requisition status updated.');
 
         return $this->redirect(url('hr.requisitions.show', [$id]));

@@ -19,6 +19,11 @@ DROP TABLE IF EXISTS questions;
 DROP TABLE IF EXISTS assessments;
 DROP TABLE IF EXISTS application_status_histories;
 DROP TABLE IF EXISTS applications;
+DROP TABLE IF EXISTS requisition_governance_audit;
+DROP TABLE IF EXISTS job_board_sync_records;
+DROP TABLE IF EXISTS job_board_platforms;
+DROP TABLE IF EXISTS requisition_template_versions;
+DROP TABLE IF EXISTS requisition_approval_steps;
 DROP TABLE IF EXISTS job_requisition_status_histories;
 DROP TABLE IF EXISTS job_requisitions;
 DROP TABLE IF EXISTS account_audit_records;
@@ -45,6 +50,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   role VARCHAR(32) NOT NULL DEFAULT 'CANDIDATE',
   status VARCHAR(32) NOT NULL DEFAULT 'ACTIVE',
+  is_department_head BOOLEAN NOT NULL DEFAULT FALSE,
   remember_token VARCHAR(100) NULL,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
@@ -129,6 +135,90 @@ CREATE TABLE job_requisition_status_histories (
   CONSTRAINT fk_job_history_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
+CREATE TABLE requisition_approval_steps (
+  step_id       BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id        BIGINT UNSIGNED NOT NULL,
+  approver_id   BIGINT UNSIGNED NOT NULL,
+  decision      VARCHAR(20) NOT NULL,          -- 'APPROVED' or 'REJECTED'
+  comments      TEXT NULL,
+  created_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_approval_steps_job FOREIGN KEY (job_id)
+    REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_approval_steps_approver FOREIGN KEY (approver_id)
+    REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_approval_steps_job (job_id),
+  KEY idx_approval_steps_approver (approver_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE requisition_template_versions (
+  version_id     BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id         BIGINT UNSIGNED NOT NULL,
+  version_number INT UNSIGNED NOT NULL,
+  description_body TEXT NOT NULL,
+  requirements_body TEXT NOT NULL,
+  created_by     BIGINT UNSIGNED NOT NULL,
+  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_template_versions_job FOREIGN KEY (job_id)
+    REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_template_versions_user FOREIGN KEY (created_by)
+    REFERENCES users(user_id) ON DELETE RESTRICT,
+  UNIQUE KEY uq_template_version_job_num (job_id, version_number),
+  KEY idx_template_versions_job (job_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE job_board_platforms (
+  platform_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name        VARCHAR(120) NOT NULL UNIQUE,
+  is_active   BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+INSERT INTO job_board_platforms (name) VALUES
+  ('LinkedIn Jobs'),
+  ('Indeed'),
+  ('Glassdoor'),
+  ('Internal Careers Page')
+ON DUPLICATE KEY UPDATE name = VALUES(name);
+
+CREATE TABLE job_board_sync_records (
+  sync_id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id         BIGINT UNSIGNED NOT NULL,
+  platform_id    BIGINT UNSIGNED NOT NULL,
+  payload_summary TEXT NOT NULL,                 -- JSON: {title, department, description_excerpt, requirements}
+  status         VARCHAR(40) NOT NULL,           -- 'QUEUED', 'PUBLISHED', 'UNPUBLISHED', 'FAILED'
+  queued_at      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  completed_at   TIMESTAMP NULL,
+  created_by     BIGINT UNSIGNED NOT NULL,
+  CONSTRAINT fk_sync_records_job FOREIGN KEY (job_id)
+    REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_sync_records_platform FOREIGN KEY (platform_id)
+    REFERENCES job_board_platforms(platform_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_sync_records_user FOREIGN KEY (created_by)
+    REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_sync_records_job (job_id),
+  KEY idx_sync_records_platform_status (platform_id, status),
+  KEY idx_sync_records_job_platform (job_id, platform_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE requisition_governance_audit (
+  audit_id       BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id         BIGINT UNSIGNED NOT NULL,
+  actor_user_id  BIGINT UNSIGNED NOT NULL,
+  action         VARCHAR(60) NOT NULL,
+  old_values     JSON NULL,
+  new_values     JSON NULL,
+  comments       TEXT NULL,
+  created_at     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_gov_audit_job FOREIGN KEY (job_id)
+    REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_gov_audit_actor FOREIGN KEY (actor_user_id)
+    REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_gov_audit_job (job_id),
+  KEY idx_gov_audit_action (action),
+  KEY idx_gov_audit_actor (actor_user_id),
+  KEY idx_gov_audit_created (created_at)
+) ENGINE=InnoDB;
+
 CREATE TABLE applications (
   application_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   candidate_id BIGINT UNSIGNED NOT NULL,
@@ -163,11 +253,23 @@ CREATE TABLE assessments (
   description TEXT NULL,
   type VARCHAR(40) NOT NULL DEFAULT 'TECHNICAL',
   duration_minutes INT UNSIGNED NOT NULL,
+  cooldown_months INT UNSIGNED NOT NULL DEFAULT 6,
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
   CONSTRAINT fk_assessments_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
   KEY idx_assessments_job_type (job_id, type)
+) ENGINE=InnoDB;
+
+CREATE TABLE assessment_question_rules (
+  rule_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  assessment_id BIGINT UNSIGNED NOT NULL,
+  difficulty_level VARCHAR(20) NOT NULL,
+  question_count INT UNSIGNED NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NULL,
+  updated_at TIMESTAMP NULL,
+  CONSTRAINT fk_assessment_rules_assessment FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id) ON DELETE CASCADE,
+  UNIQUE KEY uq_assessment_rule_difficulty (assessment_id, difficulty_level)
 ) ENGINE=InnoDB;
 
 CREATE TABLE questions (
@@ -186,6 +288,30 @@ CREATE TABLE questions (
   KEY idx_questions_assessment_difficulty (assessment_id, difficulty_level)
 ) ENGINE=InnoDB;
 
+CREATE TABLE question_expected_outputs (
+  output_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  question_id BIGINT UNSIGNED NOT NULL,
+  expected_output LONGTEXT NOT NULL,
+  label VARCHAR(120) NULL,
+  is_hidden BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NULL,
+  CONSTRAINT fk_expected_outputs_question FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE CASCADE,
+  KEY idx_expected_outputs_question (question_id)
+) ENGINE=InnoDB;
+
+CREATE TABLE assessment_common_answers (
+  common_answer_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  assessment_id BIGINT UNSIGNED NOT NULL,
+  question_id BIGINT UNSIGNED NULL,
+  answer_text LONGTEXT NOT NULL,
+  source_label VARCHAR(120) NULL,
+  created_at TIMESTAMP NULL,
+  CONSTRAINT fk_common_answers_assessment FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id) ON DELETE CASCADE,
+  CONSTRAINT fk_common_answers_question FOREIGN KEY (question_id) REFERENCES questions(question_id) ON DELETE CASCADE,
+  KEY idx_common_answers_assessment (assessment_id),
+  KEY idx_common_answers_question (question_id)
+) ENGINE=InnoDB;
+
 CREATE TABLE candidate_assessments (
   ca_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   application_id BIGINT UNSIGNED NOT NULL,
@@ -194,6 +320,8 @@ CREATE TABLE candidate_assessments (
   start_time TIMESTAMP NULL,
   end_time TIMESTAMP NULL,
   expires_at TIMESTAMP NULL,
+  remaining_seconds INT UNSIGNED NULL,
+  last_heartbeat_at TIMESTAMP NULL,
   status VARCHAR(40) NOT NULL DEFAULT 'IN_PROGRESS',
   score DECIMAL(6,3) NULL,
   created_at TIMESTAMP NULL,
@@ -201,7 +329,7 @@ CREATE TABLE candidate_assessments (
   CONSTRAINT fk_attempts_application FOREIGN KEY (application_id) REFERENCES applications(application_id) ON DELETE CASCADE,
   CONSTRAINT fk_attempts_candidate FOREIGN KEY (candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
   CONSTRAINT fk_attempts_assessment FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id) ON DELETE CASCADE,
-  UNIQUE KEY uq_attempt_candidate_assessment (candidate_id, assessment_id),
+  KEY idx_attempt_candidate_assessment (candidate_id, assessment_id),
   KEY idx_attempt_application_status (application_id, status)
 ) ENGINE=InnoDB;
 
@@ -228,10 +356,13 @@ CREATE TABLE submissions (
   attempt_question_id BIGINT UNSIGNED NOT NULL,
   question_id BIGINT UNSIGNED NULL,
   answer_text LONGTEXT NULL,
+  code_output LONGTEXT NULL,
   saved_at TIMESTAMP NULL,
   finalized_at TIMESTAMP NULL,
   is_correct BOOLEAN NULL,
+  output_matched BOOLEAN NULL,
   awarded_points DECIMAL(6,2) NULL,
+  plagiarism_score DECIMAL(6,3) NULL,
   created_at TIMESTAMP NULL,
   updated_at TIMESTAMP NULL,
   CONSTRAINT fk_submissions_attempt FOREIGN KEY (ca_id) REFERENCES candidate_assessments(ca_id) ON DELETE CASCADE,
@@ -390,3 +521,72 @@ INSERT INTO departments (name, description) VALUES
 ('Human Resources', 'Recruitment and HR operations'),
 ('Engineering', 'Technical hiring department')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
+
+CREATE TABLE screening_configs (
+  config_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id BIGINT UNSIGNED NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_by BIGINT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_screening_configs_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_screening_configs_user FOREIGN KEY (created_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_screening_configs_job (job_id, is_active)
+) ENGINE=InnoDB;
+
+CREATE TABLE screening_skills (
+  skill_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  config_id BIGINT UNSIGNED NOT NULL,
+  skill_name VARCHAR(160) NOT NULL,
+  weight DECIMAL(5,2) NOT NULL,
+  evidence_field VARCHAR(80) NOT NULL DEFAULT 'skill_keywords',
+  CONSTRAINT fk_screening_skills_config FOREIGN KEY (config_id) REFERENCES screening_configs(config_id) ON DELETE CASCADE,
+  CONSTRAINT chk_screening_skill_weight CHECK (weight > 0 AND weight <= 100),
+  UNIQUE KEY uq_screening_skill_name (config_id, skill_name)
+) ENGINE=InnoDB;
+
+CREATE TABLE screening_thresholds (
+  threshold_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  config_id BIGINT UNSIGNED NOT NULL,
+  min_score TINYINT UNSIGNED NOT NULL,
+  max_score TINYINT UNSIGNED NOT NULL,
+  target_status VARCHAR(40) NOT NULL,
+  CONSTRAINT fk_screening_thresholds_config FOREIGN KEY (config_id) REFERENCES screening_configs(config_id) ON DELETE CASCADE,
+  CONSTRAINT chk_screening_threshold_range CHECK (min_score <= max_score AND min_score >= 0 AND max_score <= 100)
+) ENGINE=InnoDB;
+
+CREATE TABLE screening_audit_records (
+  audit_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  job_id BIGINT UNSIGNED NOT NULL,
+  actor_user_id BIGINT UNSIGNED NOT NULL,
+  action VARCHAR(60) NOT NULL,
+  entity_type VARCHAR(40) NULL,
+  entity_id BIGINT UNSIGNED NULL,
+  old_values JSON NULL,
+  new_values JSON NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_screening_audit_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_screening_audit_actor FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+  KEY idx_screening_audit_job (job_id),
+  KEY idx_screening_audit_action (action),
+  KEY idx_screening_audit_actor (actor_user_id),
+  KEY idx_screening_audit_created (created_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE candidate_merge_log (
+  merge_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  primary_candidate_id BIGINT UNSIGNED NOT NULL,
+  duplicate_candidate_id BIGINT UNSIGNED NOT NULL,
+  merged_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  merged_by BIGINT UNSIGNED NOT NULL,
+  notes TEXT,
+  decision_type VARCHAR(20) NOT NULL DEFAULT 'MERGE',
+  confidence_category VARCHAR(20) NULL,
+  job_id BIGINT UNSIGNED NULL,
+  matching_evidence JSON NULL,
+  CONSTRAINT fk_candidate_merge_primary FOREIGN KEY (primary_candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_candidate_merge_duplicate FOREIGN KEY (duplicate_candidate_id) REFERENCES candidates(candidate_id) ON DELETE CASCADE,
+  CONSTRAINT fk_candidate_merge_user FOREIGN KEY (merged_by) REFERENCES users(user_id) ON DELETE RESTRICT,
+  CONSTRAINT fk_merge_log_job FOREIGN KEY (job_id) REFERENCES job_requisitions(job_id) ON DELETE SET NULL,
+  CONSTRAINT chk_candidate_merge_not_same CHECK (primary_candidate_id <> duplicate_candidate_id),
+  UNIQUE KEY uq_candidate_merge_pair (primary_candidate_id, duplicate_candidate_id)
+) ENGINE=InnoDB;

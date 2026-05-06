@@ -139,6 +139,10 @@
             <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('dashboard')) ?>">Dashboard</a>
             <?php if ($user = auth_user()): ?>
                 <?php if ($user['role'] === 'HR_ADMIN'): ?>
+                    <?php if (!empty($user['is_department_head'])): ?>
+                        <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.approvals.index')) ?>">Approval Queue</a>
+                    <?php endif; ?>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.department-heads.index')) ?>">Dept Heads</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.users.index')) ?>">Users</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.requisitions.index')) ?>">Requisitions</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.reports.pipeline')) ?>">Reports</a>

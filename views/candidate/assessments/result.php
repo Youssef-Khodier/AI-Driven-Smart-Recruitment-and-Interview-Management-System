@@ -49,6 +49,12 @@
                             <td class="px-4 py-4 text-primary text-sm align-top max-w-xs break-words"><?= e(str_limit($question['question_text'], 140)) ?></td>
                             <td class="px-4 py-4 text-text-muted text-sm align-top">
                                 <div class="bg-surface-container-low p-3 rounded border border-border-base whitespace-pre-wrap max-h-32 overflow-y-auto"><?= nl2br(e($question['answer_text'] ?? '')) ?></div>
+                                <?php if (($question['code_output'] ?? '') !== ''): ?>
+                                    <div class="mt-2 text-xs text-text-muted">Simulated output match: <?= $question['output_matched'] === null ? 'not checked' : ($question['output_matched'] ? 'matched' : 'not matched') ?></div>
+                                <?php endif; ?>
+                                <?php if ($question['plagiarism_score'] !== null): ?>
+                                    <div class="mt-1 text-xs text-text-muted">Simulated plagiarism similarity: <?= e($question['plagiarism_score']) ?>%</div>
+                                <?php endif; ?>
                             </td>
                             <td class="px-4 py-4 text-primary font-medium text-right align-top whitespace-nowrap">
                                 <?= e($question['awarded_points'] ?? '-') ?> / <?= e($question['points']) ?>
