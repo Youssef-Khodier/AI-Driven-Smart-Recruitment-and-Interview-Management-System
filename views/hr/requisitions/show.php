@@ -91,7 +91,7 @@
                     </button>
                 </form>
             <?php endif; ?>
-            <?php if ($requisition['status'] === 'CLOSED' && count((new \App\Repositories\GovernanceRepository())->getPublishedPlatforms($requisition['job_id'])) > 0): ?>
+            <?php if ($requisition['status'] === 'CLOSED' && count((new \App\Models\GovernanceModel())->getPublishedPlatforms($requisition['job_id'])) > 0): ?>
                 <form class="inline m-0" method="POST" action="<?= e(url('hr.requisitions.publish.unpublish', [$requisition['job_id']])) ?>">
                     <?= csrf_field() ?>
                     <button type="submit" class="inline-flex items-center justify-center px-3 py-1.5 border border-transparent rounded text-xs font-medium text-white bg-error hover:bg-red-700 transition-colors shadow-sm">

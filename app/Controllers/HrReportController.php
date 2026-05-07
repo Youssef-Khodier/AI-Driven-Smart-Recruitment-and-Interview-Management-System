@@ -8,7 +8,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Enums\UserRole;
 use App\Policies\ReportPolicy;
-use App\Repositories\ReportRepository;
+use App\Models\ReportModel;
 
 final class HrReportController extends Controller
 {
@@ -19,7 +19,7 @@ final class HrReportController extends Controller
             throw new HttpException(403, 'You are not authorized to view reports.');
         }
 
-        return $this->view('hr/reports/pipeline', ReportRepository::pipelineByOpenRequisition() + [
+        return $this->view('hr/reports/pipeline', ReportModel::pipelineByOpenRequisition() + [
             'title' => 'Pipeline Report',
         ]);
     }
@@ -33,8 +33,8 @@ final class HrReportController extends Controller
 
         return $this->view('hr/reports/time-to-hire', [
             'title' => 'Time to Hire',
-            'requisitions' => ReportRepository::timeToHireByRequisition(),
-            'departments' => ReportRepository::timeToHireByDepartment(),
+            'requisitions' => ReportModel::timeToHireByRequisition(),
+            'departments' => ReportModel::timeToHireByDepartment(),
         ]);
     }
 
@@ -47,9 +47,9 @@ final class HrReportController extends Controller
 
         return $this->view('hr/reports/bottlenecks', [
             'title' => 'Pipeline Bottleneck Analysis',
-            'stageDurations' => ReportRepository::averageStageDurations(),
-            'conversionRates' => ReportRepository::stageConversionRates(),
-            'bottlenecks' => ReportRepository::identifyBottlenecks(),
+            'stageDurations' => ReportModel::averageStageDurations(),
+            'conversionRates' => ReportModel::stageConversionRates(),
+            'bottlenecks' => ReportModel::identifyBottlenecks(),
         ]);
     }
 }

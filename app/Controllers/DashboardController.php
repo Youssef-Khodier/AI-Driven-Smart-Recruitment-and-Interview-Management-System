@@ -34,7 +34,7 @@ final class DashboardController extends Controller
 
         $pendingApprovalsCount = 0;
         if ($user['is_department_head'] ?? false) {
-            $repo = new \App\Repositories\GovernanceRepository();
+            $repo = new \App\Models\GovernanceModel();
             $pendingApprovalsCount = count($repo->getPendingApprovals($user['department_id']));
         }
 

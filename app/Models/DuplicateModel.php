@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-class DuplicateRepository {
+class DuplicateModel {
     public function findByPair(int $candidateA, int $candidateB): ?array {
         $primary = min($candidateA, $candidateB);
         $duplicate = max($candidateA, $candidateB);

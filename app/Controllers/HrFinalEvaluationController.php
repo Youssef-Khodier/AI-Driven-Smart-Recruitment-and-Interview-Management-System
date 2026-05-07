@@ -8,9 +8,9 @@ use App\Core\Response;
 use App\Core\Auth;
 use App\Enums\FinalEvaluationRecommendation;
 use App\Policies\FinalEvaluationPolicy;
-use App\Repositories\FinalEvaluationRepository;
-use App\Repositories\FeedbackGovernanceRepository;
-use App\Repositories\PostOfferAuditRepository;
+use App\Models\FinalEvaluationModel;
+use App\Models\FeedbackGovernanceModel;
+use App\Models\PostOfferAuditModel;
 use App\Enums\PostOfferAuditAction;
 use App\Core\Database;
 
@@ -36,10 +36,10 @@ final class HrFinalEvaluationController extends Controller
             return Response::redirect(url('hr.requisitions.index'))->with('error', 'Application not found');
         }
 
-        $evidence = FinalEvaluationRepository::getEvidence($id);
-        $scoreData = FinalEvaluationRepository::calculateAggregateScore($evidence);
-        $evaluation = FinalEvaluationRepository::findByApplicationId($id);
-        $latestSnapshot = FeedbackGovernanceRepository::getLatestSnapshot($id);
+        $evidence = FinalEvaluationModel::getEvidence($id);
+        $scoreData = FinalEvaluationModel::calculateAggregateScore($evidence);
+        $evaluation = FinalEvaluationModel::findByApplicationId($id);
+        $latestSnapshot = FeedbackGovernanceModel::getLatestSnapshot($id);
         if ($latestSnapshot) {
             $scoreData['score'] = (float)$latestSnapshot['aggregate_score'];
             $scoreData['has_partial_evidence'] = $scoreData['has_partial_evidence'] || (int)$latestSnapshot['missing_feedback_count'] > 0;
@@ -47,8 +47,8 @@ final class HrFinalEvaluationController extends Controller
 
         $canCreateOffer = false;
         if ($evaluation && in_array($evaluation['recommendation'], [FinalEvaluationRecommendation::HIRE->value, FinalEvaluationRecommendation::STRONG_HIRE->value])) {
-            $activeOffer = \App\Repositories\OfferRepository::getActiveOffer($id);
-            $allOffers = \App\Repositories\OfferRepository::findByApplicationId($id);
+            $activeOffer = \App\Models\OfferModel::getActiveOffer($id);
+            $allOffers = \App\Models\OfferModel::findByApplicationId($id);
             if (!$activeOffer && count($allOffers) < 2) {
                 $canCreateOffer = true;
             }
@@ -72,14 +72,14 @@ final class HrFinalEvaluationController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $evaluation = FinalEvaluationRepository::findByApplicationId($id);
+        $evaluation = FinalEvaluationModel::findByApplicationId($id);
         if ($evaluation) {
             return Response::redirect(url('hr.evaluations.show', [$id]))->with('error', 'Final evaluation already recorded.');
         }
 
-        $evidence = FinalEvaluationRepository::getEvidence($id);
-        $scoreData = FinalEvaluationRepository::calculateAggregateScore($evidence);
-        $latestSnapshot = FeedbackGovernanceRepository::getLatestSnapshot($id);
+        $evidence = FinalEvaluationModel::getEvidence($id);
+        $scoreData = FinalEvaluationModel::calculateAggregateScore($evidence);
+        $latestSnapshot = FeedbackGovernanceModel::getLatestSnapshot($id);
         if ($latestSnapshot) {
             $scoreData['score'] = (float)$latestSnapshot['aggregate_score'];
             $scoreData['has_partial_evidence'] = $scoreData['has_partial_evidence'] || (int)$latestSnapshot['missing_feedback_count'] > 0;
@@ -101,7 +101,7 @@ final class HrFinalEvaluationController extends Controller
 
         $actorId = Auth::id();
 
-        FinalEvaluationRepository::save(
+        FinalEvaluationModel::save(
             $id,
             $scoreData['score'],
             $recommendation,
@@ -110,7 +110,7 @@ final class HrFinalEvaluationController extends Controller
             $actorId
         );
 
-        PostOfferAuditRepository::record($id, null, null, $actorId, PostOfferAuditAction::FINAL_EVALUATION_SAVE->value, [
+        PostOfferAuditModel::record($id, null, null, $actorId, PostOfferAuditAction::FINAL_EVALUATION_SAVE->value, [
             'recommendation' => ['new' => $recommendation],
             'aggregate_score' => ['new' => $scoreData['score']],
             'partial_evidence_acknowledged' => ['new' => $scoreData['has_partial_evidence']],

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-final class AuditLogRepository
+final class AuditLogModel
 {
     public static function search(array $filters, int $page = 1, int $perPage = 25): array
     {

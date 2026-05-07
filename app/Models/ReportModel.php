@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\ApplicationStatus;
 use App\Enums\JobRequisitionStatus;
 
-final class ReportRepository
+final class ReportModel
 {
     public static function pipelineByOpenRequisition(): array
     {

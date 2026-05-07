@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\NotificationType;
 use App\Enums\OfferStatus;
 
-final class NotificationRepository
+final class NotificationModel
 {
     public static function createUnique(int $userId, string $title, string $message, string $type, ?int $referenceId = null, ?string $referenceType = null): ?int
     {

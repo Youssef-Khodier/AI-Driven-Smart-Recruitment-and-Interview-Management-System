@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\OfferStatus;
 use App\Enums\PostOfferAuditAction;
 
-final class OfferRepository
+final class OfferModel
 {
     public static function find(int $offerId): ?array
     {
@@ -81,7 +81,7 @@ final class OfferRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'offer_id = ?', [$offerId]);
 
-            FinalEvaluationRepository::updateApplicationStatus($offer['application_id'], 'OFFER', $actorId, 'Offer sent');
+            FinalEvaluationModel::updateApplicationStatus($offer['application_id'], 'OFFER', $actorId, 'Offer sent');
         });
     }
 
@@ -96,9 +96,9 @@ final class OfferRepository
                     'updated_at' => date('Y-m-d H:i:s'),
                 ], 'offer_id = ?', [$offerId]);
                 
-                FinalEvaluationRepository::updateApplicationStatus($offer['application_id'], 'REJECTED', $actorUserId, 'Offer expired');
+                FinalEvaluationModel::updateApplicationStatus($offer['application_id'], 'REJECTED', $actorUserId, 'Offer expired');
                 
-                PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorUserId, PostOfferAuditAction::OFFER_EXPIRE->value, [
+                PostOfferAuditModel::record($offer['application_id'], $offerId, null, $actorUserId, PostOfferAuditAction::OFFER_EXPIRE->value, [
                     'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::EXPIRED->value]
                 ]);
 
@@ -119,7 +119,7 @@ final class OfferRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'offer_id = ?', [$offerId]);
 
-            FinalEvaluationRepository::updateApplicationStatus($offer['application_id'], 'HIRED', $actorId, 'Offer accepted');
+            FinalEvaluationModel::updateApplicationStatus($offer['application_id'], 'HIRED', $actorId, 'Offer accepted');
         });
     }
 
@@ -133,7 +133,7 @@ final class OfferRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'offer_id = ?', [$offerId]);
 
-            FinalEvaluationRepository::updateApplicationStatus($offer['application_id'], 'REJECTED', $actorId, 'Offer rejected');
+            FinalEvaluationModel::updateApplicationStatus($offer['application_id'], 'REJECTED', $actorId, 'Offer rejected');
         });
     }
 }

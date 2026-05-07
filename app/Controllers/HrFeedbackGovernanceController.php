@@ -11,7 +11,7 @@ use App\Enums\UserRole;
 use App\Enums\FeedbackConcernStatus;
 use App\Enums\FeedbackGovernanceAuditAction;
 use App\Policies\ReportPolicy;
-use App\Repositories\FeedbackGovernanceRepository;
+use App\Models\FeedbackGovernanceModel;
 use App\Core\Database;
 
 final class HrFeedbackGovernanceController extends Controller
@@ -108,10 +108,10 @@ final class HrFeedbackGovernanceController extends Controller
         $gapSnapshots = [];
         if (!empty($snapshots)) {
             $latestSnapshotId = $snapshots[0]['snapshot_id'];
-            $gapSnapshots = FeedbackGovernanceRepository::getGapSnapshots($latestSnapshotId);
+            $gapSnapshots = FeedbackGovernanceModel::getGapSnapshots($latestSnapshotId);
         }
 
-        $benchmarks = FeedbackGovernanceRepository::getBenchmarksForJob((int)$application['job_id']);
+        $benchmarks = FeedbackGovernanceModel::getBenchmarksForJob((int)$application['job_id']);
 
         return $this->view('hr/governance/feedback-detail', [
             'title' => 'Feedback Governance — ' . $application['candidate_name'],
@@ -152,13 +152,13 @@ final class HrFeedbackGovernanceController extends Controller
             throw new \App\Core\ValidationException(['resolution_status' => ['Invalid resolution status.']]);
         }
 
-        FeedbackGovernanceRepository::resolveConcernFlag($flagId, [
+        FeedbackGovernanceModel::resolveConcernFlag($flagId, [
             'status' => $resolutionStatus,
             'resolved_by' => $actorId,
             'resolution_rationale' => $data['resolution_rationale'],
         ]);
 
-        FeedbackGovernanceRepository::recordAudit([
+        FeedbackGovernanceModel::recordAudit([
             'actor_user_id' => $actorId,
             'actor_role' => $user['role'],
             'application_id' => (int)$flag['application_id'],

@@ -14,8 +14,8 @@ use App\Enums\ComplianceRunCheckType;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\NotificationType;
 use App\Enums\UserRole;
-use App\Repositories\NotificationRepository;
-use App\Repositories\OfferRepository;
+use App\Models\NotificationModel;
+use App\Models\OfferModel;
 
 final class HrComplianceCheckController extends Controller
 {
@@ -57,8 +57,8 @@ final class HrComplianceCheckController extends Controller
         $duplicateSkipped = 0;
         $batchId = $this->startBatch((int) $actor['user_id'], ComplianceRunCheckType::ALL_CHECKS->value);
 
-        foreach (NotificationRepository::findMissingFeedbackReminders() as $row) {
-            $created = NotificationRepository::createUnique(
+        foreach (NotificationModel::findMissingFeedbackReminders() as $row) {
+            $created = NotificationModel::createUnique(
                 (int) $row['interviewer_id'],
                 'Feedback Reminder',
                 'Please submit feedback for ' . $row['candidate_name'] . ' from the interview scheduled on ' . date('Y-m-d H:i', strtotime($row['scheduled_at'])) . '.',
@@ -74,8 +74,8 @@ final class HrComplianceCheckController extends Controller
             $this->recordFinding($batchId, 'MISSING_FEEDBACK', 'HIGH', 'INTERVIEW', (int) $row['interview_id'], (int) $row['candidate_id'], (int) $row['interviewer_id'], $row['scheduled_at'], 'CREATE_NOTIFICATION', $created, $created === null ? $this->existingNotificationId((int) $row['interviewer_id'], NotificationType::FEEDBACK_REMINDER->value, (int) $row['interview_id'], 'INTERVIEW') : null, null, 'Feedback is overdue by at least 24 hours.');
         }
 
-        foreach (NotificationRepository::findOffersExpiringWithin48Hours() as $row) {
-            $created = NotificationRepository::createUnique(
+        foreach (NotificationModel::findOffersExpiringWithin48Hours() as $row) {
+            $created = NotificationModel::createUnique(
                 (int) $row['created_by'],
                 'Offer Expiring Soon',
                 'The offer for ' . $row['candidate_name'] . ' (' . $row['job_title'] . ') expires on ' . date('Y-m-d H:i', strtotime($row['expiry_date'])) . '.',
@@ -91,11 +91,11 @@ final class HrComplianceCheckController extends Controller
             $this->recordFinding($batchId, 'OFFER_EXPIRING', 'MEDIUM', 'OFFER', (int) $row['offer_id'], (int) $row['candidate_id'], (int) $row['created_by'], $row['expiry_date'], 'CREATE_NOTIFICATION', $created, $created === null ? $this->existingNotificationId((int) $row['created_by'], NotificationType::OFFER_EXPIRING_SOON->value, (int) $row['offer_id'], 'OFFER') : null, null, 'Sent offer expires within 48 hours.');
         }
 
-        foreach (NotificationRepository::findExpiredSentOffers() as $row) {
-            if (OfferRepository::enforceExpiryForOffer((int) $row['offer_id'], (int) $actor['user_id'])) {
+        foreach (NotificationModel::findExpiredSentOffers() as $row) {
+            if (OfferModel::enforceExpiryForOffer((int) $row['offer_id'], (int) $actor['user_id'])) {
                 $offersExpired++;
             }
-            $created = NotificationRepository::createUnique(
+            $created = NotificationModel::createUnique(
                 (int) $row['created_by'],
                 'Offer Expired',
                 'The offer for ' . $row['candidate_name'] . ' (' . $row['job_title'] . ') expired on ' . date('Y-m-d H:i', strtotime($row['expiry_date'])) . '.',

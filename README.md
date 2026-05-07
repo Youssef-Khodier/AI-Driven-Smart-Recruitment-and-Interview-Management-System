@@ -1,6 +1,6 @@
 # AI-Driven Smart Recruitment and Interview Management System
 
-SRIM is implemented as a framework-free Vanilla PHP monolithic MVC application with server-rendered PHP templates, web routes, native sessions, CSRF protection, server-side validation, PDO-backed models, SQL database setup, middleware-style guards, and policies.
+SRIM is implemented as a framework-free Vanilla PHP monolithic MVC application with a direct `app/Models` folder, server-rendered PHP templates, web routes, native sessions, CSRF protection, server-side validation, PDO-backed model access, SQL database setup, middleware-style guards, services, and policies.
 
 The visible in-app navigation is intentionally pruned to the grouped workflows required by the 42 mapped functions: Recruitment, Assessments, Interviews, Feedback, Offers & Onboarding, and Administration & Compliance.
 

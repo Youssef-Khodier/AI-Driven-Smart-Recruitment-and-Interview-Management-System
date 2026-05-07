@@ -21,7 +21,7 @@ final class InterviewPolicy
         $userId = (int)$user['user_id'];
         $interviewId = (int)$interview['interview_id'];
         
-        $assignment = \App\Repositories\InterviewRepository::findAssignment($interviewId, $userId);
+        $assignment = \App\Models\InterviewModel::findAssignment($interviewId, $userId);
         return $assignment !== null;
     }
 
@@ -66,7 +66,7 @@ final class InterviewPolicy
             return false;
         }
         $userId = (int)$user['user_id'];
-        $assignment = \App\Repositories\InterviewRepository::findAssignment((int)$interview['interview_id'], $userId);
+        $assignment = \App\Models\InterviewModel::findAssignment((int)$interview['interview_id'], $userId);
         if (!$assignment) {
             return false;
         }
@@ -77,7 +77,7 @@ final class InterviewPolicy
     public function updateWorkspace(array $user, array $interview): bool
     {
         $userId = (int)$user['user_id'];
-        $assignment = \App\Repositories\InterviewRepository::findAssignment((int)$interview['interview_id'], $userId);
+        $assignment = \App\Models\InterviewModel::findAssignment((int)$interview['interview_id'], $userId);
         if (!$assignment) {
             return false;
         }

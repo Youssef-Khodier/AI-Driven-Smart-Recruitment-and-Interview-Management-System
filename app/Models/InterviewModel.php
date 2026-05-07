@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\AccountStatus;
@@ -11,7 +11,7 @@ use App\Enums\InterviewExtensionStatus;
 use App\Enums\InterviewStatus;
 use App\Enums\UserRole;
 
-final class InterviewRepository
+final class InterviewModel
 {
     public static function findEligibleApplicationForScheduling(int $applicationId): ?array
     {
@@ -200,7 +200,7 @@ final class InterviewRepository
                 ]);
             }
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, \App\Enums\InterviewAuditAction::SCHEDULED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, \App\Enums\InterviewAuditAction::SCHEDULED->value, [
                 'interview_type' => $interviewData['interview_type'],
                 'scheduled_at' => $interviewData['scheduled_at'],
                 'duration_minutes' => $interviewData['duration_minutes'],
@@ -419,7 +419,7 @@ final class InterviewRepository
             ]);
         }
 
-        InterviewAuditRepository::record($interviewId, $actorUserId, InterviewAuditAction::BRIEFING_CREATED->value, $data);
+        InterviewAuditModel::record($interviewId, $actorUserId, InterviewAuditAction::BRIEFING_CREATED->value, $data);
 
         return self::briefingSnapshot($interviewId) ?? [];
     }
@@ -540,7 +540,7 @@ final class InterviewRepository
                 'created_at' => date('Y-m-d H:i:s'),
             ]);
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, InterviewAuditAction::WORKSPACE_UPDATED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, InterviewAuditAction::WORKSPACE_UPDATED->value, [
                 'version_number' => $newVersion,
                 'changed_section' => $changedSection,
             ]);
@@ -586,7 +586,7 @@ final class InterviewRepository
                 'requested_at' => date('Y-m-d H:i:s'),
             ]);
 
-            InterviewAuditRepository::record($interviewId, $requestedBy, InterviewAuditAction::EXTENSION_REQUESTED->value, [
+            InterviewAuditModel::record($interviewId, $requestedBy, InterviewAuditAction::EXTENSION_REQUESTED->value, [
                 'extension_request_id' => $id,
                 'requested_minutes' => $minutes,
                 'request_reason' => $reason,
@@ -608,7 +608,7 @@ final class InterviewRepository
                 InterviewExtensionStatus::PENDING->value,
             ]);
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_CANCELLED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_CANCELLED->value, [
                 'extension_request_id' => $requestId,
             ]);
         });
@@ -635,7 +635,7 @@ final class InterviewRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'interview_id = ?', [$interviewId]);
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_APPROVED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_APPROVED->value, [
                 'extension_request_id' => $requestId,
                 'approved_minutes' => $approvedMinutes,
                 'decision_reason' => $reason,
@@ -662,7 +662,7 @@ final class InterviewRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'interview_id = ?', [$interviewId]);
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_DENIED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, InterviewAuditAction::EXTENSION_DENIED->value, [
                 'extension_request_id' => $requestId,
                 'decision_reason' => $reason,
             ]);
@@ -677,7 +677,7 @@ final class InterviewRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ], 'interview_id = ?', [$interviewId]);
 
-            InterviewAuditRepository::record($interviewId, $actorUserId, \App\Enums\InterviewAuditAction::COMPLETED->value, [
+            InterviewAuditModel::record($interviewId, $actorUserId, \App\Enums\InterviewAuditAction::COMPLETED->value, [
                 'status' => InterviewStatus::COMPLETED->value,
             ]);
         });

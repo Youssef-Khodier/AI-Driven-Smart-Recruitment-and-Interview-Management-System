@@ -9,7 +9,7 @@ use App\Core\Auth;
 use App\Core\HttpException;
 use App\Core\Session;
 use App\Enums\UserRole;
-use App\Repositories\ReferralRepository;
+use App\Models\ReferralModel;
 use App\Core\Database;
 
 final class HrReferralController extends Controller
@@ -18,8 +18,8 @@ final class HrReferralController extends Controller
     {
         $this->requireRole(UserRole::HR_ADMIN->value);
 
-        $referrals = ReferralRepository::allWithDetails();
-        $summary = ReferralRepository::summary();
+        $referrals = ReferralModel::allWithDetails();
+        $summary = ReferralModel::summary();
 
         return $this->view('hr/referrals/index', [
             'title' => 'Referral Tracking',
@@ -45,7 +45,7 @@ final class HrReferralController extends Controller
             throw new HttpException(404, 'Application not found.');
         }
 
-        $existingReferral = ReferralRepository::findByApplication($applicationId);
+        $existingReferral = ReferralModel::findByApplication($applicationId);
 
         $internalUsers = Database::fetchAll(
             'SELECT user_id, name, email FROM users WHERE role != ? AND status = ? ORDER BY name',
@@ -64,7 +64,7 @@ final class HrReferralController extends Controller
     {
         $this->requireRole(UserRole::HR_ADMIN->value);
 
-        $existing = ReferralRepository::findByApplication($applicationId);
+        $existing = ReferralModel::findByApplication($applicationId);
         if ($existing) {
             return $this->redirect(url('hr.referrals.index'))->with('error', 'A referral already exists for this application.');
         }
@@ -85,7 +85,7 @@ final class HrReferralController extends Controller
         $referrerUserId = $request->input('referrer_user_id') ? (int)$request->input('referrer_user_id') : null;
         $rewardAmount = $request->input('reward_amount') ? (float)$request->input('reward_amount') : null;
 
-        $referralId = ReferralRepository::create([
+        $referralId = ReferralModel::create([
             'application_id' => $applicationId,
             'candidate_id' => (int)$application['candidate_id'],
             'referrer_user_id' => $referrerUserId,
@@ -97,7 +97,7 @@ final class HrReferralController extends Controller
 
         // Auto-create pending reward if amount provided
         if ($rewardAmount !== null && $rewardAmount > 0) {
-            ReferralRepository::createReward($referralId, $rewardAmount);
+            ReferralModel::createReward($referralId, $rewardAmount);
         }
 
         Session::flash('status', 'Referral recorded successfully.');
@@ -108,12 +108,12 @@ final class HrReferralController extends Controller
     {
         $user = $this->requireRole(UserRole::HR_ADMIN->value);
 
-        $reward = ReferralRepository::getReward($referralId);
+        $reward = ReferralModel::getReward($referralId);
         if (!$reward || $reward['reward_status'] !== 'PENDING') {
             return $this->redirect(url('hr.referrals.index'))->with('error', 'Reward not found or already processed.');
         }
 
-        ReferralRepository::approveReward($reward['reward_id'], (int)$user['user_id']);
+        ReferralModel::approveReward($reward['reward_id'], (int)$user['user_id']);
 
         Session::flash('status', 'Reward approved.');
         return $this->redirect(url('hr.referrals.index'));
@@ -123,13 +123,13 @@ final class HrReferralController extends Controller
     {
         $user = $this->requireRole(UserRole::HR_ADMIN->value);
 
-        $reward = ReferralRepository::getReward($referralId);
+        $reward = ReferralModel::getReward($referralId);
         if (!$reward || $reward['reward_status'] !== 'PENDING') {
             return $this->redirect(url('hr.referrals.index'))->with('error', 'Reward not found or already processed.');
         }
 
         $notes = trim($request->input('notes') ?? '');
-        ReferralRepository::rejectReward($reward['reward_id'], (int)$user['user_id'], $notes);
+        ReferralModel::rejectReward($reward['reward_id'], (int)$user['user_id'], $notes);
 
         Session::flash('status', 'Reward rejected.');
         return $this->redirect(url('hr.referrals.index'));
@@ -139,12 +139,12 @@ final class HrReferralController extends Controller
     {
         $this->requireRole(UserRole::HR_ADMIN->value);
 
-        $reward = ReferralRepository::getReward($referralId);
+        $reward = ReferralModel::getReward($referralId);
         if (!$reward || $reward['reward_status'] !== 'APPROVED') {
             return $this->redirect(url('hr.referrals.index'))->with('error', 'Reward must be approved before marking as paid.');
         }
 
-        ReferralRepository::markPaid($reward['reward_id']);
+        ReferralModel::markPaid($reward['reward_id']);
 
         Session::flash('status', 'Reward marked as paid.');
         return $this->redirect(url('hr.referrals.index'));

@@ -49,7 +49,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <?php 
-                                $state = \App\Repositories\InterviewFeedbackRepository::completionState($interview['interview_id']);
+                                $state = \App\Models\InterviewFeedbackModel::completionState($interview['interview_id']);
                                 $stateClass = $state === 'COMPLETE' ? 'text-success' : ($state === 'PARTIAL' ? 'text-warning' : 'text-text-muted');
                                 ?>
                                 <span class="font-medium text-xs <?= $stateClass ?>"><?= e($state) ?></span>

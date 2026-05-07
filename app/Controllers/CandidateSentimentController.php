@@ -6,8 +6,8 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
-use App\Repositories\FeedbackGovernanceRepository;
-use App\Repositories\InterviewRepository;
+use App\Models\FeedbackGovernanceModel;
+use App\Models\InterviewModel;
 use App\Enums\FeedbackGovernanceAuditAction;
 
 final class CandidateSentimentController extends Controller
@@ -20,7 +20,7 @@ final class CandidateSentimentController extends Controller
         }
 
         $interviewId = (int)$id;
-        $interview = InterviewRepository::findForCandidate($interviewId, (int)$actor['user_id']);
+        $interview = InterviewModel::findForCandidate($interviewId, (int)$actor['user_id']);
 
         if (!$interview) {
             throw new \App\Core\HttpException(403, 'You are not associated with this interview.');
@@ -31,7 +31,7 @@ final class CandidateSentimentController extends Controller
                 ->with('error', 'Sentiment can only be submitted after a completed interview.');
         }
 
-        $alreadySubmitted = FeedbackGovernanceRepository::hasSubmittedSentiment((int)$actor['user_id'], $interviewId);
+        $alreadySubmitted = FeedbackGovernanceModel::hasSubmittedSentiment((int)$actor['user_id'], $interviewId);
 
         return $this->view('candidate/interviews/sentiment', [
             'title' => 'Post-Interview Feedback',
@@ -48,7 +48,7 @@ final class CandidateSentimentController extends Controller
         }
 
         $interviewId = (int)$id;
-        $interview = InterviewRepository::findForCandidate($interviewId, (int)$actor['user_id']);
+        $interview = InterviewModel::findForCandidate($interviewId, (int)$actor['user_id']);
 
         if (!$interview) {
             throw new \App\Core\HttpException(403, 'You are not associated with this interview.');
@@ -59,7 +59,7 @@ final class CandidateSentimentController extends Controller
                 ->with('error', 'Sentiment can only be submitted after a completed interview.');
         }
 
-        if (FeedbackGovernanceRepository::hasSubmittedSentiment((int)$actor['user_id'], $interviewId)) {
+        if (FeedbackGovernanceModel::hasSubmittedSentiment((int)$actor['user_id'], $interviewId)) {
             return $this->redirect(url('candidate.interviews.show', [$interviewId]))
                 ->with('error', 'You have already submitted your feedback for this interview.');
         }
@@ -75,7 +75,7 @@ final class CandidateSentimentController extends Controller
 
         $comment = trim($request->input('comment') ?? '');
 
-        FeedbackGovernanceRepository::createSentiment([
+        FeedbackGovernanceModel::createSentiment([
             'candidate_id' => (int)$actor['user_id'],
             'application_id' => (int)$interview['application_id'],
             'interview_id' => $interviewId,
@@ -83,7 +83,7 @@ final class CandidateSentimentController extends Controller
             'comment' => $comment ?: null,
         ]);
 
-        FeedbackGovernanceRepository::recordAudit([
+        FeedbackGovernanceModel::recordAudit([
             'actor_user_id' => (int)$actor['user_id'],
             'actor_role' => $actor['role'],
             'application_id' => (int)$interview['application_id'],

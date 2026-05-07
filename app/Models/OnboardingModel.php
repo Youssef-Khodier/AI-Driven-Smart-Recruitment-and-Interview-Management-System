@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-final class OnboardingRepository
+final class OnboardingModel
 {
     public static function getList(): array
     {
@@ -91,7 +91,7 @@ final class OnboardingRepository
             return;
         }
 
-        PostOfferAuditRepository::record(
+        PostOfferAuditModel::record(
             (int)$onboarding['application_id'],
             (int)$onboarding['offer_id'],
             (int)$onboarding['onboarding_id'],

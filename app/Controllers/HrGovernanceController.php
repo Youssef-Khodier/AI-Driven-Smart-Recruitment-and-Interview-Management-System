@@ -9,7 +9,7 @@ use App\Core\HttpException;
 use App\Core\Response;
 use App\Core\Session;
 use App\Core\View;
-use App\Repositories\GovernanceRepository;
+use App\Models\GovernanceModel;
 use App\Policies\GovernancePolicy;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\GovernanceAuditAction;
@@ -18,12 +18,12 @@ use App\Services\TemplateVersionDiffService;
 
 class HrGovernanceController extends Controller
 {
-    private GovernanceRepository $repo;
+    private GovernanceModel $repo;
     private GovernancePolicy $policy;
 
     public function __construct()
     {
-        $this->repo = new GovernanceRepository();
+        $this->repo = new GovernanceModel();
         $this->policy = new GovernancePolicy();
     }
 

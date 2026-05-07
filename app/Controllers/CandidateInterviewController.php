@@ -6,7 +6,7 @@ use App\Core\Controller;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
-use App\Repositories\InterviewRepository;
+use App\Models\InterviewModel;
 
 final class CandidateInterviewController extends Controller
 {
@@ -18,7 +18,7 @@ final class CandidateInterviewController extends Controller
         }
 
         $interviewId = (int)$id;
-        $interview = InterviewRepository::findForCandidate($interviewId, (int)$actor['user_id']);
+        $interview = InterviewModel::findForCandidate($interviewId, (int)$actor['user_id']);
 
         if (!$interview) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -38,7 +38,7 @@ final class CandidateInterviewController extends Controller
         }
 
         $interviewId = (int)$id;
-        $interview = InterviewRepository::findForCandidate($interviewId, (int)$actor['user_id']);
+        $interview = InterviewModel::findForCandidate($interviewId, (int)$actor['user_id']);
 
         if (!$interview) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -47,8 +47,8 @@ final class CandidateInterviewController extends Controller
         return $this->view('interviews/workspace', [
             'title' => 'Coding Workspace',
             'interview' => $interview,
-            'workspace' => InterviewRepository::workspaceForInterview($interviewId),
-            'history' => InterviewRepository::workspaceHistory($interviewId),
+            'workspace' => InterviewModel::workspaceForInterview($interviewId),
+            'history' => InterviewModel::workspaceHistory($interviewId),
             'saveRoute' => url('candidate.interviews.workspace.save', [$interviewId]),
             'backRoute' => url('candidate.interviews.show', [$interviewId]),
             'canSave' => true,
@@ -64,13 +64,13 @@ final class CandidateInterviewController extends Controller
         }
 
         $interviewId = (int)$id;
-        $interview = InterviewRepository::findForCandidate($interviewId, (int)$actor['user_id']);
+        $interview = InterviewModel::findForCandidate($interviewId, (int)$actor['user_id']);
 
         if (!$interview) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        InterviewRepository::saveWorkspaceSnapshot($interviewId, $request->body(), (int)$actor['user_id'], 'CANDIDATE');
+        InterviewModel::saveWorkspaceSnapshot($interviewId, $request->body(), (int)$actor['user_id'], 'CANDIDATE');
         Session::flash('status', 'Workspace snapshot saved.');
 
         return $this->redirect(url('candidate.interviews.workspace', [$interviewId]));

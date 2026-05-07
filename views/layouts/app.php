@@ -128,6 +128,57 @@
             transform: translateY(-2px);
             box-shadow: 0 15px 35px rgba(23, 32, 51, 0.12);
         }
+        .app-shell {
+            box-sizing: border-box;
+            max-width: 1100px;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        .app-content,
+        .app-content > * {
+            min-width: 0;
+        }
+        .app-content .overflow-x-auto {
+            max-width: 100%;
+        }
+        @media (min-width: 768px) {
+            .app-shell {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .app-content .overflow-x-auto {
+                overflow-x: visible;
+            }
+            .app-content .overflow-x-auto > table {
+                table-layout: fixed;
+                width: 100%;
+                min-width: 0;
+            }
+            .app-content .overflow-x-auto th,
+            .app-content .overflow-x-auto td {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+                white-space: normal !important;
+                overflow-wrap: break-word;
+                vertical-align: top;
+            }
+            .app-content .overflow-x-auto a,
+            .app-content .overflow-x-auto button,
+            .app-content .overflow-x-auto .inline-flex {
+                overflow-wrap: normal;
+            }
+            .app-content .overflow-x-auto .whitespace-nowrap,
+            .app-content .overflow-x-auto .truncate {
+                white-space: normal !important;
+            }
+            .app-content .overflow-x-auto .truncate {
+                max-width: none !important;
+                overflow: visible !important;
+                text-overflow: clip !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-bg-main min-h-screen font-body text-body flex flex-col">
@@ -161,7 +212,7 @@
     
     <div class="flex items-center gap-4">
         <?php if ($user = auth_user()): ?>
-            <?php $unreadCount = \App\Repositories\NotificationRepository::unreadCount((int) $user['user_id']); ?>
+            <?php $unreadCount = \App\Models\NotificationModel::unreadCount((int) $user['user_id']); ?>
             <a href="<?= e(url('notifications.index')) ?>" class="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-low text-primary hover:bg-surface-container-high transition-colors" title="Notifications">
                 <span class="material-symbols-outlined text-[20px]">notifications</span>
                 <?php if ($unreadCount > 0): ?>
@@ -180,7 +231,7 @@
     </div>
 </header>
 
-<main class="flex-grow max-w-[1100px] w-full mx-auto px-4 md:px-xl py-6 md:py-xl">
+<main class="app-shell flex-grow w-full mx-auto py-6 md:py-xl">
     <?php if ($status = flash('status')): ?>
         <div class="bg-success-bg border border-success/20 text-success px-4 py-3 rounded-lg mb-6 flex items-center gap-3">
             <span class="material-symbols-outlined text-[20px]">check_circle</span>
@@ -202,7 +253,7 @@
         </div>
     <?php endif; ?>
 
-    <div class="w-full">
+    <div class="app-content w-full">
         <?= $content ?>
     </div>
 </main>

@@ -38,7 +38,7 @@
                         <td class="px-6 py-4 text-text-muted"><?= e($interview['role_in_panel']) ?></td>
                         <td class="px-6 py-4">
                             <?php 
-                            $alreadySubmitted = \App\Repositories\InterviewFeedbackRepository::alreadySubmitted($interview['interview_id'], $actor['user_id']);
+                            $alreadySubmitted = \App\Models\InterviewFeedbackModel::alreadySubmitted($interview['interview_id'], $actor['user_id']);
                             if ($alreadySubmitted) {
                                 echo '<span class="inline-flex items-center gap-1 text-success text-sm font-medium"><span class="material-symbols-outlined text-[16px]">check_circle</span> Submitted</span>';
                             } elseif ($interview['status'] === \App\Enums\InterviewStatus::COMPLETED->value && in_array($interview['role_in_panel'], \App\Enums\InterviewAssignmentRole::officialScorerValues())) {

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-class GovernanceRepository
+class GovernanceModel
 {
     public function getPendingApprovals(int $departmentId): array
     {

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\ApplicationStatus;
 use App\Enums\RetentionAuditAction;
 
-final class DataRetentionRepository
+final class DataRetentionModel
 {
     public static function eligibleCandidates(int $retentionDays): array
     {

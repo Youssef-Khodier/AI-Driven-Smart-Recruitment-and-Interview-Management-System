@@ -8,7 +8,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
 use App\Policies\NotificationPolicy;
-use App\Repositories\NotificationRepository;
+use App\Models\NotificationModel;
 
 final class NotificationController extends Controller
 {
@@ -20,8 +20,8 @@ final class NotificationController extends Controller
 
         return $this->view('notifications/index', [
             'title' => 'Notifications',
-            'notifications' => NotificationRepository::listForUser((int) $user['user_id'], $page, $perPage),
-            'total' => NotificationRepository::countForUser((int) $user['user_id']),
+            'notifications' => NotificationModel::listForUser((int) $user['user_id'], $page, $perPage),
+            'total' => NotificationModel::countForUser((int) $user['user_id']),
             'page' => $page,
             'perPage' => $perPage,
         ]);
@@ -30,7 +30,7 @@ final class NotificationController extends Controller
     public function markRead(Request $request, string $id): Response
     {
         $user = $this->requireAuth();
-        $notification = NotificationRepository::find((int) $id);
+        $notification = NotificationModel::find((int) $id);
         if (! $notification) {
             throw new HttpException(404, 'Notification not found.');
         }
@@ -38,7 +38,7 @@ final class NotificationController extends Controller
             throw new HttpException(403, 'You cannot update this notification.');
         }
 
-        NotificationRepository::markRead((int) $id, (int) $user['user_id']);
+        NotificationModel::markRead((int) $id, (int) $user['user_id']);
         Session::flash('status', 'Notification marked as read.');
 
         return $this->redirect(url('notifications.index'));
@@ -47,7 +47,7 @@ final class NotificationController extends Controller
     public function markAllRead(Request $request): Response
     {
         $user = $this->requireAuth();
-        NotificationRepository::markAllRead((int) $user['user_id']);
+        NotificationModel::markAllRead((int) $user['user_id']);
         Session::flash('status', 'All notifications marked as read.');
 
         return $this->redirect(url('notifications.index'));

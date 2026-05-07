@@ -8,7 +8,7 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Enums\UserRole;
 use App\Policies\AuditLogPolicy;
-use App\Repositories\AuditLogRepository;
+use App\Models\AuditLogModel;
 
 final class HrAuditLogController extends Controller
 {
@@ -24,15 +24,15 @@ final class HrAuditLogController extends Controller
             'to' => $this->dateInput($request->input('to')),
             'actor' => trim((string) $request->input('actor', '')),
             'action' => trim((string) $request->input('action', '')),
-            'entity' => in_array($request->input('entity'), AuditLogRepository::entities(), true) ? $request->input('entity') : '',
+            'entity' => in_array($request->input('entity'), AuditLogModel::entities(), true) ? $request->input('entity') : '',
         ];
         $page = max(1, (int) $request->input('page', 1));
-        $result = AuditLogRepository::search($filters, $page, 25);
+        $result = AuditLogModel::search($filters, $page, 25);
 
         return $this->view('hr/audit-log/index', $result + [
             'title' => 'Audit Log',
             'filters' => $filters,
-            'entities' => AuditLogRepository::entities(),
+            'entities' => AuditLogModel::entities(),
         ]);
     }
 

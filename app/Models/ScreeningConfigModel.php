@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use Exception;
 
-class ScreeningConfigRepository {
+class ScreeningConfigModel {
     public function findActiveByJobId(int $jobId): ?array {
         $sql = "SELECT * FROM screening_configs WHERE job_id = ? AND is_active = TRUE LIMIT 1";
         return Database::fetch($sql, [$jobId]);

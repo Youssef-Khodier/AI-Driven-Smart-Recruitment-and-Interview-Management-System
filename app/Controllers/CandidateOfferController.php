@@ -10,9 +10,9 @@ use App\Enums\OfferStatus;
 use App\Enums\OnboardingStatus;
 use App\Enums\PostOfferAuditAction;
 use App\Policies\OfferPolicy;
-use App\Repositories\OfferRepository;
-use App\Repositories\OnboardingRepository;
-use App\Repositories\PostOfferAuditRepository;
+use App\Models\OfferModel;
+use App\Models\OnboardingModel;
+use App\Models\PostOfferAuditModel;
 use App\Core\Database;
 
 final class CandidateOfferController extends Controller
@@ -20,7 +20,7 @@ final class CandidateOfferController extends Controller
     public function show(Request $request, int $offerId): Response
     {
         $actorId = Auth::id();
-        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+        OfferModel::enforceExpiryForOffer($offerId, $actorId);
 
         if (!OfferPolicy::view($offerId)) {
             return Response::redirect(url('candidate.dashboard'))->with('error', 'Unauthorized');
@@ -42,7 +42,7 @@ final class CandidateOfferController extends Controller
         }
 
         $onboarding = $offer['status'] === OfferStatus::ACCEPTED->value
-            ? OnboardingRepository::findByOfferId($offerId)
+            ? OnboardingModel::findByOfferId($offerId)
             : null;
 
         return Response::view('candidate/offers/show', [
@@ -59,25 +59,25 @@ final class CandidateOfferController extends Controller
         }
 
         $actorId = Auth::id();
-        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+        OfferModel::enforceExpiryForOffer($offerId, $actorId);
 
-        $offer = OfferRepository::find($offerId);
+        $offer = OfferModel::find($offerId);
         if (!$offer || $offer['status'] !== OfferStatus::SENT->value) {
             return Response::redirect(url('candidate.offers.show', [$offerId]))->with('error', 'Offer is no longer available for acceptance.');
         }
 
-        OfferRepository::accept($offerId, $actorId);
+        OfferModel::accept($offerId, $actorId);
 
-        $onboarding = OnboardingRepository::findByOfferId($offerId);
+        $onboarding = OnboardingModel::findByOfferId($offerId);
         if (!$onboarding) {
-            $onboardingId = OnboardingRepository::create($offerId, OnboardingStatus::PENDING->value, null, false, $actorId);
-            PostOfferAuditRepository::record($offer['application_id'], $offerId, $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_CREATE->value, [
+            $onboardingId = OnboardingModel::create($offerId, OnboardingStatus::PENDING->value, null, false, $actorId);
+            PostOfferAuditModel::record($offer['application_id'], $offerId, $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_CREATE->value, [
                 'status' => ['new' => OnboardingStatus::PENDING->value],
                 'source' => ['new' => 'candidate_offer_acceptance'],
             ]);
         }
 
-        PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_ACCEPT->value, [
+        PostOfferAuditModel::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_ACCEPT->value, [
             'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::ACCEPTED->value]
         ]);
 
@@ -91,16 +91,16 @@ final class CandidateOfferController extends Controller
         }
 
         $actorId = Auth::id();
-        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+        OfferModel::enforceExpiryForOffer($offerId, $actorId);
 
-        $offer = OfferRepository::find($offerId);
+        $offer = OfferModel::find($offerId);
         if (!$offer || $offer['status'] !== OfferStatus::SENT->value) {
             return Response::redirect(url('candidate.offers.show', [$offerId]))->with('error', 'Offer is no longer available for rejection.');
         }
 
-        OfferRepository::reject($offerId, $actorId);
+        OfferModel::reject($offerId, $actorId);
 
-        PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_REJECT->value, [
+        PostOfferAuditModel::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_REJECT->value, [
             'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::REJECTED->value]
         ]);
 

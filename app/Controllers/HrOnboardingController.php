@@ -10,9 +10,9 @@ use App\Enums\OnboardingStatus;
 use App\Enums\OfferStatus;
 use App\Enums\PostOfferAuditAction;
 use App\Policies\OnboardingPolicy;
-use App\Repositories\OnboardingRepository;
-use App\Repositories\OfferRepository;
-use App\Repositories\PostOfferAuditRepository;
+use App\Models\OnboardingModel;
+use App\Models\OfferModel;
+use App\Models\PostOfferAuditModel;
 
 final class HrOnboardingController extends Controller
 {
@@ -22,7 +22,7 @@ final class HrOnboardingController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $records = OnboardingRepository::getList();
+        $records = OnboardingModel::getList();
 
         return Response::view('hr/onboarding/index', [
             'title' => 'Onboarding',
@@ -36,12 +36,12 @@ final class HrOnboardingController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $offer = OfferRepository::find($offerId);
+        $offer = OfferModel::find($offerId);
         if (!$offer || $offer['status'] !== OfferStatus::ACCEPTED->value) {
             return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'Onboarding requires an accepted offer.');
         }
 
-        $existing = OnboardingRepository::findByOfferId($offerId);
+        $existing = OnboardingModel::findByOfferId($offerId);
         if ($existing) {
             return Response::redirect(url('hr.onboarding.show', [$existing['onboarding_id']]))->with('error', 'Onboarding already exists for this offer.');
         }
@@ -60,12 +60,12 @@ final class HrOnboardingController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $offer = OfferRepository::find($offerId);
+        $offer = OfferModel::find($offerId);
         if (!$offer || $offer['status'] !== OfferStatus::ACCEPTED->value) {
             return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'Onboarding requires an accepted offer.');
         }
 
-        if (OnboardingRepository::findByOfferId($offerId)) {
+        if (OnboardingModel::findByOfferId($offerId)) {
             return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'Onboarding already exists.');
         }
 
@@ -78,9 +78,9 @@ final class HrOnboardingController extends Controller
         $documentsCompleted = $request->boolean('documents_completed');
         $actorId = Auth::id();
 
-        $onboardingId = OnboardingRepository::create($offerId, $status, $startDate, $documentsCompleted, $actorId);
+        $onboardingId = OnboardingModel::create($offerId, $status, $startDate, $documentsCompleted, $actorId);
 
-        PostOfferAuditRepository::record($offer['application_id'], $offerId, $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_CREATE->value, [
+        PostOfferAuditModel::record($offer['application_id'], $offerId, $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_CREATE->value, [
             'status' => ['new' => $status],
             'start_date' => ['new' => $startDate],
             'documents_completed' => ['new' => $documentsCompleted],
@@ -95,7 +95,7 @@ final class HrOnboardingController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $record = OnboardingRepository::find($onboardingId);
+        $record = OnboardingModel::find($onboardingId);
         if (!$record) {
             return Response::redirect(url('hr.onboarding.index'))->with('error', 'Onboarding not found.');
         }
@@ -113,7 +113,7 @@ final class HrOnboardingController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $record = OnboardingRepository::find($onboardingId);
+        $record = OnboardingModel::find($onboardingId);
         if (!$record) {
             return Response::redirect(url('hr.onboarding.index'))->with('error', 'Onboarding not found.');
         }
@@ -127,9 +127,9 @@ final class HrOnboardingController extends Controller
         $documentsCompleted = $request->boolean('documents_completed');
         $actorId = Auth::id();
 
-        OnboardingRepository::update($onboardingId, $status, $startDate, $documentsCompleted);
+        OnboardingModel::update($onboardingId, $status, $startDate, $documentsCompleted);
 
-        PostOfferAuditRepository::record($record['application_id'], $record['offer_id'], $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_UPDATE->value, [
+        PostOfferAuditModel::record($record['application_id'], $record['offer_id'], $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_UPDATE->value, [
             'status' => ['old' => $record['status'], 'new' => $status],
             'start_date' => ['old' => $record['start_date'], 'new' => $startDate],
             'documents_completed' => ['old' => (bool)$record['documents_completed'], 'new' => $documentsCompleted],

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\FeedbackGovernanceAuditAction;
@@ -9,7 +9,7 @@ use App\Enums\EvaluationDebriefStatus;
 use App\Enums\CompetencyGapSeverity;
 use App\Services\FeedbackNormalizationService;
 
-final class FeedbackGovernanceRepository
+final class FeedbackGovernanceModel
 {
     public static function refreshForInterview(int $interviewId, int $actorUserId, string $actorRole): ?int
     {

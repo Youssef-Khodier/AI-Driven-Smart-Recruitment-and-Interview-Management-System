@@ -14,7 +14,7 @@ use App\Enums\JobRequisitionStatus;
 use App\Enums\UserRole;
 use App\Policies\ApplicationPolicy;
 use App\Policies\JobRequisitionPolicy;
-use App\Repositories\NotificationRepository;
+use App\Models\NotificationModel;
 
 final class HrController extends Controller
 {
@@ -170,7 +170,7 @@ final class HrController extends Controller
         $requisition = $this->findRequisition((int) $id);
         $assessments = Database::fetchAll('SELECT * FROM assessments WHERE job_id = ? ORDER BY created_at DESC', [$id]);
         $history = Database::fetchAll('SELECT h.*, u.name AS actor_name FROM job_requisition_status_histories h JOIN users u ON u.user_id = h.actor_user_id WHERE h.job_id = ? ORDER BY h.created_at DESC', [$id]);
-        $repo = new \App\Repositories\GovernanceRepository();
+        $repo = new \App\Models\GovernanceModel();
         $approvalHistory = $repo->getApprovalHistory((int) $id);
         $versionCount = count($repo->getVersionHistory((int) $id));
 
@@ -203,7 +203,7 @@ final class HrController extends Controller
         $flashMessage = 'Requisition updated.';
         if ($requisition['status'] === JobRequisitionStatus::APPROVED->value) {
             if ($requisition['description'] !== $data['description'] || $requisition['requirements'] !== $data['requirements']) {
-                $repo = new \App\Repositories\GovernanceRepository();
+                $repo = new \App\Models\GovernanceModel();
                 $repo->createTemplateVersion((int)$id, $data['description'], $data['requirements'], (int)$actor['user_id']);
                 
                 $data['status'] = JobRequisitionStatus::DRAFT->value;
@@ -237,7 +237,7 @@ final class HrController extends Controller
         Database::update('job_requisitions', $updates, 'job_id = ?', [(int) $id]);
         $this->recordJobStatus((int) $id, (int) $actor['user_id'], $requisition['status'], $status, 'Status changed by HR.');
         
-        $repo = new \App\Repositories\GovernanceRepository();
+        $repo = new \App\Models\GovernanceModel();
         if ($status === JobRequisitionStatus::PENDING->value) {
             $repo->createTemplateVersion((int)$id, $requisition['description'], $requisition['requirements'], (int)$actor['user_id']);
             
@@ -278,7 +278,7 @@ final class HrController extends Controller
 
         Database::update('applications', ['status' => $data['status'], 'updated_at' => date('Y-m-d H:i:s')], 'application_id = ?', [(int) $id]);
         Database::insert('application_status_histories', ['application_id' => $id, 'actor_user_id' => $actor['user_id'], 'old_status' => $application['status'], 'new_status' => $data['status'], 'reason' => $data['reason'] ?? null, 'created_at' => date('Y-m-d H:i:s')]);
-        NotificationRepository::createApplicationStatusNotification((int) $id, $data['status']);
+        NotificationModel::createApplicationStatusNotification((int) $id, $data['status']);
         Session::flash('status', 'Application status updated.');
 
         return $this->redirect(url('hr.applications.index', [$application['job_id']]));

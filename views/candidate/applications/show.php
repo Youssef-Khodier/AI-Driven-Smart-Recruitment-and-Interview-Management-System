@@ -91,7 +91,7 @@
         <?php endif; ?>
 
         <?php
-        $candidateOffers = \App\Repositories\OfferRepository::findByApplicationId($application['application_id']);
+        $candidateOffers = \App\Models\OfferModel::findByApplicationId($application['application_id']);
         $visibleOffers = array_filter($candidateOffers, fn($o) => $o['status'] !== 'DRAFT');
         if (!empty($visibleOffers)):
             $latestOffer = end($visibleOffers);

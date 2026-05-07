@@ -124,7 +124,7 @@
             </div>
 
             <?php 
-            $alreadySubmitted = \App\Repositories\InterviewFeedbackRepository::alreadySubmitted($briefing['interview_id'], $actor['user_id']);
+            $alreadySubmitted = \App\Models\InterviewFeedbackModel::alreadySubmitted($briefing['interview_id'], $actor['user_id']);
             if ((new \App\Policies\InterviewFeedbackPolicy())->create($actor, $briefing, $briefing['assignment'], $alreadySubmitted)): 
             ?>
                 <div class="bg-card-surface rounded-xl shadow-ambient border border-secondary/30 p-6 relative overflow-hidden">

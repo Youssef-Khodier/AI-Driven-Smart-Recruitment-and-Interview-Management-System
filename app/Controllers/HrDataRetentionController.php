@@ -11,7 +11,7 @@ use App\Core\Session;
 use App\Core\ValidationException;
 use App\Enums\UserRole;
 use App\Policies\DataRetentionPolicy;
-use App\Repositories\DataRetentionRepository;
+use App\Models\DataRetentionModel;
 
 final class HrDataRetentionController extends Controller
 {
@@ -25,7 +25,7 @@ final class HrDataRetentionController extends Controller
         $days = $this->retentionDays();
         return $this->view('hr/data-retention/index', [
             'title' => 'Candidate Data Retention',
-            'candidates' => DataRetentionRepository::eligibleCandidates($days),
+            'candidates' => DataRetentionModel::eligibleCandidates($days),
             'retentionDays' => $days,
         ]);
     }
@@ -35,7 +35,7 @@ final class HrDataRetentionController extends Controller
         $actor = $this->requireRole(UserRole::HR_ADMIN->value);
         $this->requireConfirmation($request, 'ANONYMIZE');
 
-        if (! DataRetentionRepository::anonymize((int) $candidate, (int) $actor['user_id'], $this->retentionDays())) {
+        if (! DataRetentionModel::anonymize((int) $candidate, (int) $actor['user_id'], $this->retentionDays())) {
             throw new ValidationException(['candidate' => ['Candidate is not eligible for anonymization.']]);
         }
 
@@ -48,7 +48,7 @@ final class HrDataRetentionController extends Controller
         $actor = $this->requireRole(UserRole::HR_ADMIN->value);
         $this->requireConfirmation($request, 'DELETE');
 
-        if (! DataRetentionRepository::delete((int) $candidate, (int) $actor['user_id'], $this->retentionDays())) {
+        if (! DataRetentionModel::delete((int) $candidate, (int) $actor['user_id'], $this->retentionDays())) {
             throw new ValidationException(['candidate' => ['Candidate is not eligible for deletion.']]);
         }
 

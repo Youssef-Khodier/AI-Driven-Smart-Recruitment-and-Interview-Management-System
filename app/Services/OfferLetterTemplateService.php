@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Core\Database;
-use App\Repositories\PostOfferAuditRepository;
+use App\Models\PostOfferAuditModel;
 
 /**
  * Generates versioned digital offer letters from templates.
@@ -107,7 +107,7 @@ HTML;
     {
         $result = $this->generate($offer);
 
-        PostOfferAuditRepository::record((int)$offer['application_id'], $offerId, null, $actorId, 'OFFER_LETTER_GENERATED', [
+        PostOfferAuditModel::record((int)$offer['application_id'], $offerId, null, $actorId, 'OFFER_LETTER_GENERATED', [
             'template_version' => $result['template_version'],
             'generated_at' => $result['generated_at'],
             'letter_html' => $result['html'],

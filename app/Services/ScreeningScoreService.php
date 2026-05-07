@@ -2,21 +2,21 @@
 
 namespace App\Services;
 
-use App\Repositories\ScreeningConfigRepository;
-use App\Repositories\ScreeningAuditRepository;
+use App\Models\ScreeningConfigModel;
+use App\Models\ScreeningAuditModel;
 use App\Core\Database;
 use App\Enums\ScreeningAuditAction;
 use Exception;
 
 class ScreeningScoreService {
-    private ScreeningConfigRepository $configRepo;
+    private ScreeningConfigModel $configRepo;
     private SimulatedMatchScorer $scorer;
-    private ScreeningAuditRepository $auditRepo;
+    private ScreeningAuditModel $auditRepo;
 
     public function __construct() {
-        $this->configRepo = new ScreeningConfigRepository();
+        $this->configRepo = new ScreeningConfigModel();
         $this->scorer = new SimulatedMatchScorer();
-        $this->auditRepo = new ScreeningAuditRepository();
+        $this->auditRepo = new ScreeningAuditModel();
     }
 
     public function recalculateForJob(int $jobId, int $actorId): array {

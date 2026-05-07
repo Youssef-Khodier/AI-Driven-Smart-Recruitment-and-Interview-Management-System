@@ -285,7 +285,7 @@
         <mxCell id="150" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Client-Server&#xa;Browser portals communicate with a centralized backend." vertex="1">
           <mxGeometry x="1530" y="360" width="360" height="90" as="geometry" />
         </mxCell>
-        <mxCell id="151" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Repository Pattern&#xa;Business logic stays independent from persistence details." vertex="1">
+        <mxCell id="151" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Model Layer&#xa;Business logic stays independent from database details." vertex="1">
           <mxGeometry x="1530" y="490" width="360" height="90" as="geometry" />
         </mxCell>
         <mxCell id="152" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Observer / Event-Driven Parts&#xa;Notifications, escalations, heartbeats, and audit events react to workflow changes." vertex="1">

@@ -8,18 +8,18 @@ use App\Core\Response;
 use App\Core\Session;
 use App\Core\Auth;
 use App\Policies\ScreeningPolicy;
-use App\Repositories\ScreeningConfigRepository;
-use App\Repositories\ScreeningAuditRepository;
+use App\Models\ScreeningConfigModel;
+use App\Models\ScreeningAuditModel;
 use App\Core\Database;
 use App\Enums\ScreeningAuditAction;
 
 class HrScreeningController extends Controller {
-    private ScreeningConfigRepository $configRepo;
-    private ScreeningAuditRepository $auditRepo;
+    private ScreeningConfigModel $configRepo;
+    private ScreeningAuditModel $auditRepo;
 
     public function __construct() {
-        $this->configRepo = new ScreeningConfigRepository();
-        $this->auditRepo = new ScreeningAuditRepository();
+        $this->configRepo = new ScreeningConfigModel();
+        $this->auditRepo = new ScreeningAuditModel();
     }
 
     private function getRequisition(int $id): array {
@@ -374,7 +374,7 @@ class HrScreeningController extends Controller {
         $user = Auth::user();
         $userId = is_array($user) ? $user['user_id'] : $user->user_id;
 
-        $repo = new \App\Repositories\DuplicateRepository();
+        $repo = new \App\Models\DuplicateModel();
         $mergeIdRecord = $repo->recordDecision($primaryId, $duplicateId, $userId, $decisionType, $confidence, $id, null, $notes);
 
         $this->auditRepo->log($id, $userId, ScreeningAuditAction::DUPLICATE_DECISION->value, 'MERGE', $mergeIdRecord, null, [

@@ -8,7 +8,7 @@ use App\Core\Response;
 use App\Core\HttpException;
 use App\Core\Session;
 use App\Core\Database;
-use App\Repositories\OnboardingRepository;
+use App\Models\OnboardingModel;
 
 /**
  * Candidate-facing onboarding welcome portal.
@@ -111,8 +111,8 @@ final class CandidateOnboardingController extends Controller
             return $this->redirect(url('candidate.onboarding.show', [$onboardingId]))->with('error', 'Invalid task.');
         }
 
-        OnboardingRepository::completeTask($onboarding, $taskKey, $candidateId);
-        $completed = OnboardingRepository::completedTaskKeys($onboardingId);
+        OnboardingModel::completeTask($onboarding, $taskKey, $candidateId);
+        $completed = OnboardingModel::completedTaskKeys($onboardingId);
 
         // If all tasks are done, update the DB boolean.
         if (count(array_intersect($allTasks, $completed)) >= count($allTasks)) {
@@ -139,7 +139,7 @@ final class CandidateOnboardingController extends Controller
             return array_map(fn($t) => array_merge($t, ['completed' => true]), $allTasks);
         }
 
-        $completed = OnboardingRepository::completedTaskKeys($onboardingId);
+        $completed = OnboardingModel::completedTaskKeys($onboardingId);
 
         return array_map(function ($task) use ($completed) {
             $task['completed'] = in_array($task['key'], $completed);

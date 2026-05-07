@@ -9,7 +9,7 @@ use App\Core\Session;
 use App\Core\ValidationException;
 use App\Enums\InterviewAssignmentRole;
 use App\Policies\InterviewPolicy;
-use App\Repositories\InterviewRepository;
+use App\Models\InterviewModel;
 
 final class HrInterviewController extends Controller
 {
@@ -20,7 +20,7 @@ final class HrInterviewController extends Controller
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        $interviews = InterviewRepository::hrInterviewList();
+        $interviews = InterviewModel::hrInterviewList();
 
         return $this->view('hr/interviews/index', [
             'title' => 'Interviews',
@@ -36,14 +36,14 @@ final class HrInterviewController extends Controller
         }
 
         $applicationIdInt = (int)$applicationId;
-        $application = InterviewRepository::findEligibleApplicationForScheduling($applicationIdInt);
+        $application = InterviewModel::findEligibleApplicationForScheduling($applicationIdInt);
 
         if (!$application) {
             Session::flash('error', 'Application is not eligible for interview scheduling.');
             return $this->redirect(url('hr.requisitions.index'));
         }
 
-        $panelUsers = InterviewRepository::activePanelUsers();
+        $panelUsers = InterviewModel::activePanelUsers();
         $recommendation = Session::flashed('panel_recommendation');
 
         return $this->view('hr/interviews/form', [
@@ -73,7 +73,7 @@ final class HrInterviewController extends Controller
             throw new ValidationException(['duration_minutes' => ['Duration must be a positive number.']]);
         }
 
-        $recommendation = InterviewRepository::recommendedPanel((int)$applicationId, $data['scheduled_at'], $duration, (int)$actor['user_id']);
+        $recommendation = InterviewModel::recommendedPanel((int)$applicationId, $data['scheduled_at'], $duration, (int)$actor['user_id']);
         Session::flash('panel_recommendation', $recommendation);
         Session::flash('old', $request->body());
         Session::flash('status', 'Panel recommendation generated from current assignment counts.');
@@ -89,7 +89,7 @@ final class HrInterviewController extends Controller
         }
 
         $applicationIdInt = (int)$applicationId;
-        $application = InterviewRepository::findEligibleApplicationForScheduling($applicationIdInt);
+        $application = InterviewModel::findEligibleApplicationForScheduling($applicationIdInt);
 
         if (!$application) {
             throw new ValidationException(['application_id' => ['Application is not eligible.']]);
@@ -119,7 +119,7 @@ final class HrInterviewController extends Controller
         $hasHrRepresentative = false;
         $hasTechnicalInterviewer = false;
 
-        $activeUsers = array_column(InterviewRepository::activePanelUsers(), null, 'user_id');
+        $activeUsers = array_column(InterviewModel::activePanelUsers(), null, 'user_id');
 
         if (is_array($rawPanel)) {
             foreach ($rawPanel as $member) {
@@ -168,11 +168,11 @@ final class HrInterviewController extends Controller
             throw new ValidationException(['panel_members' => ['Panel must include an HR representative and a technical interviewer. Shadow observer is optional.']]);
         }
 
-        if (InterviewRepository::hasScheduleConflict(null, $applicationIdInt, $assignedUserIds, $data['scheduled_at'], $duration)) {
+        if (InterviewModel::hasScheduleConflict(null, $applicationIdInt, $assignedUserIds, $data['scheduled_at'], $duration)) {
             throw new ValidationException(['scheduled_at' => ['Schedule conflict detected for the application or a panel member.']]);
         }
 
-        $interviewId = InterviewRepository::createInterviewWithAssignments([
+        $interviewId = InterviewModel::createInterviewWithAssignments([
             'application_id' => $applicationIdInt,
             'interview_type' => $data['interview_type'],
             'scheduled_at' => $data['scheduled_at'],
@@ -187,7 +187,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview) {
             throw new \App\Core\HttpException(404, 'Interview not found.');
@@ -197,11 +197,11 @@ final class HrInterviewController extends Controller
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        $interview['feedback'] = \App\Repositories\InterviewFeedbackRepository::forInterview($id);
-        $interview['completion_state'] = \App\Repositories\InterviewFeedbackRepository::completionState($id);
-        $interview['briefing_snapshot'] = InterviewRepository::briefingSnapshot($id);
-        $interview['extension_requests'] = InterviewRepository::extensionRequests($id);
-        $interview['workspace'] = InterviewRepository::workspaceForInterview($id);
+        $interview['feedback'] = \App\Models\InterviewFeedbackModel::forInterview($id);
+        $interview['completion_state'] = \App\Models\InterviewFeedbackModel::completionState($id);
+        $interview['briefing_snapshot'] = InterviewModel::briefingSnapshot($id);
+        $interview['extension_requests'] = InterviewModel::extensionRequests($id);
+        $interview['workspace'] = InterviewModel::workspaceForInterview($id);
 
         return $this->view('hr/interviews/show', [
             'title' => 'Interview Details',
@@ -214,7 +214,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview) {
             throw new \App\Core\HttpException(404, 'Interview not found.');
@@ -224,7 +224,7 @@ final class HrInterviewController extends Controller
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        InterviewRepository::refreshBriefingSnapshot($id, (int)$actor['user_id']);
+        InterviewModel::refreshBriefingSnapshot($id, (int)$actor['user_id']);
         Session::flash('status', 'Briefing snapshot refreshed.');
 
         return $this->redirect(url('hr.interviews.show', [$id]));
@@ -234,7 +234,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview) {
             throw new \App\Core\HttpException(404, 'Interview not found.');
@@ -247,8 +247,8 @@ final class HrInterviewController extends Controller
         return $this->view('interviews/workspace', [
             'title' => 'Coding Workspace',
             'interview' => $interview,
-            'workspace' => InterviewRepository::workspaceForInterview($id),
-            'history' => InterviewRepository::workspaceHistory($id),
+            'workspace' => InterviewModel::workspaceForInterview($id),
+            'history' => InterviewModel::workspaceHistory($id),
             'saveRoute' => url('hr.interviews.workspace.save', [$id]),
             'backRoute' => url('hr.interviews.show', [$id]),
             'canSave' => true,
@@ -260,7 +260,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview) {
             throw new \App\Core\HttpException(404, 'Interview not found.');
@@ -270,7 +270,7 @@ final class HrInterviewController extends Controller
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        InterviewRepository::saveWorkspaceSnapshot($id, $request->body(), (int)$actor['user_id'], 'HR');
+        InterviewModel::saveWorkspaceSnapshot($id, $request->body(), (int)$actor['user_id'], 'HR');
         Session::flash('status', 'Workspace snapshot saved.');
 
         return $this->redirect(url('hr.interviews.workspace', [$id]));
@@ -280,8 +280,8 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
-        $extension = InterviewRepository::findExtensionRequest($id, (int)$requestId);
+        $interview = InterviewModel::findForHr($id);
+        $extension = InterviewModel::findExtensionRequest($id, (int)$requestId);
 
         if (!$interview || !$extension) {
             throw new \App\Core\HttpException(404, 'Extension request not found.');
@@ -302,7 +302,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview || !(new InterviewPolicy())->decideExtension($actor, $interview)) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -318,7 +318,7 @@ final class HrInterviewController extends Controller
             throw new ValidationException(['approved_minutes' => ['Approved duration must be positive.']]);
         }
 
-        InterviewRepository::approveExtension($id, (int)$requestId, (int)$actor['user_id'], $approvedMinutes, $data['decision_reason']);
+        InterviewModel::approveExtension($id, (int)$requestId, (int)$actor['user_id'], $approvedMinutes, $data['decision_reason']);
         Session::flash('status', 'Extension approved and interview duration updated.');
 
         return $this->redirect(url('hr.interviews.show', [$id]));
@@ -328,7 +328,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
 
         if (!$interview || !(new InterviewPolicy())->decideExtension($actor, $interview)) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -338,7 +338,7 @@ final class HrInterviewController extends Controller
             'decision_reason' => ['required'],
         ]);
 
-        InterviewRepository::denyExtension($id, (int)$requestId, (int)$actor['user_id'], $data['decision_reason']);
+        InterviewModel::denyExtension($id, (int)$requestId, (int)$actor['user_id'], $data['decision_reason']);
         Session::flash('status', 'Extension denied.');
 
         return $this->redirect(url('hr.interviews.show', [$id]));
@@ -353,7 +353,7 @@ final class HrInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $interview = InterviewRepository::findForHr($id);
+        $interview = InterviewModel::findForHr($id);
         
         if (!$interview) {
             throw new \App\Core\HttpException(404, 'Interview not found.');
@@ -367,7 +367,7 @@ final class HrInterviewController extends Controller
             throw new ValidationException(['status' => ['Interview must be SCHEDULED to complete.']]);
         }
 
-        InterviewRepository::markCompleted($id, (int)$actor['user_id']);
+        InterviewModel::markCompleted($id, (int)$actor['user_id']);
 
         Session::flash('status', 'Interview marked as completed.');
         return $this->redirect(url('hr.interviews.show', [$id]));

@@ -11,9 +11,9 @@ use App\Enums\OfferStatus;
 use App\Enums\FinalEvaluationRecommendation;
 use App\Enums\PostOfferAuditAction;
 use App\Policies\OfferPolicy;
-use App\Repositories\OfferRepository;
-use App\Repositories\FinalEvaluationRepository;
-use App\Repositories\PostOfferAuditRepository;
+use App\Models\OfferModel;
+use App\Models\FinalEvaluationModel;
+use App\Models\PostOfferAuditModel;
 use App\Services\OfferPackageCalculator;
 use App\Core\Database;
 
@@ -26,18 +26,18 @@ final class HrOfferController extends Controller
         }
 
         $actorId = Auth::id();
-        $offers = OfferRepository::getOffersWithDetails();
+        $offers = OfferModel::getOffersWithDetails();
         
         $expiredAny = false;
         foreach ($offers as $o) {
             if ($o['status'] === OfferStatus::SENT->value && strtotime($o['expiry_date']) < time()) {
-                OfferRepository::enforceExpiryForOffer((int)$o['offer_id'], $actorId);
+                OfferModel::enforceExpiryForOffer((int)$o['offer_id'], $actorId);
                 $expiredAny = true;
             }
         }
         
         if ($expiredAny) {
-            $offers = OfferRepository::getOffersWithDetails(); // fetch again to get updated statuses
+            $offers = OfferModel::getOffersWithDetails(); // fetch again to get updated statuses
         }
 
         return Response::view('hr/offers/index', [
@@ -52,22 +52,22 @@ final class HrOfferController extends Controller
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
         }
 
-        $evaluation = FinalEvaluationRepository::findByApplicationId($applicationId);
+        $evaluation = FinalEvaluationModel::findByApplicationId($applicationId);
         if (!$evaluation || !in_array($evaluation['recommendation'], [FinalEvaluationRecommendation::HIRE->value, FinalEvaluationRecommendation::STRONG_HIRE->value])) {
             return Response::redirect(url('hr.evaluations.show', [$applicationId]))->with('error', 'Application is not offer-eligible.');
         }
 
         $actorId = Auth::id();
-        $activeOffer = OfferRepository::getActiveOffer($applicationId);
+        $activeOffer = OfferModel::getActiveOffer($applicationId);
         if ($activeOffer && $activeOffer['status'] === OfferStatus::SENT->value) {
-            OfferRepository::enforceExpiryForOffer((int)$activeOffer['offer_id'], $actorId);
+            OfferModel::enforceExpiryForOffer((int)$activeOffer['offer_id'], $actorId);
         }
 
-        if (OfferRepository::getActiveOffer($applicationId)) {
+        if (OfferModel::getActiveOffer($applicationId)) {
             return Response::redirect(url('hr.evaluations.show', [$applicationId]))->with('error', 'An active offer already exists.');
         }
 
-        $existingOffers = OfferRepository::findByApplicationId($applicationId);
+        $existingOffers = OfferModel::findByApplicationId($applicationId);
         if (count($existingOffers) >= 2) {
             return Response::redirect(url('hr.evaluations.show', [$applicationId]))->with('error', 'Maximum number of offers reached.');
         }
@@ -99,16 +99,16 @@ final class HrOfferController extends Controller
         }
         
         $actorId = Auth::id();
-        $activeOffer = OfferRepository::getActiveOffer($applicationId);
+        $activeOffer = OfferModel::getActiveOffer($applicationId);
         if ($activeOffer && $activeOffer['status'] === OfferStatus::SENT->value) {
-            OfferRepository::enforceExpiryForOffer((int)$activeOffer['offer_id'], $actorId);
+            OfferModel::enforceExpiryForOffer((int)$activeOffer['offer_id'], $actorId);
         }
 
-        if (OfferRepository::getActiveOffer($applicationId)) {
+        if (OfferModel::getActiveOffer($applicationId)) {
             return Response::redirect(url('hr.evaluations.show', [$applicationId]))->with('error', 'An active offer already exists.');
         }
         
-        $existingOffers = OfferRepository::findByApplicationId($applicationId);
+        $existingOffers = OfferModel::findByApplicationId($applicationId);
         if (count($existingOffers) >= 2) {
             return Response::redirect(url('hr.evaluations.show', [$applicationId]))->with('error', 'Maximum number of offers reached.');
         }
@@ -164,11 +164,11 @@ final class HrOfferController extends Controller
 
         $replacesOfferId = count($existingOffers) > 0 ? $existingOffers[0]['offer_id'] : null;
 
-        $offerId = OfferRepository::createDraft($applicationId, $type, $ctc, $bonus, $stock, $expiryDate, $actorId, $replacesOfferId);
+        $offerId = OfferModel::createDraft($applicationId, $type, $ctc, $bonus, $stock, $expiryDate, $actorId, $replacesOfferId);
 
         $action = $replacesOfferId ? PostOfferAuditAction::OFFER_REPLACE->value : PostOfferAuditAction::OFFER_CREATE->value;
 
-        PostOfferAuditRepository::record($applicationId, $offerId, null, $actorId, $action, [
+        PostOfferAuditModel::record($applicationId, $offerId, null, $actorId, $action, [
             'status' => ['new' => OfferStatus::DRAFT->value],
             'ctc' => ['new' => $ctc],
             'bonus' => ['new' => $bonus],
@@ -183,7 +183,7 @@ final class HrOfferController extends Controller
     public function show(Request $request, int $offerId): Response
     {
         $actorId = Auth::id();
-        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+        OfferModel::enforceExpiryForOffer($offerId, $actorId);
 
         if (!OfferPolicy::view($offerId)) {
             return Response::redirect(url('hr.dashboard'))->with('error', 'Unauthorized');
@@ -206,10 +206,10 @@ final class HrOfferController extends Controller
 
         $onboarding = null;
         if ($offer['status'] === OfferStatus::ACCEPTED->value) {
-            $onboarding = \App\Repositories\OnboardingRepository::findByOfferId($offerId);
+            $onboarding = \App\Models\OnboardingModel::findByOfferId($offerId);
         }
 
-        $revisions = OfferRepository::getRevisionChain((int)$offer['application_id']);
+        $revisions = OfferModel::getRevisionChain((int)$offer['application_id']);
 
         return Response::view('hr/offers/show', [
             'title' => 'View Offer',
@@ -226,9 +226,9 @@ final class HrOfferController extends Controller
         }
 
         $actorId = Auth::id();
-        OfferRepository::enforceExpiryForOffer($offerId, $actorId);
+        OfferModel::enforceExpiryForOffer($offerId, $actorId);
 
-        $offer = OfferRepository::find($offerId);
+        $offer = OfferModel::find($offerId);
         if (!$offer || $offer['status'] !== OfferStatus::DRAFT->value) {
             return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'Only draft offers can be sent.');
         }
@@ -237,9 +237,9 @@ final class HrOfferController extends Controller
             return Response::redirect(url('hr.offers.show', [$offerId]))->with('error', 'Cannot send an offer with a past expiry date.');
         }
 
-        OfferRepository::send($offerId, $actorId);
+        OfferModel::send($offerId, $actorId);
 
-        PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_SEND->value, [
+        PostOfferAuditModel::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_SEND->value, [
             'status' => ['old' => OfferStatus::DRAFT->value, 'new' => OfferStatus::SENT->value]
         ]);
 

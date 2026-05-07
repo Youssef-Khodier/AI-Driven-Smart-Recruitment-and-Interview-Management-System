@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
 /**
- * Repository for referral and referral reward tracking.
+ * Model for referral and referral reward tracking.
  */
-final class ReferralRepository
+final class ReferralModel
 {
     public static function create(array $data): int
     {

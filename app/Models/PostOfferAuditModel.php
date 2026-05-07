@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-final class PostOfferAuditRepository
+final class PostOfferAuditModel
 {
     public static function record(int $applicationId, ?int $offerId, ?int $onboardingId, int $actorUserId, string $action, array $changedFields): void
     {

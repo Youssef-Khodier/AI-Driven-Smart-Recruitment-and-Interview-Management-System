@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-final class InterviewAuditRepository
+final class InterviewAuditModel
 {
     public static function record(int $interviewId, int $actorUserId, string $action, array $changedFields, ?string $reason = null): void
     {

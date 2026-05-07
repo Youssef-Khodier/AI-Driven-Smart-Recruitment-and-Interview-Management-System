@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 
-class ScreeningAuditRepository {
+class ScreeningAuditModel {
     public function log(int $jobId, int $actorId, string $action, ?string $entityType, ?int $entityId, ?array $oldValues, ?array $newValues): void {
         $sql = "INSERT INTO screening_audit_records (job_id, actor_user_id, action, entity_type, entity_id, old_values, new_values)
                 VALUES (?, ?, ?, ?, ?, ?, ?)";

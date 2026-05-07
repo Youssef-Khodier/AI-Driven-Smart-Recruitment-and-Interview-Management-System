@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\FinalEvaluationRecommendation;
 use App\Enums\FinalEvaluationStatus;
 
-final class FinalEvaluationRepository
+final class FinalEvaluationModel
 {
     public static function getEvidence(int $applicationId): array
     {

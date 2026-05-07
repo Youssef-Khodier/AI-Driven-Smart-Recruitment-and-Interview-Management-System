@@ -7,14 +7,14 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Session;
 use App\Policies\InterviewPolicy;
-use App\Repositories\InterviewRepository;
+use App\Models\InterviewModel;
 
 final class InterviewerInterviewController extends Controller
 {
     public function index(Request $request): Response
     {
         $actor = $this->requireAuth();
-        $interviews = InterviewRepository::assignedInterviewList((int)$actor['user_id']);
+        $interviews = InterviewModel::assignedInterviewList((int)$actor['user_id']);
 
         return $this->view('interviewer/interviews/index', [
             'title' => 'Assigned Interviews',
@@ -27,7 +27,7 @@ final class InterviewerInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         
-        $briefing = InterviewRepository::briefingForAssignedUser((int)$interviewId, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser((int)$interviewId, (int)$actor['user_id']);
 
         if (!$briefing) {
             throw new \App\Core\HttpException(403, 'Unauthorized. You are not assigned to this interview.');
@@ -40,8 +40,8 @@ final class InterviewerInterviewController extends Controller
         return $this->view('interviewer/interviews/show', [
             'title' => 'Interview Briefing',
             'briefing' => $briefing,
-            'workspace' => InterviewRepository::workspaceForInterview((int)$interviewId),
-            'extensionRequests' => InterviewRepository::extensionRequests((int)$interviewId),
+            'workspace' => InterviewModel::workspaceForInterview((int)$interviewId),
+            'extensionRequests' => InterviewModel::extensionRequests((int)$interviewId),
             'actor' => $actor,
         ]);
     }
@@ -50,7 +50,7 @@ final class InterviewerInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $briefing = InterviewRepository::briefingForAssignedUser($id, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser($id, (int)$actor['user_id']);
 
         if (!$briefing) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -61,8 +61,8 @@ final class InterviewerInterviewController extends Controller
         return $this->view('interviews/workspace', [
             'title' => 'Coding Workspace',
             'interview' => $briefing,
-            'workspace' => InterviewRepository::workspaceForInterview($id),
-            'history' => InterviewRepository::workspaceHistory($id),
+            'workspace' => InterviewModel::workspaceForInterview($id),
+            'history' => InterviewModel::workspaceHistory($id),
             'saveRoute' => url('interviewer.interviews.workspace.save', [$id]),
             'backRoute' => url('interviewer.interviews.show', [$id]),
             'canSave' => $canSave,
@@ -74,7 +74,7 @@ final class InterviewerInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $briefing = InterviewRepository::briefingForAssignedUser($id, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser($id, (int)$actor['user_id']);
 
         if (!$briefing) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
@@ -84,7 +84,7 @@ final class InterviewerInterviewController extends Controller
             throw new \App\Core\HttpException(403, 'Shadow observers can view the workspace but cannot save changes.');
         }
 
-        InterviewRepository::saveWorkspaceSnapshot($id, $request->body(), (int)$actor['user_id'], 'INTERVIEWER');
+        InterviewModel::saveWorkspaceSnapshot($id, $request->body(), (int)$actor['user_id'], 'INTERVIEWER');
         Session::flash('status', 'Workspace snapshot saved.');
 
         return $this->redirect(url('interviewer.interviews.workspace', [$id]));
@@ -94,7 +94,7 @@ final class InterviewerInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $briefing = InterviewRepository::briefingForAssignedUser($id, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser($id, (int)$actor['user_id']);
 
         if (!$briefing || !(new InterviewPolicy())->requestExtension($actor, $briefing)) {
             throw new \App\Core\HttpException(403, 'Only assigned official interviewers can request extensions.');
@@ -110,7 +110,7 @@ final class InterviewerInterviewController extends Controller
             throw new \App\Core\ValidationException(['requested_minutes' => ['Requested duration must be positive.']]);
         }
 
-        InterviewRepository::requestExtension($id, (int)$actor['user_id'], $minutes, $data['request_reason']);
+        InterviewModel::requestExtension($id, (int)$actor['user_id'], $minutes, $data['request_reason']);
         Session::flash('status', 'Extension request sent to HR.');
 
         return $this->redirect(url('interviewer.interviews.show', [$id]));
@@ -120,13 +120,13 @@ final class InterviewerInterviewController extends Controller
     {
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
-        $extension = InterviewRepository::findExtensionRequest($id, (int)$requestId);
+        $extension = InterviewModel::findExtensionRequest($id, (int)$requestId);
 
         if (!$extension || (int)$extension['requested_by'] !== (int)$actor['user_id']) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        InterviewRepository::cancelExtension($id, (int)$requestId, (int)$actor['user_id']);
+        InterviewModel::cancelExtension($id, (int)$requestId, (int)$actor['user_id']);
         Session::flash('status', 'Extension request cancelled.');
 
         return $this->redirect(url('interviewer.interviews.show', [$id]));
@@ -137,13 +137,13 @@ final class InterviewerInterviewController extends Controller
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
         
-        $briefing = InterviewRepository::briefingForAssignedUser($id, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser($id, (int)$actor['user_id']);
 
         if (!$briefing) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        $alreadySubmitted = \App\Repositories\InterviewFeedbackRepository::alreadySubmitted($id, (int)$actor['user_id']);
+        $alreadySubmitted = \App\Models\InterviewFeedbackModel::alreadySubmitted($id, (int)$actor['user_id']);
 
         if (!(new \App\Policies\InterviewFeedbackPolicy())->create($actor, $briefing, $briefing['assignment'], $alreadySubmitted)) {
             throw new \App\Core\HttpException(403, 'You cannot submit official feedback for this interview.');
@@ -160,13 +160,13 @@ final class InterviewerInterviewController extends Controller
         $actor = $this->requireAuth();
         $id = (int)$interviewId;
         
-        $briefing = InterviewRepository::briefingForAssignedUser($id, (int)$actor['user_id']);
+        $briefing = InterviewModel::briefingForAssignedUser($id, (int)$actor['user_id']);
 
         if (!$briefing) {
             throw new \App\Core\HttpException(403, 'Unauthorized.');
         }
 
-        $alreadySubmitted = \App\Repositories\InterviewFeedbackRepository::alreadySubmitted($id, (int)$actor['user_id']);
+        $alreadySubmitted = \App\Models\InterviewFeedbackModel::alreadySubmitted($id, (int)$actor['user_id']);
 
         if (!(new \App\Policies\InterviewFeedbackPolicy())->create($actor, $briefing, $briefing['assignment'], $alreadySubmitted)) {
             throw new \App\Core\HttpException(403, 'You cannot submit official feedback for this interview.');
@@ -211,10 +211,10 @@ final class InterviewerInterviewController extends Controller
         $data['interview_id'] = $id;
         $data['interviewer_id'] = (int)$actor['user_id'];
 
-        \App\Repositories\InterviewFeedbackRepository::create($data, (int)$actor['user_id']);
+        \App\Models\InterviewFeedbackModel::create($data, (int)$actor['user_id']);
 
         if ($flagPayload) {
-            $flagId = \App\Repositories\FeedbackGovernanceRepository::createConcernFlag([
+            $flagId = \App\Models\FeedbackGovernanceModel::createConcernFlag([
                 'application_id' => (int)$briefing['application_id'],
                 'interview_id' => $id,
                 'candidate_id' => (int)$briefing['candidate_id'],
@@ -224,7 +224,7 @@ final class InterviewerInterviewController extends Controller
                 'created_by' => (int)$actor['user_id'],
             ]);
 
-            \App\Repositories\FeedbackGovernanceRepository::recordAudit([
+            \App\Models\FeedbackGovernanceModel::recordAudit([
                 'actor_user_id' => (int)$actor['user_id'],
                 'actor_role' => $actor['role'],
                 'application_id' => (int)$briefing['application_id'],
@@ -239,7 +239,7 @@ final class InterviewerInterviewController extends Controller
             ]);
         }
 
-        \App\Repositories\FeedbackGovernanceRepository::refreshForInterview($id, (int)$actor['user_id'], $actor['role']);
+        \App\Models\FeedbackGovernanceModel::refreshForInterview($id, (int)$actor['user_id'], $actor['role']);
 
         Session::flash('status', 'Official feedback submitted successfully.');
         return $this->redirect(url('interviewer.interviews.show', [$id]));

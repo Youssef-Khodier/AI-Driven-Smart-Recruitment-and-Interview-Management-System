@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Repositories;
+namespace App\Models;
 
 use App\Core\Database;
 use App\Enums\InterviewAssignmentRole;
 
-final class InterviewFeedbackRepository
+final class InterviewFeedbackModel
 {
     public static function alreadySubmitted(int $interviewId, int $interviewerId): bool
     {
@@ -30,7 +30,7 @@ final class InterviewFeedbackRepository
                 'submitted_at' => date('Y-m-d H:i:s'),
             ]);
 
-            InterviewAuditRepository::record($data['interview_id'], $actorUserId, \App\Enums\InterviewAuditAction::FEEDBACK_SUBMITTED->value, [
+            InterviewAuditModel::record($data['interview_id'], $actorUserId, \App\Enums\InterviewAuditAction::FEEDBACK_SUBMITTED->value, [
                 'interviewer_id' => $data['interviewer_id'],
                 'technical_score' => $data['technical_score'],
                 'communication_score' => $data['communication_score'],

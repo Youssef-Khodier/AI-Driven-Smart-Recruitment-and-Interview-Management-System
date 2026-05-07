@@ -29,19 +29,19 @@ Main project overview, setup guide, seeded accounts, and demo script.
 Contains the main PHP application code.
 
 #### `app/Controllers`
-Handles browser requests, reads user input, calls repositories or services, and returns views or redirects.
+Handles browser requests, reads user input, calls models or services, and returns views or redirects.
 
 #### `app/Core`
 Contains the small custom framework pieces used by the project, including routing, requests, responses, sessions, validation, authentication helpers, database setup, and view rendering.
+
+#### `app/Models`
+Contains the direct MVC model layer. These classes handle database reads and writes for recruitment, interview, assessment, offer, onboarding, audit, and compliance workflows.
 
 #### `app/Enums`
 Contains fixed status and type values used across the system, such as user roles, application statuses, interview statuses, offer statuses, and audit actions.
 
 #### `app/Policies`
 Contains authorization rules. These files decide what each user role is allowed to view or change.
-
-#### `app/Repositories`
-Contains database access logic. Controllers use repositories to read and write recruitment, interview, assessment, offer, onboarding, audit, and compliance data.
 
 #### `app/Services`
 Contains business logic that is bigger than simple database access, such as screening scores, duplicate detection, simulated assessments, offer calculations, background checks, and template comparisons.
