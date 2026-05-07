@@ -1,6 +1,6 @@
 # AI-Driven Smart Recruitment and Interview Management System
 
-SRIM is implemented as a framework-free Vanilla PHP monolithic MVC application with server-rendered PHP templates, web routes, native sessions, CSRF protection, server-side validation, PDO-backed models, SQL schema/seed scripts, middleware-style guards, and policies.
+SRIM is implemented as a framework-free Vanilla PHP monolithic MVC application with server-rendered PHP templates, web routes, native sessions, CSRF protection, server-side validation, PDO-backed models, SQL database setup, middleware-style guards, and policies.
 
 The visible in-app navigation is intentionally pruned to the grouped workflows required by the 42 mapped functions: Recruitment, Assessments, Interviews, Feedback, Offers & Onboarding, and Administration & Compliance.
 
@@ -12,9 +12,8 @@ The visible in-app navigation is intentionally pruned to the grouped workflows r
 ## Setup
 
 1. Copy `.env.example` to `.env` and update database values.
-2. Import the database schema with `mysql -u root -p < database/schema.sql`.
-3. Seed the academic demo data with `php scripts/seed.php`.
-4. Start the local server from the project root with `php -S 127.0.0.1:8000`.
+2. Import the provided SQL database file into MySQL. The SQL file should include the schema and demo data.
+3. Start the local server from the project root with `php -S 127.0.0.1:8000`.
 
 ## Seeded Demo Accounts
 
@@ -45,13 +44,5 @@ Change the password before any shared demo or deployment.
 6. Open `Compliance` and `Administration` to run notification checks, archive closed or rejected records, review diversity data, audit logs, retention actions, notifications, and user access.
 7. Log in as `lina.candidate@example.com` to browse jobs, apply, start assessments, review interview sentiment, accept or reject offers, and complete onboarding tasks.
 8. Log in as `omar.interviewer@example.com` or `mona.shadow@example.com` to open `My Interviews`, review briefings, use the coding workspace, request extensions, and submit or observe feedback according to role.
-
-## Verification
-
-Run syntax verification with:
-
-```bash
-php scripts/check.php
-```
 
 The seeded academic demo includes departments, requisitions, screening configuration, candidates, applications across statuses, assessments with difficulty rules, expected code outputs, plagiarism common answers, interviews, panel assignments, feedback, offers, referrals, background checks, onboarding task progress, notifications, audit records, template versions, and demographic data for diversity reporting.

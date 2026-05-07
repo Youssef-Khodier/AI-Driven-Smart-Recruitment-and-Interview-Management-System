@@ -15,13 +15,13 @@ Lists files and folders that should not be committed to git, such as local logs,
 Apache configuration for routing requests through the app and blocking direct public access to private folders and sensitive files.
 
 ### `composer.json`
-Composer project file. It defines the PHP version requirement and helper commands such as database seed and test commands.
+Composer project file. It defines project metadata and the PHP version requirement.
 
 ### `index.php`
 Main entry point for the web app. It loads the application from `bootstrap/app.php` and runs it.
 
 ### `README.md`
-Main project overview, setup guide, seeded accounts, demo script, and verification command.
+Main project overview, setup guide, seeded accounts, and demo script.
 
 ## Folders
 
@@ -72,24 +72,6 @@ Contains route definitions.
 
 #### `routes/web.php`
 Maps URLs to controller methods. This is where the app defines pages and form actions.
-
-### `scripts`
-Contains command-line helper scripts.
-
-#### `scripts/check.php`
-Runs PHP syntax checks for project files.
-
-#### `scripts/db.php`
-Runs database helper commands from the command line.
-
-#### `scripts/seed.php`
-Seeds the main demo data.
-
-#### `scripts/mock_seed.php`
-Seeds extra mock/demo data.
-
-#### `scripts/validate_feature_007.php`
-Validation script for a specific implemented feature set.
 
 ### `storage`
 Stores generated app files and logs that should not be public.

@@ -11,20 +11,6 @@
     "require-dev": {},
     "autoload": {},
     "autoload-dev": {},
-    "scripts": {
-        "db:schema": [
-            "@php scripts/db.php schema"
-        ],
-        "db:seed": [
-            "@php scripts/db.php seed"
-        ],
-        "db:seed-mock": [
-            "@php scripts/mock_seed.php"
-        ],
-        "test": [
-            "@php scripts/check.php"
-        ]
-    },
     "extra": {},
     "config": {
         "optimize-autoloader": true,

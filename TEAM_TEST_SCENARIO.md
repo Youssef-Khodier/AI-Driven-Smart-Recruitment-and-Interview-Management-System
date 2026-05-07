@@ -13,10 +13,9 @@ Use these seeded accounts:
 ## Before Testing
 
 1. Make sure `.env` has the correct database settings.
-2. Import the database schema.
-3. Seed the demo data.
-4. Start the local PHP server.
-5. Open the app in the browser.
+2. Import the provided SQL database file. The file should include the schema and demo data.
+3. Start the local PHP server.
+4. Open the app in the browser.
 
 ## Scenario Goal
 
