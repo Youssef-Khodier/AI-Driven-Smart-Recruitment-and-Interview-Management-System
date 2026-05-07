@@ -99,5 +99,35 @@
             form.submit();
         }
     }, 1000);
+
+    const focusUrl = <?= json_encode(url('candidate.assessments.focus-events.store', [$attempt['ca_id']])) ?>;
+    const csrf = form.querySelector('input[name="_token"]')?.value || '';
+    let lastIntegrityEvent = '';
+    let lastIntegritySentAt = 0;
+
+    const recordIntegrityEvent = (eventType, visibleState) => {
+        const now = Date.now();
+        const fingerprint = `${eventType}:${visibleState}`;
+        if (fingerprint === lastIntegrityEvent && now - lastIntegritySentAt < 2000) {
+            return;
+        }
+
+        lastIntegrityEvent = fingerprint;
+        lastIntegritySentAt = now;
+        const body = new FormData();
+        body.append('_token', csrf);
+        body.append('event_type', eventType);
+        body.append('visible_state', visibleState);
+        fetch(focusUrl, { method: 'POST', body, credentials: 'same-origin' }).catch(() => {});
+    };
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            recordIntegrityEvent('TAB_SWITCH', document.visibilityState || 'hidden');
+        } else {
+            recordIntegrityEvent('FOCUS_RETURNED', document.visibilityState || 'visible');
+        }
+    });
+    window.addEventListener('blur', () => recordIntegrityEvent('FOCUS_LOST', document.visibilityState || 'blur'));
 })();
 </script>

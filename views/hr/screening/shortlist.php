@@ -1,5 +1,4 @@
 <?php $title = 'Simulated AI-Ranked Shortlist'; ?>
-<?php ob_start(); ?>
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
@@ -11,12 +10,12 @@
         </a>
     </div>
 
-    <?php if ($flash = \App\Core\Session::getFlash('success')): ?>
+    <?php if ($flash = \App\Core\Session::flashed('success')): ?>
         <div class="bg-success-bg border border-success/30 text-success-dark p-4 rounded-lg text-sm">
             <?= e($flash) ?>
         </div>
     <?php endif; ?>
-    <?php if ($flash = \App\Core\Session::getFlash('error')): ?>
+    <?php if ($flash = \App\Core\Session::flashed('error')): ?>
         <div class="bg-error/10 border border-error text-error p-4 rounded-lg text-sm">
             <?= e($flash) ?>
         </div>
@@ -32,6 +31,7 @@
         <a href="<?= e(url('hr.screening.triage', [$requisition['job_id']])) ?>" class="px-4 py-2 border border-outline-variant text-primary bg-white rounded-md shadow-sm text-sm font-medium hover:bg-surface-container-highest transition-colors flex items-center gap-2">
             <span class="material-symbols-outlined text-[18px]">alt_route</span> Run Triage
         </a>
+        <span class="self-center text-xs text-text-muted">Ranking uses stored match score, experience, and applied date.</span>
     </div>
 
     <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base overflow-hidden">
@@ -93,5 +93,3 @@
         </table>
     </div>
 </div>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

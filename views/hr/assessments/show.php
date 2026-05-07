@@ -138,7 +138,7 @@
                             <div class="text-xs text-text-muted"><?= e($attempt['email']) ?></div>
                         </td>
                         <td class="px-6 py-3">
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium <?= $attempt['status'] === 'COMPLETED' ? 'bg-success-bg text-success border border-success/20' : 'bg-blue-50 text-blue-800 border border-blue-200' ?>">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium <?= $attempt['status'] === 'SUBMITTED' ? 'bg-success-bg text-success border border-success/20' : 'bg-blue-50 text-blue-800 border border-blue-200' ?>">
                                 <?= e($attempt['status']) ?>
                             </span>
                         </td>

@@ -54,6 +54,13 @@ function error_list(): array
     return flash('errors', []);
 }
 
+function error(string $key): mixed
+{
+    $errors = error_list();
+
+    return $errors[$key] ?? null;
+}
+
 function selected(mixed $actual, mixed $expected): string
 {
     return (string) $actual === (string) $expected ? ' selected' : '';

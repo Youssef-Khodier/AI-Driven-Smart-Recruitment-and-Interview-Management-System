@@ -53,18 +53,3 @@
         </table>
     </div>
 </div>
-ef="<?= e(url('hr.requisitions.show', [$row['job_id']])) ?>">
-                            View
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            <?php if (empty($requisitions)): ?>
-                <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-text-muted">No job requisitions found.</td>
-                </tr>
-            <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>

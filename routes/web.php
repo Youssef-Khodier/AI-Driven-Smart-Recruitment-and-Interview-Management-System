@@ -19,6 +19,7 @@ use App\Enums\JobRequisitionStatus;
 
 $router->get('/', fn () => Response::view('welcome', ['title' => 'Welcome']), 'home');
 
+// Authentication and role-specific dashboards.
 $router->get('/register', [AuthController::class, 'register'], 'register');
 $router->post('/register', [AuthController::class, 'storeRegistration'], 'register.store');
 $router->get('/login', [AuthController::class, 'login'], 'login');
@@ -30,10 +31,12 @@ $router->get('/candidate/dashboard', [DashboardController::class, 'candidate'], 
 $router->get('/hr/dashboard', [DashboardController::class, 'hr'], 'hr.dashboard');
 $router->get('/interviewer/dashboard', [DashboardController::class, 'interviewer'], 'interviewer.dashboard');
 
+// System Administration & Compliance.
 $router->get('/notifications', [NotificationController::class, 'index'], 'notifications.index');
 $router->post('/notifications/{id}/read', [NotificationController::class, 'markRead'], 'notifications.read');
 $router->post('/notifications/read-all', [NotificationController::class, 'markAllRead'], 'notifications.read-all');
 
+// Candidate recruitment, assessment, interview, offer, and onboarding flows.
 $router->get('/candidate/profile', [CandidateController::class, 'profile'], 'candidate.profile');
 $router->put('/candidate/profile', [CandidateController::class, 'updateProfile'], 'candidate.profile.update');
 $router->get('/candidate/jobs', [CandidateController::class, 'jobs'], 'candidate.jobs.index');
@@ -45,6 +48,8 @@ $router->post('/candidate/applications/{application}/assessments/{assessment}/st
 $router->get('/candidate/assessments/{id}', [AssessmentController::class, 'showCandidate'], 'candidate.assessments.show');
 $router->put('/candidate/assessments/{id}/answers/{question}', [AssessmentController::class, 'saveAnswer'], 'candidate.assessments.answers.update');
 $router->post('/candidate/assessments/{id}/heartbeat', [AssessmentController::class, 'heartbeat'], 'candidate.assessments.heartbeat');
+$router->post('/candidate/assessments/{id}/submit', [AssessmentController::class, 'submitCandidate'], 'candidate.assessments.submit');
+$router->post('/candidate/assessments/{id}/focus-events', [AssessmentController::class, 'focusEvent'], 'candidate.assessments.focus-events.store');
 $router->get('/candidate/assessments/{id}/result', [AssessmentController::class, 'resultCandidate'], 'candidate.assessments.result');
 
 $router->get('/candidate/interviews/{id}', [\App\Controllers\CandidateInterviewController::class, 'show'], 'candidate.interviews.show');
@@ -58,6 +63,7 @@ $router->get('/candidate/offers/{id}', [\App\Controllers\CandidateOfferControlle
 $router->post('/candidate/offers/{id}/accept', [\App\Controllers\CandidateOfferController::class, 'accept'], 'candidate.offers.accept');
 $router->post('/candidate/offers/{id}/reject', [\App\Controllers\CandidateOfferController::class, 'reject'], 'candidate.offers.reject');
 
+// System Administration & Compliance.
 $router->get('/hr/users', [HrController::class, 'users'], 'hr.users.index');
 $router->get('/hr/users/create', [HrController::class, 'createUser'], 'hr.users.create');
 $router->post('/hr/users', [HrController::class, 'storeUser'], 'hr.users.store');
@@ -65,6 +71,9 @@ $router->get('/hr/users/{id}/access', [HrController::class, 'editAccess'], 'hr.u
 $router->put('/hr/users/{id}/access', [HrController::class, 'updateAccess'], 'hr.users.access.update');
 
 $router->post('/hr/checks/run', [HrComplianceCheckController::class, 'run'], 'hr.checks.run');
+$router->get('/hr/compliance', [HrComplianceCheckController::class, 'index'], 'hr.compliance.index');
+$router->get('/hr/compliance/diversity', [HrComplianceCheckController::class, 'diversity'], 'hr.compliance.diversity');
+$router->post('/hr/compliance/archive', [HrComplianceCheckController::class, 'archive'], 'hr.compliance.archive');
 $router->get('/hr/reports/pipeline', [HrReportController::class, 'pipeline'], 'hr.reports.pipeline');
 $router->get('/hr/reports/time-to-hire', [HrReportController::class, 'timeToHire'], 'hr.reports.time-to-hire');
 $router->get('/hr/feedback-governance', [\App\Controllers\HrFeedbackGovernanceController::class, 'index'], 'hr.feedback-governance.index');
@@ -73,6 +82,7 @@ $router->get('/hr/data-retention', [HrDataRetentionController::class, 'index'], 
 $router->post('/hr/data-retention/{candidate}/anonymize', [HrDataRetentionController::class, 'anonymize'], 'hr.data-retention.anonymize');
 $router->post('/hr/data-retention/{candidate}/delete', [HrDataRetentionController::class, 'delete'], 'hr.data-retention.delete');
 
+// Recruitment Pipeline & Triage.
 $router->get('/hr/requisitions', [HrController::class, 'requisitions'], 'hr.requisitions.index');
 $router->get('/hr/requisitions/create', [HrController::class, 'createRequisition'], 'hr.requisitions.create');
 $router->post('/hr/requisitions', [HrController::class, 'storeRequisition'], 'hr.requisitions.store');
@@ -96,10 +106,6 @@ $router->get('/hr/requisitions/{id}/sync-history', [HrGovernanceController::clas
 
 $router->get('/hr/requisitions/{id}/governance-audit', [HrGovernanceController::class, 'governanceAudit'], 'hr.requisitions.governance-audit');
 
-$router->get('/hr/department-heads', [HrGovernanceController::class, 'departmentHeads'], 'hr.department-heads.index');
-$router->post('/hr/department-heads', [HrGovernanceController::class, 'assignDepartmentHead'], 'hr.department-heads.store');
-$router->post('/hr/department-heads/{id}/remove', [HrGovernanceController::class, 'removeDepartmentHead'], 'hr.department-heads.destroy');
-
 $router->post('/hr/requisitions/{id}/open', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::OPEN->value), 'hr.requisitions.open');
 $router->post('/hr/requisitions/{id}/close', fn ($request, $id) => (new HrController())->transitionRequisition($request, $id, JobRequisitionStatus::CLOSED->value), 'hr.requisitions.close');
 $router->get('/hr/requisitions/{id}/applications', [HrController::class, 'applications'], 'hr.applications.index');
@@ -116,6 +122,7 @@ $router->get('/hr/requisitions/{id}/duplicates/resolve', [HrScreeningController:
 $router->post('/hr/requisitions/{id}/duplicates/resolve', [HrScreeningController::class, 'resolveDuplicate'], 'hr.screening.duplicates.resolve');
 $router->get('/hr/requisitions/{id}/screening/audit', [HrScreeningController::class, 'audit'], 'hr.screening.audit');
 
+// Assessment & Proctored Simulation.
 $router->get('/hr/requisitions/{id}/assessments', [AssessmentController::class, 'index'], 'hr.assessments.index');
 $router->get('/hr/requisitions/{id}/assessments/create', [AssessmentController::class, 'create'], 'hr.assessments.create');
 $router->post('/hr/requisitions/{id}/assessments', [AssessmentController::class, 'store'], 'hr.assessments.store');
@@ -131,13 +138,12 @@ $router->post('/hr/assessment-questions/{id}/deactivate', [AssessmentController:
 $router->get('/hr/requisitions/{id}/assessment-results', [AssessmentController::class, 'results'], 'hr.assessment-results.index');
 $router->get('/hr/candidate-assessments/{id}', [AssessmentController::class, 'reviewAttempt'], 'hr.candidate-assessments.show');
 
+// Interview Coordination & Logistics.
+$router->get('/hr/interviews', [HrInterviewController::class, 'index'], 'hr.interviews.index');
 $router->get('/hr/applications/{id}/interviews/create', [HrInterviewController::class, 'create'], 'hr.interviews.create');
 $router->post('/hr/applications/{id}/interviews/recommendations', [HrInterviewController::class, 'recommendPanel'], 'hr.interviews.recommendations');
 $router->post('/hr/applications/{id}/interviews', [HrInterviewController::class, 'store'], 'hr.interviews.store');
 $router->get('/hr/interviews/{id}', [HrInterviewController::class, 'show'], 'hr.interviews.show');
-$router->get('/hr/interviews/{id}/edit', [HrInterviewController::class, 'edit'], 'hr.interviews.edit');
-$router->put('/hr/interviews/{id}', [HrInterviewController::class, 'update'], 'hr.interviews.update');
-$router->post('/hr/interviews/{id}/cancel', [HrInterviewController::class, 'cancel'], 'hr.interviews.cancel');
 $router->post('/hr/interviews/{id}/complete', [HrInterviewController::class, 'complete'], 'hr.interviews.complete');
 $router->post('/hr/interviews/{id}/briefing/refresh', [HrInterviewController::class, 'refreshBriefing'], 'hr.interviews.briefing.refresh');
 $router->get('/hr/interviews/{id}/workspace', [HrInterviewController::class, 'workspace'], 'hr.interviews.workspace');
@@ -147,11 +153,13 @@ $router->post('/hr/interviews/{id}/extensions/{request}/approve', [HrInterviewCo
 $router->post('/hr/interviews/{id}/extensions/{request}/deny', [HrInterviewController::class, 'denyExtension'], 'hr.interviews.extensions.deny');
 $router->get('/hr/interviews/{id}/audit', [HrInterviewController::class, 'audit'], 'hr.interviews.audit');
 
+// Feedback & Evaluation.
 $router->get('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'show'], 'hr.evaluations.show');
 $router->post('/hr/applications/{id}/final-evaluation', [\App\Controllers\HrFinalEvaluationController::class, 'store'], 'hr.evaluations.store');
 $router->get('/hr/applications/{id}/governance', [\App\Controllers\HrFeedbackGovernanceController::class, 'show'], 'hr.governance.show');
 $router->post('/hr/flags/{id}/resolve', [\App\Controllers\HrFeedbackGovernanceController::class, 'resolveFlag'], 'hr.flags.resolve');
 
+// Offers & Onboarding.
 $router->get('/hr/offers', [\App\Controllers\HrOfferController::class, 'index'], 'hr.offers.index');
 $router->get('/hr/applications/{id}/offers/create', [\App\Controllers\HrOfferController::class, 'create'], 'hr.offers.create');
 $router->post('/hr/applications/{id}/offers', [\App\Controllers\HrOfferController::class, 'store'], 'hr.offers.store');
@@ -177,6 +185,7 @@ $router->get('/candidate/onboarding', [\App\Controllers\CandidateOnboardingContr
 $router->get('/candidate/onboarding/{id}', [\App\Controllers\CandidateOnboardingController::class, 'show'], 'candidate.onboarding.show');
 $router->post('/candidate/onboarding/{id}/complete-task', [\App\Controllers\CandidateOnboardingController::class, 'completeTask'], 'candidate.onboarding.complete-task');
 
+// Offers & Onboarding support workflows.
 $router->get('/hr/referrals', [\App\Controllers\HrReferralController::class, 'index'], 'hr.referrals.index');
 $router->get('/hr/applications/{id}/referral', [\App\Controllers\HrReferralController::class, 'create'], 'hr.referrals.create');
 $router->post('/hr/applications/{id}/referral', [\App\Controllers\HrReferralController::class, 'store'], 'hr.referrals.store');

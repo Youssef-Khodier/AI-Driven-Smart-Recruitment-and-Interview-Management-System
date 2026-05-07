@@ -1,79 +1,64 @@
-<?php require base_path('views/layouts/header.php'); ?>
-
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <div class="mb-6 flex justify-between items-center">
+<?php $title = 'Publish to Job Boards'; ?>
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="flex items-center justify-between">
         <div>
-            <a href="/hr/requisitions/<?= htmlspecialchars($requisition['job_id']) ?>" class="text-sm text-indigo-600 hover:text-indigo-900">&larr; Back to Requisition</a>
-            <h1 class="text-2xl font-semibold text-gray-900 mt-2">Publish to Job Boards</h1>
-            <p class="text-gray-600 mt-1">Requisition: <?= htmlspecialchars($requisition['title']) ?> (Status: <?= htmlspecialchars($requisition['status']) ?>)</p>
+            <h1 class="text-3xl font-bold text-primary">Publish to Job Boards</h1>
+            <p class="text-text-muted mt-1">Create local sync log records for <?= e($requisition['title']) ?>.</p>
         </div>
+        <a href="<?= e(url('hr.requisitions.show', [$requisition['job_id']])) ?>" class="text-secondary hover:underline text-sm font-medium flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">arrow_back</span> Back to Requisition
+        </a>
     </div>
 
-    <?php if (isset($_SESSION['flash_error'])): ?>
-        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-            <div class="flex">
-                <div class="ml-3">
-                    <p class="text-sm text-red-700"><?= htmlspecialchars($_SESSION['flash_error']) ?></p>
-                </div>
-            </div>
+    <?php if ($flash = \App\Core\Session::flashed('error')): ?>
+        <div class="bg-error/10 border border-error text-error p-4 rounded-lg text-sm">
+            <?= e($flash) ?>
         </div>
-        <?php unset($_SESSION['flash_error']); ?>
     <?php endif; ?>
 
-    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+    <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base overflow-hidden">
+        <div class="p-6 border-b border-border-base bg-surface-container-lowest">
+            <h2 class="text-lg font-semibold text-primary">Local Job-Board Sync Manager</h2>
+            <p class="text-sm text-text-muted mt-1">No external APIs are called. Publishing writes database sync records and marks them complete locally.</p>
+        </div>
+
         <div class="p-6">
             <?php if ($requisition['status'] !== 'OPEN'): ?>
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                    <div class="flex">
-                        <div class="ml-3">
-                            <p class="text-sm text-yellow-700">
-                                This requisition cannot be published because its status is not OPEN.
-                            </p>
-                        </div>
-                    </div>
+                <div class="bg-warning-bg border border-warning/30 text-warning-dark p-4 rounded-lg text-sm">
+                    This requisition cannot be published because its status is not OPEN.
                 </div>
             <?php else: ?>
-                <form action="/hr/requisitions/<?= htmlspecialchars($requisition['job_id']) ?>/publish" method="POST">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(\App\Core\Csrf::getToken()) ?>">
-                    
-                    <fieldset>
-                        <legend class="text-base font-medium text-gray-900">Select Platforms</legend>
-                        <div class="mt-4 space-y-4">
-                            <?php foreach ($activePlatforms as $platform): ?>
-                                <?php 
-                                    $isPublished = in_array($platform['platform_id'], $publishedPlatforms);
-                                ?>
-                                <div class="flex items-start">
-                                    <div class="flex items-center h-5">
-                                        <input id="platform_<?= $platform['platform_id'] ?>" 
-                                               name="platforms[]" 
-                                               value="<?= $platform['platform_id'] ?>" 
-                                               type="checkbox" 
-                                               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                               <?= $isPublished ? 'checked disabled' : '' ?>>
-                                    </div>
-                                    <div class="ml-3 text-sm">
-                                        <label for="platform_<?= $platform['platform_id'] ?>" class="font-medium text-gray-700">
-                                            <?= htmlspecialchars($platform['name']) ?>
-                                        </label>
-                                        <?php if ($isPublished): ?>
-                                            <p class="text-gray-500">Already published</p>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                <form action="<?= e(url('hr.requisitions.publish.store', [$requisition['job_id']])) ?>" method="POST" class="space-y-6">
+                    <?= csrf_field() ?>
+                    <fieldset class="space-y-4">
+                        <legend class="text-sm font-semibold text-primary">Select local platforms</legend>
+                        <?php foreach ($activePlatforms as $platform): ?>
+                            <?php $isPublished = in_array($platform['platform_id'], $publishedPlatforms); ?>
+                            <label class="flex items-start gap-3 rounded-lg border border-border-base p-3 <?= $isPublished ? 'bg-surface-container-low text-text-muted' : 'bg-white' ?>">
+                                <input
+                                    name="platforms[]"
+                                    value="<?= e($platform['platform_id']) ?>"
+                                    type="checkbox"
+                                    class="mt-1 rounded border-border-base text-secondary focus:ring-secondary"
+                                    <?= $isPublished ? 'checked disabled' : '' ?>
+                                >
+                                <span>
+                                    <span class="block font-medium text-primary"><?= e($platform['name']) ?></span>
+                                    <span class="block text-xs text-text-muted"><?= $isPublished ? 'Already published in local sync history.' : 'A PUBLISHED sync record will be stored locally.' ?></span>
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
+                        <?php if (empty($activePlatforms)): ?>
+                            <p class="text-text-muted text-sm italic">No active job-board platforms are configured.</p>
+                        <?php endif; ?>
                     </fieldset>
 
-                    <div class="mt-6">
-                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Publish
-                        </button>
+                    <div class="flex justify-end gap-3">
+                        <a href="<?= e(url('hr.requisitions.sync-history', [$requisition['job_id']])) ?>" class="px-5 py-2.5 border border-outline-variant rounded-md shadow-sm text-sm font-medium text-primary bg-white hover:bg-surface-container-highest transition-colors">View Sync History</a>
+                        <button type="submit" class="px-5 py-2.5 bg-secondary text-white rounded-md shadow-sm text-sm font-medium hover:bg-blue-800 transition-colors">Publish</button>
                     </div>
                 </form>
             <?php endif; ?>
         </div>
     </div>
 </div>
-
-<?php require base_path('views/layouts/footer.php'); ?>

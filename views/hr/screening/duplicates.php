@@ -1,5 +1,4 @@
 <?php $title = 'Duplicate Candidates'; ?>
-<?php ob_start(); ?>
 <div class="max-w-5xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
@@ -11,7 +10,7 @@
         </a>
     </div>
 
-    <?php if ($flash = \App\Core\Session::getFlash('success')): ?>
+    <?php if ($flash = \App\Core\Session::flashed('success')): ?>
         <div class="bg-success-bg border border-success/30 text-success-dark p-4 rounded-lg text-sm">
             <?= e($flash) ?>
         </div>
@@ -88,5 +87,3 @@
         <?php endif; ?>
     </div>
 </div>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

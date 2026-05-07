@@ -97,13 +97,18 @@ final class CandidateController extends Controller
             throw new \App\Core\HttpException(404, 'Application not found.');
         }
         $assessments = Database::fetchAll('SELECT * FROM assessments WHERE job_id = ? AND is_active = 1 ORDER BY created_at DESC', [$application['job_id']]);
-        $attempts = Database::fetchAll('SELECT * FROM candidate_assessments WHERE application_id = ? AND candidate_id = ?', [$id, $user['user_id']]);
+        $interviews = Database::fetchAll('SELECT * FROM interviews WHERE application_id = ? ORDER BY scheduled_at DESC', [$id]);
+        $attempts = Database::fetchAll('SELECT * FROM candidate_assessments WHERE application_id = ? AND candidate_id = ? ORDER BY created_at DESC, ca_id DESC', [$id, $user['user_id']]);
         $attemptMap = [];
         foreach ($attempts as $attempt) {
-            $attemptMap[(int) $attempt['assessment_id']] = $attempt;
+            $assessmentId = (int) $attempt['assessment_id'];
+            if (isset($attemptMap[$assessmentId])) {
+                continue;
+            }
+            $attemptMap[$assessmentId] = $attempt;
         }
 
-        return $this->view('candidate/applications/show', compact('application', 'assessments', 'attemptMap') + ['title' => 'Application']);
+        return $this->view('candidate/applications/show', compact('application', 'assessments', 'attemptMap', 'interviews') + ['title' => 'Application']);
     }
 
     private function candidate(int $id): ?array

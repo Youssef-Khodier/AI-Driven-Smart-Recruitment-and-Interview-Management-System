@@ -100,13 +100,36 @@
             <?php if ($offer['status'] === 'DRAFT'): ?>
                 <div class="bg-card-surface rounded-xl shadow-ambient border border-secondary/30 p-6">
                     <h2 class="text-lg font-semibold text-primary mb-2">Draft Actions</h2>
-                    <p class="text-sm text-text-muted mb-4">This offer is currently a draft. Send it to the candidate to allow them to respond.</p>
+                    <p class="text-sm text-text-muted mb-4">Generate the HTML offer letter, then send it to the candidate when ready.</p>
+                    <form method="POST" action="<?= e(url('hr.offers.generate-letter', [$offer['offer_id']])) ?>" class="mb-3">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="w-full bg-white border border-outline-variant text-primary px-4 py-2.5 rounded-lg hover:bg-surface-container-low transition-colors font-medium shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">article</span> Generate Offer Letter
+                        </button>
+                    </form>
                     <form method="POST" action="<?= e(url('hr.offers.send', [$offer['offer_id']])) ?>">
                         <?= csrf_field() ?>
                         <button type="submit" class="w-full bg-secondary-container hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition-colors font-medium shadow-sm flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-[18px]">send</span> Send Offer
                         </button>
                     </form>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($offer['status'] !== 'DRAFT'): ?>
+                <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6">
+                    <h2 class="text-lg font-semibold text-primary mb-2">Offer Letter</h2>
+                    <div class="flex flex-col gap-3">
+                        <form method="POST" action="<?= e(url('hr.offers.generate-letter', [$offer['offer_id']])) ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="w-full bg-white border border-outline-variant text-primary px-4 py-2.5 rounded-lg hover:bg-surface-container-low transition-colors font-medium shadow-sm flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">article</span> Generate Latest HTML Letter
+                            </button>
+                        </form>
+                        <a href="<?= e(url('hr.offers.letter', [$offer['offer_id']])) ?>" class="w-full bg-secondary-container hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg transition-colors font-medium shadow-sm flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">visibility</span> View Letter
+                        </a>
+                    </div>
                 </div>
             <?php endif; ?>
 
@@ -130,4 +153,40 @@
             <?php endif; ?>
         </div>
     </div>
+
+    <?php if (!empty($revisions)): ?>
+        <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6">
+            <h2 class="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary">history</span> Counter-Offer / Revision Chain
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-border-base text-text-muted">
+                            <th class="py-2 pr-3">Seq</th>
+                            <th class="py-2 pr-3">Status</th>
+                            <th class="py-2 pr-3">CTC</th>
+                            <th class="py-2 pr-3">Bonus</th>
+                            <th class="py-2 pr-3">Stock</th>
+                            <th class="py-2 pr-3">Replaces</th>
+                            <th class="py-2 pr-3">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($revisions as $revision): ?>
+                            <tr class="border-b border-border-base/60">
+                                <td class="py-2 pr-3 font-medium"><?= e($revision['offer_sequence']) ?></td>
+                                <td class="py-2 pr-3"><?= e($revision['status']) ?></td>
+                                <td class="py-2 pr-3">$<?= number_format((float)$revision['ctc'], 2) ?></td>
+                                <td class="py-2 pr-3">$<?= number_format((float)$revision['bonus'], 2) ?></td>
+                                <td class="py-2 pr-3">$<?= number_format((float)$revision['stock_options'], 2) ?></td>
+                                <td class="py-2 pr-3"><?= $revision['replaces_offer_id'] ? '#' . e($revision['replaces_offer_id']) : 'Original' ?></td>
+                                <td class="py-2 pr-3"><?= e(date('M d, Y H:i', strtotime($revision['created_at']))) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <?php endif; ?>
 </div>

@@ -7,9 +7,11 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Core\Auth;
 use App\Enums\OfferStatus;
+use App\Enums\OnboardingStatus;
 use App\Enums\PostOfferAuditAction;
 use App\Policies\OfferPolicy;
 use App\Repositories\OfferRepository;
+use App\Repositories\OnboardingRepository;
 use App\Repositories\PostOfferAuditRepository;
 use App\Core\Database;
 
@@ -39,9 +41,14 @@ final class CandidateOfferController extends Controller
             return Response::redirect(url('candidate.applications.index'))->with('error', 'Offer not found or not sent yet');
         }
 
+        $onboarding = $offer['status'] === OfferStatus::ACCEPTED->value
+            ? OnboardingRepository::findByOfferId($offerId)
+            : null;
+
         return Response::view('candidate/offers/show', [
             'title' => 'Your Offer',
-            'offer' => $offer
+            'offer' => $offer,
+            'onboarding' => $onboarding,
         ]);
     }
 
@@ -60,6 +67,15 @@ final class CandidateOfferController extends Controller
         }
 
         OfferRepository::accept($offerId, $actorId);
+
+        $onboarding = OnboardingRepository::findByOfferId($offerId);
+        if (!$onboarding) {
+            $onboardingId = OnboardingRepository::create($offerId, OnboardingStatus::PENDING->value, null, false, $actorId);
+            PostOfferAuditRepository::record($offer['application_id'], $offerId, $onboardingId, $actorId, PostOfferAuditAction::ONBOARDING_CREATE->value, [
+                'status' => ['new' => OnboardingStatus::PENDING->value],
+                'source' => ['new' => 'candidate_offer_acceptance'],
+            ]);
+        }
 
         PostOfferAuditRepository::record($offer['application_id'], $offerId, null, $actorId, PostOfferAuditAction::OFFER_ACCEPT->value, [
             'status' => ['old' => OfferStatus::SENT->value, 'new' => OfferStatus::ACCEPTED->value]

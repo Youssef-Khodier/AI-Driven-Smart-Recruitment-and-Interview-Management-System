@@ -153,8 +153,8 @@ final class FeedbackNormalizationService
             return 'HIRE';
         }
         if ($score >= 40) {
-            return 'NO_HIRE';
+            return 'HOLD';
         }
-        return 'STRONG_NO_HIRE';
+        return 'NO_HIRE';
     }
 }

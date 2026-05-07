@@ -140,6 +140,47 @@
                     </div>
                 </div>
             <?php endif; ?>
+
+            <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5">
+                    <div>
+                        <h2 class="text-xl font-semibold text-primary mb-1">Workspace & Extension</h2>
+                        <p class="text-text-muted text-sm">Workspace changes are saved as database snapshots.</p>
+                    </div>
+                    <a href="<?= e(url('interviewer.interviews.workspace', [$briefing['interview_id']])) ?>" class="bg-secondary-container hover:bg-blue-700 text-white px-5 py-2 rounded-md transition-colors font-medium shadow-sm flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">code</span> Open Workspace
+                    </a>
+                </div>
+
+                <?php if (empty($briefing['assignment']['is_shadowing'])): ?>
+                    <form method="POST" action="<?= e(url('interviewer.interviews.extensions.store', [$briefing['interview_id']])) ?>" class="border-t border-border-base pt-4 grid grid-cols-1 md:grid-cols-[140px_1fr_auto] gap-3 items-end">
+                        <?= csrf_field() ?>
+                        <div>
+                            <label class="block text-sm font-medium text-primary mb-1">Minutes</label>
+                            <input type="number" name="requested_minutes" min="1" value="15" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-primary mb-1">Reason</label>
+                            <input type="text" name="request_reason" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm" placeholder="Need more time to finish the coding task">
+                        </div>
+                        <button class="bg-surface-container-low hover:bg-surface-container-highest text-primary border border-border-base px-4 py-2 rounded-md font-medium">Request</button>
+                    </form>
+                <?php endif; ?>
+
+                <div class="mt-4 space-y-2">
+                    <?php foreach ($extensionRequests as $extension): ?>
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 bg-surface-container-lowest border border-border-base rounded-lg p-3 text-sm">
+                            <span class="text-primary"><?= e($extension['requested_by_name']) ?> requested <?= e($extension['requested_minutes']) ?> min - <?= e($extension['status']) ?></span>
+                            <?php if ($extension['status'] === \App\Enums\InterviewExtensionStatus::PENDING->value && (int)$extension['requested_by'] === (int)$actor['user_id']): ?>
+                                <form method="POST" action="<?= e(url('interviewer.interviews.extensions.cancel', [$briefing['interview_id'], $extension['extension_request_id']])) ?>">
+                                    <?= csrf_field() ?>
+                                    <button class="text-error hover:underline">Cancel</button>
+                                </form>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>

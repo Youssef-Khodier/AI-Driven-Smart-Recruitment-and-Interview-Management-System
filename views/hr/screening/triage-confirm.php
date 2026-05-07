@@ -1,5 +1,4 @@
 <?php $title = 'Preview Automated Triage'; ?>
-<?php ob_start(); ?>
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
@@ -69,5 +68,3 @@
         </form>
     <?php endif; ?>
 </div>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

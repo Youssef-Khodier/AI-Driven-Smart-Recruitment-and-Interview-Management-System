@@ -64,6 +64,11 @@ final class Request
         return $this->body;
     }
 
+    public function all(): array
+    {
+        return array_merge($this->query, $this->body);
+    }
+
     public function query(): array
     {
         return $this->query;
@@ -72,6 +77,13 @@ final class Request
     public function input(string $key, mixed $default = null): mixed
     {
         return $this->body[$key] ?? $this->query[$key] ?? $default;
+    }
+
+    public function boolean(string $key, bool $default = false): bool
+    {
+        $value = $this->input($key, $default);
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 
     public function referer(): ?string

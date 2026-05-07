@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Repositories\PostOfferAuditRepository;
 
 /**
  * Generates versioned digital offer letters from templates.
@@ -84,7 +85,7 @@ HTML;
 
         $html = str_replace(array_keys($placeholders), array_values($placeholders), $template);
 
-        // Determine template version — check if we're using default or custom
+        // Determine template version based on whether the default or a custom template is used.
         $templateVersion = $customTemplate ? 'custom_' . substr(md5($customTemplate), 0, 8) : 'default_v1';
 
         return [
@@ -106,20 +107,13 @@ HTML;
     {
         $result = $this->generate($offer);
 
-        // Use post_offer_audit_records to store the generation event + letter content
-        return Database::insert('post_offer_audit_records', [
-            'application_id' => $offer['application_id'],
-            'offer_id' => $offerId,
-            'actor_user_id' => $actorId,
-            'action' => 'OFFER_LETTER_GENERATED',
-            'old_values' => null,
-            'new_values' => json_encode([
-                'template_version' => $result['template_version'],
-                'generated_at' => $result['generated_at'],
-                'letter_html' => $result['html'],
-            ]),
-            'created_at' => date('Y-m-d H:i:s'),
+        PostOfferAuditRepository::record((int)$offer['application_id'], $offerId, null, $actorId, 'OFFER_LETTER_GENERATED', [
+            'template_version' => $result['template_version'],
+            'generated_at' => $result['generated_at'],
+            'letter_html' => $result['html'],
         ]);
+
+        return (int)Database::pdo()->lastInsertId();
     }
 
     /**
@@ -131,14 +125,14 @@ HTML;
     public function getLatestLetter(int $offerId): ?array
     {
         $record = Database::fetch(
-            "SELECT new_values FROM post_offer_audit_records WHERE offer_id = ? AND action = 'OFFER_LETTER_GENERATED' ORDER BY created_at DESC LIMIT 1",
+            "SELECT changed_fields FROM post_offer_audit_records WHERE offer_id = ? AND action = 'OFFER_LETTER_GENERATED' ORDER BY created_at DESC, audit_id DESC LIMIT 1",
             [$offerId]
         );
 
-        if (!$record || !$record['new_values']) {
+        if (!$record || !$record['changed_fields']) {
             return null;
         }
 
-        return json_decode($record['new_values'], true);
+        return json_decode($record['changed_fields'], true);
     }
 }

@@ -7,9 +7,97 @@ use App\Enums\FeedbackGovernanceAuditAction;
 use App\Enums\FeedbackConcernStatus;
 use App\Enums\EvaluationDebriefStatus;
 use App\Enums\CompetencyGapSeverity;
+use App\Services\FeedbackNormalizationService;
 
 final class FeedbackGovernanceRepository
 {
+    public static function refreshForInterview(int $interviewId, int $actorUserId, string $actorRole): ?int
+    {
+        $interview = Database::fetch(
+            'SELECT i.interview_id, i.application_id, a.candidate_id, a.job_id
+             FROM interviews i
+             JOIN applications a ON a.application_id = i.application_id
+             WHERE i.interview_id = ?',
+            [$interviewId]
+        );
+
+        if (!$interview) {
+            return null;
+        }
+
+        $feedback = Database::fetchAll(
+            "SELECT f.*
+             FROM interview_feedback f
+             JOIN interviewers_assignment ia
+               ON ia.interview_id = f.interview_id
+              AND ia.interviewer_id = f.interviewer_id
+             WHERE f.interview_id = ?
+               AND ia.is_shadowing = 0
+               AND ia.role_in_panel IN ('INTERVIEWER', 'PANEL_LEAD')
+             ORDER BY f.submitted_at ASC",
+            [$interviewId]
+        );
+
+        $completeness = self::getOfficialFeedbackCompleteness($interviewId);
+        $histories = [];
+        foreach ($feedback as $row) {
+            $histories[(int)$row['interviewer_id']] = self::getInterviewerHarshnessHistory((int)$row['interviewer_id']);
+        }
+
+        $result = (new FeedbackNormalizationService())->calculate($feedback, $histories, (int)$completeness['missing']);
+        $snapshotId = self::createSnapshot([
+            'application_id' => (int)$interview['application_id'],
+            'interview_id' => $interviewId,
+            'calculated_by' => $actorUserId,
+            ...$result,
+        ]);
+
+        self::ensureDefaultBenchmarks((int)$interview['job_id'], $actorUserId);
+        self::generateGapSnapshots($snapshotId, (int)$interview['job_id']);
+
+        self::recordAudit([
+            'actor_user_id' => $actorUserId,
+            'actor_role' => $actorRole,
+            'application_id' => (int)$interview['application_id'],
+            'interview_id' => $interviewId,
+            'entity_type' => 'normalized_evaluation_snapshots',
+            'entity_id' => $snapshotId,
+            'action' => empty($result['fallback_reasons'])
+                ? FeedbackGovernanceAuditAction::CALCULATION->value
+                : FeedbackGovernanceAuditAction::FALLBACK_APPLIED->value,
+            'new_values' => [
+                'aggregate_score' => $result['aggregate_score'],
+                'recommendation' => $result['recommendation'],
+                'normalization_status' => $result['normalization_status'],
+            ],
+        ]);
+
+        if ((int)$completeness['missing'] === 0 && (int)$completeness['included'] > 0 && !self::getDebriefForInterview($interviewId)) {
+            $participants = array_map(
+                fn($row) => (int)$row['interviewer_id'],
+                $feedback
+            );
+            $debriefId = self::createDebrief([
+                'application_id' => (int)$interview['application_id'],
+                'interview_id' => $interviewId,
+                'participants' => $participants,
+            ]);
+
+            self::recordAudit([
+                'actor_user_id' => $actorUserId,
+                'actor_role' => $actorRole,
+                'application_id' => (int)$interview['application_id'],
+                'interview_id' => $interviewId,
+                'entity_type' => 'evaluation_debrief_records',
+                'entity_id' => $debriefId,
+                'action' => FeedbackGovernanceAuditAction::DEBRIEF_CREATED->value,
+                'reason' => 'All required interview feedback has been submitted.',
+            ]);
+        }
+
+        return $snapshotId;
+    }
+
     // --- Snapshots ---
     public static function createSnapshot(array $data): int
     {
@@ -248,6 +336,27 @@ final class FeedbackGovernanceRepository
             ]);
         }
     }
+
+    public static function ensureDefaultBenchmarks(int $jobId, ?int $actorUserId = null): void
+    {
+        if (!empty(self::getBenchmarksForJob($jobId))) {
+            return;
+        }
+
+        foreach ([
+            'technical' => 7.0,
+            'communication' => 7.0,
+            'culture_fit' => 7.0,
+        ] as $competency => $score) {
+            self::updateBenchmark($jobId, $competency, [
+                'benchmark_score' => $score,
+                'weight' => 1.0,
+                'source' => 'DEFAULT_FEEDBACK_BENCHMARK',
+                'updated_by' => $actorUserId,
+            ]);
+        }
+    }
+
 
     // --- Gaps ---
     public static function generateGapSnapshots(int $snapshotId, int $jobId): void

@@ -24,6 +24,11 @@
                 <label class="block text-sm font-medium text-primary mb-1">Title</label>
                 <input name="title" value="<?= e($requisition['title'] ?? old('title')) ?>" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
             </div>
+
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">Location</label>
+                <input name="location" value="<?= e($requisition['location'] ?? old('location')) ?>" placeholder="e.g. Remote, New York, NY" class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+            </div>
         </div>
 
         <div>

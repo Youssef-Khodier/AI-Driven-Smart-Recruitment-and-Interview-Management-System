@@ -15,7 +15,7 @@
             <div class="flex items-center gap-6">
                 <div>
                     <span class="text-text-muted text-sm block mb-1">Status</span>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $attempt['status'] === 'COMPLETED' ? 'bg-success-bg text-success' : 'bg-blue-100 text-blue-800' ?>">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium <?= $attempt['status'] === 'SUBMITTED' ? 'bg-success-bg text-success' : 'bg-blue-100 text-blue-800' ?>">
                         <?= e($attempt['status']) ?>
                     </span>
                 </div>

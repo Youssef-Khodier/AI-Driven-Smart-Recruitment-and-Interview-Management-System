@@ -70,7 +70,7 @@ final class InterviewFeedbackRepository
         }
 
         if ($officialCount === 0) {
-            return 'none';
+            return 'NONE';
         }
 
         $feedbackCountArray = Database::fetch(
@@ -80,13 +80,13 @@ final class InterviewFeedbackRepository
         $feedbackCount = (int) ($feedbackCountArray['count'] ?? 0);
 
         if ($feedbackCount === 0) {
-            return 'none';
+            return 'NONE';
         }
 
         if ($feedbackCount >= $officialCount) {
-            return 'complete';
+            return 'COMPLETE';
         }
 
-        return 'partial';
+        return 'PARTIAL';
     }
 }

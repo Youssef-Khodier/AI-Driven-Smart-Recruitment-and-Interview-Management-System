@@ -127,6 +127,7 @@ CREATE TABLE job_requisitions (
   title VARCHAR(180) NOT NULL,
   description TEXT NOT NULL,
   requirements TEXT NOT NULL,
+  location VARCHAR(160) NULL,
   status VARCHAR(40) NOT NULL DEFAULT 'DRAFT',
   created_by BIGINT UNSIGNED NOT NULL,
   approved_by BIGINT UNSIGNED NULL,

@@ -21,7 +21,7 @@
             </div>
             <div class="p-4 md:p-6">
                 <span class="text-text-muted text-xs uppercase tracking-wider block mb-1">Status</span>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border <?= $attempt['status'] === 'COMPLETED' ? 'bg-success-bg text-success border-success/20' : 'bg-blue-50 text-blue-800 border-blue-200' ?>">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border <?= $attempt['status'] === 'SUBMITTED' ? 'bg-success-bg text-success border-success/20' : 'bg-blue-50 text-blue-800 border-blue-200' ?>">
                     <?= e($attempt['status']) ?>
                 </span>
             </div>

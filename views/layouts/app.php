@@ -139,21 +139,18 @@
             <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('dashboard')) ?>">Dashboard</a>
             <?php if ($user = auth_user()): ?>
                 <?php if ($user['role'] === 'HR_ADMIN'): ?>
-                    <?php if (!empty($user['is_department_head'])): ?>
-                        <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.approvals.index')) ?>">Approval Queue</a>
-                    <?php endif; ?>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.department-heads.index')) ?>">Dept Heads</a>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.users.index')) ?>">Users</a>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.requisitions.index')) ?>">Requisitions</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.requisitions.index')) ?>">Recruitment</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.interviews.index')) ?>">Interviews</a>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.reports.pipeline')) ?>">Reports</a>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.audit-log.index')) ?>">Audit</a>
-                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.data-retention.index')) ?>">Retention</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.feedback-governance.index')) ?>">Feedback</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.offers.index')) ?>">Offers</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.compliance.index')) ?>">Compliance</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('hr.users.index')) ?>">Administration</a>
                 <?php endif; ?>
                 <?php if ($user['role'] === 'CANDIDATE'): ?>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('candidate.profile')) ?>">My Profile</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('candidate.jobs.index')) ?>">Open Jobs</a>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('candidate.applications.index')) ?>">My Applications</a>
+                    <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('candidate.onboarding.index')) ?>">Onboarding</a>
                 <?php endif; ?>
                 <?php if ($user['role'] === 'INTERVIEWER' || $user['role'] === 'JUNIOR_STAFF'): ?>
                     <a class="transition-colors rounded-md transition-all duration-200 active:scale-95 duration-150 px-2 py-1 text-text-muted hover:bg-surface-container-low hover:text-primary" href="<?= e(url('interviewer.interviews.index')) ?>">My Interviews</a>

@@ -9,6 +9,7 @@ use App\Core\Auth;
 use App\Enums\FinalEvaluationRecommendation;
 use App\Policies\FinalEvaluationPolicy;
 use App\Repositories\FinalEvaluationRepository;
+use App\Repositories\FeedbackGovernanceRepository;
 use App\Repositories\PostOfferAuditRepository;
 use App\Enums\PostOfferAuditAction;
 use App\Core\Database;
@@ -38,6 +39,11 @@ final class HrFinalEvaluationController extends Controller
         $evidence = FinalEvaluationRepository::getEvidence($id);
         $scoreData = FinalEvaluationRepository::calculateAggregateScore($evidence);
         $evaluation = FinalEvaluationRepository::findByApplicationId($id);
+        $latestSnapshot = FeedbackGovernanceRepository::getLatestSnapshot($id);
+        if ($latestSnapshot) {
+            $scoreData['score'] = (float)$latestSnapshot['aggregate_score'];
+            $scoreData['has_partial_evidence'] = $scoreData['has_partial_evidence'] || (int)$latestSnapshot['missing_feedback_count'] > 0;
+        }
 
         $canCreateOffer = false;
         if ($evaluation && in_array($evaluation['recommendation'], [FinalEvaluationRecommendation::HIRE->value, FinalEvaluationRecommendation::STRONG_HIRE->value])) {
@@ -54,6 +60,7 @@ final class HrFinalEvaluationController extends Controller
             'evidence' => $evidence,
             'scoreData' => $scoreData,
             'evaluation' => $evaluation,
+            'latestSnapshot' => $latestSnapshot,
             'canCreateOffer' => $canCreateOffer,
             'recommendations' => FinalEvaluationRecommendation::values()
         ]);
@@ -72,6 +79,11 @@ final class HrFinalEvaluationController extends Controller
 
         $evidence = FinalEvaluationRepository::getEvidence($id);
         $scoreData = FinalEvaluationRepository::calculateAggregateScore($evidence);
+        $latestSnapshot = FeedbackGovernanceRepository::getLatestSnapshot($id);
+        if ($latestSnapshot) {
+            $scoreData['score'] = (float)$latestSnapshot['aggregate_score'];
+            $scoreData['has_partial_evidence'] = $scoreData['has_partial_evidence'] || (int)$latestSnapshot['missing_feedback_count'] > 0;
+        }
 
         if ($scoreData['has_partial_evidence'] && !$request->boolean('partial_evidence_acknowledged')) {
             return Response::redirect(url('hr.evaluations.show', [$id]))->with('error', 'You must acknowledge partial evidence to proceed.');

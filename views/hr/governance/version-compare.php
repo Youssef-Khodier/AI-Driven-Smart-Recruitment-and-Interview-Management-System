@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-bold text-primary">Compare Versions</h1>
             <p class="text-text-muted mt-2 text-lg">Comparing v<?= e($v1['version_number']) ?> &harr; v<?= e($v2['version_number']) ?></p>
         </div>
-        <a href="<?= e(url('hr.versions.history', ['id' => $requisition['job_id']])) ?>" class="text-info hover:underline text-sm font-medium">&larr; Back to Version History</a>
+        <a href="<?= e(url('hr.requisitions.versions.index', [$requisition['job_id']])) ?>" class="text-info hover:underline text-sm font-medium">&larr; Back to Version History</a>
     </div>
 
     <div class="bg-card-surface border border-border-base rounded-xl shadow-sm overflow-hidden">

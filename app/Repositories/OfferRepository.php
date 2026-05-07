@@ -39,6 +39,18 @@ final class OfferRepository
         );
     }
 
+    public static function getRevisionChain(int $applicationId): array
+    {
+        return Database::fetchAll(
+            'SELECT o.*, creator.name AS created_by_name
+             FROM offers o
+             JOIN users creator ON o.created_by = creator.user_id
+             WHERE o.application_id = ?
+             ORDER BY o.offer_sequence ASC, o.offer_id ASC',
+            [$applicationId]
+        );
+    }
+
     public static function createDraft(int $applicationId, string $offerType, float $ctc, float $bonus, float $stockOptions, string $expiryDate, int $createdBy, ?int $replacesOfferId = null): int
     {
         $existingOffers = self::findByApplicationId($applicationId);

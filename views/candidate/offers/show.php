@@ -62,6 +62,14 @@
                     </div>
                 </div>
             <?php endif; ?>
+
+            <?php if ($offer['status'] === 'ACCEPTED' && !empty($onboarding)): ?>
+                <div class="border-t border-border-base pt-6 mt-2 text-center">
+                    <a href="<?= e(url('candidate.onboarding.show', [$onboarding['onboarding_id']])) ?>" class="inline-flex items-center justify-center gap-2 bg-secondary-container hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-medium shadow-md">
+                        <span class="material-symbols-outlined">how_to_reg</span> Open Welcome Portal
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

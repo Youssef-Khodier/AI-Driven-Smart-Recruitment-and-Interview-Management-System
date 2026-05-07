@@ -45,7 +45,12 @@
                             <li class="bg-surface-container-low p-3 rounded-lg border border-border-base text-sm">
                                 <div class="flex justify-between items-center mb-1">
                                     <span class="font-medium text-primary"><?= e($i['interview_type']) ?></span>
-                                    <span class="font-bold text-primary bg-white px-2 py-0.5 rounded border border-border-base"><?= e($i['overall_score']) ?>/5</span>
+                                    <span class="font-bold text-primary bg-white px-2 py-0.5 rounded border border-border-base"><?= e($i['overall_score']) ?>/10</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2 mb-2 text-xs">
+                                    <span class="text-text-muted">Tech <?= e($i['technical_score']) ?>/10</span>
+                                    <span class="text-text-muted">Comm <?= e($i['communication_score']) ?>/10</span>
+                                    <span class="text-text-muted">Culture <?= e($i['culture_fit_score']) ?>/10</span>
                                 </div>
                                 <span class="text-xs text-text-muted flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">person</span> <?= e($i['interviewer_name']) ?></span>
                             </li>
@@ -73,6 +78,29 @@
                     <?= $scoreData['score'] !== null ? e($scoreData['score']) : 'N/A' ?>
                 </div>
             </div>
+
+            <?php if (!empty($latestSnapshot)): ?>
+                <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6">
+                    <h2 class="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-info">analytics</span> Normalized Feedback
+                    </h2>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-text-muted">Normalized aggregate</span>
+                        <span class="font-bold text-primary"><?= e(number_format((float)$latestSnapshot['aggregate_score'], 1)) ?>/100</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-text-muted">Recommendation state</span>
+                        <span class="font-semibold text-primary"><?= e($latestSnapshot['recommendation']) ?></span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-text-muted">Consensus readiness</span>
+                        <span class="font-semibold <?= (int)$latestSnapshot['missing_feedback_count'] === 0 ? 'text-success' : 'text-warning' ?>">
+                            <?= (int)$latestSnapshot['missing_feedback_count'] === 0 ? 'READY' : 'WAITING' ?>
+                        </span>
+                    </div>
+                    <a href="<?= e(url('hr.governance.show', [$application['application_id']])) ?>" class="inline-flex mt-4 text-secondary hover:underline text-sm font-medium">View governance details</a>
+                </div>
+            <?php endif; ?>
 
             <?php if ($evaluation): ?>
                 <div class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6">

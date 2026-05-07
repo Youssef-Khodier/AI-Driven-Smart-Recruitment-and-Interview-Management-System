@@ -1,5 +1,4 @@
 <?php $title = 'Resolve Duplicate Candidate'; ?>
-<?php ob_start(); ?>
 <?php
     $cA = $suggestion['candidate_a'];
     $cB = $suggestion['candidate_b'];
@@ -148,5 +147,3 @@
         }
     }
 </script>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Core\Database;
 use App\Enums\FinalEvaluationRecommendation;
+use App\Enums\FinalEvaluationStatus;
 
 final class FinalEvaluationRepository
 {
@@ -45,8 +46,14 @@ final class FinalEvaluationRepository
         $interviewTotal = 0;
         $interviewCount = count($interviews);
         foreach ($interviews as $i) {
-            // Assuming feedback overall_score is 1-5. Normalize to 100: (score / 5) * 100
-            $interviewTotal += ((float)$i['overall_score'] / 5) * 100;
+            // Interview feedback dimensions are collected on a 0-10 scale.
+            $dimensionScore = (
+                (float)$i['technical_score'] +
+                (float)$i['communication_score'] +
+                (float)$i['culture_fit_score'] +
+                (float)$i['overall_score']
+            ) / 4;
+            $interviewTotal += ($dimensionScore / 10) * 100;
         }
 
         $avgAssessment = $assessmentCount > 0 ? $assessmentTotal / $assessmentCount : null;
@@ -79,6 +86,7 @@ final class FinalEvaluationRepository
                 'application_id' => $applicationId,
                 'aggregate_score' => $aggregateScore,
                 'recommendation' => $recommendation,
+                'status' => self::statusForRecommendation($recommendation),
                 'decision_notes' => $decisionNotes,
                 'partial_evidence_acknowledged' => (int)$partialEvidenceAcknowledged,
                 'evaluated_by' => $evaluatedBy,
@@ -86,7 +94,25 @@ final class FinalEvaluationRepository
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
 
-            if (in_array($recommendation, [FinalEvaluationRecommendation::NO_HIRE->value, FinalEvaluationRecommendation::STRONG_NO_HIRE->value])) {
+            $actor = Database::fetch('SELECT role FROM users WHERE user_id = ?', [$evaluatedBy]);
+            Database::insert('compliance_audit_events', [
+                'actor_user_id' => $evaluatedBy,
+                'actor_role' => $actor['role'] ?? null,
+                'entity_type' => 'FINAL_EVALUATION',
+                'entity_id' => $evaluationId,
+                'action' => 'FINAL_EVALUATION_SCORED',
+                'old_values' => null,
+                'new_values' => json_encode([
+                    'application_id' => $applicationId,
+                    'aggregate_score' => $aggregateScore,
+                    'recommendation' => $recommendation,
+                    'status' => self::statusForRecommendation($recommendation),
+                ]),
+                'reason' => 'Final evaluation score and recommendation saved.',
+                'created_at' => date('Y-m-d H:i:s'),
+            ]);
+
+            if ($recommendation === FinalEvaluationRecommendation::NO_HIRE->value) {
                 self::updateApplicationStatus($applicationId, 'REJECTED', $evaluatedBy, 'Rejected by final evaluation');
             }
 
@@ -111,5 +137,16 @@ final class FinalEvaluationRepository
                 'created_at' => date('Y-m-d H:i:s')
             ]);
         }
+    }
+
+    private static function statusForRecommendation(string $recommendation): string
+    {
+        return match ($recommendation) {
+            FinalEvaluationRecommendation::STRONG_HIRE->value => FinalEvaluationStatus::STRONG_HIRE->value,
+            FinalEvaluationRecommendation::HIRE->value => FinalEvaluationStatus::HIRE->value,
+            FinalEvaluationRecommendation::HOLD->value => FinalEvaluationStatus::HOLD->value,
+            FinalEvaluationRecommendation::NO_HIRE->value => FinalEvaluationStatus::NO_HIRE->value,
+            default => FinalEvaluationStatus::EVALUATED->value,
+        };
     }
 }

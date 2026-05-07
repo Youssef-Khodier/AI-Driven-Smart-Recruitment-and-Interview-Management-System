@@ -40,16 +40,16 @@ class HrScreeningController extends Controller {
         $requisition = $this->getRequisition($id);
         if (!in_array($requisition['status'], ['APPROVED', 'OPEN'])) {
             Session::flash('error', 'Screening configuration is only available for APPROVED or OPEN requisitions.');
-            Response::redirect("/hr/requisitions/{$id}");
+            return Response::redirect("/hr/requisitions/{$id}");
             return;
         }
 
         $config = $this->configRepo->findActiveByJobId($id);
         $skills = $config ? $this->configRepo->getSkills($config['config_id']) : [];
         $thresholds = $config ? $this->configRepo->getThresholds($config['config_id']) : [];
-        $errors = Session::getFlash('errors') ?: [];
+        $errors = Session::flashed('errors') ?: [];
 
-        Response::view('hr/screening/config', [
+        return Response::view('hr/screening/config', [
             'requisition' => $requisition,
             'config' => $config,
             'skills' => $skills,
@@ -67,7 +67,7 @@ class HrScreeningController extends Controller {
         $requisition = $this->getRequisition($id);
         if (!in_array($requisition['status'], ['APPROVED', 'OPEN'])) {
             Session::flash('error', 'Screening configuration is only available for APPROVED or OPEN requisitions.');
-            Response::redirect("/hr/requisitions/{$id}");
+            return Response::redirect("/hr/requisitions/{$id}");
             return;
         }
 
@@ -120,7 +120,7 @@ class HrScreeningController extends Controller {
         if (!empty($errors)) {
             Session::flash('errors', $errors);
             Session::flash('old_input', $data);
-            Response::redirect("/hr/requisitions/{$id}/screening");
+            return Response::redirect("/hr/requisitions/{$id}/screening");
             return;
         }
 
@@ -149,7 +149,7 @@ class HrScreeningController extends Controller {
         $this->auditRepo->log($id, $userId, $action, 'CONFIG', $newConfigId, $oldValues, $newValues);
 
         Session::flash('success', 'Screening configuration saved successfully.');
-        Response::redirect("/hr/requisitions/{$id}/screening");
+        return Response::redirect("/hr/requisitions/{$id}/screening");
     }
 
     public function recalculate($request, $id) {
@@ -162,7 +162,7 @@ class HrScreeningController extends Controller {
         $config = $this->configRepo->findActiveByJobId($id);
         if (!$config) {
             Session::flash('error', 'Please configure screening rules first.');
-            Response::redirect("/hr/requisitions/{$id}/screening");
+            return Response::redirect("/hr/requisitions/{$id}/screening");
             return;
         }
 
@@ -177,7 +177,7 @@ class HrScreeningController extends Controller {
         } else {
             Session::flash('success', "Match scores recalculated for {$result['updated_count']} candidates.");
         }
-        Response::redirect("/hr/requisitions/{$id}/shortlist");
+        return Response::redirect("/hr/requisitions/{$id}/shortlist");
     }
 
     public function shortlist($request, $id) {
@@ -190,14 +190,14 @@ class HrScreeningController extends Controller {
         $config = $this->configRepo->findActiveByJobId($id);
         if (!$config) {
             Session::flash('error', 'Please configure screening rules first.');
-            Response::redirect("/hr/requisitions/{$id}/screening");
+            return Response::redirect("/hr/requisitions/{$id}/screening");
             return;
         }
 
         $service = new \App\Services\ScreeningScoreService();
         $applications = $service->getShortlist($id);
 
-        Response::view('hr/screening/shortlist', [
+        return Response::view('hr/screening/shortlist', [
             'requisition' => $requisition,
             'config' => $config,
             'applications' => $applications
@@ -213,7 +213,7 @@ class HrScreeningController extends Controller {
         $config = $this->configRepo->findActiveByJobId($id);
         if (!$config) {
             Session::flash('error', 'Please configure screening rules first.');
-            Response::redirect("/hr/requisitions/{$id}/screening");
+            return Response::redirect("/hr/requisitions/{$id}/screening");
             return;
         }
 
@@ -243,7 +243,7 @@ class HrScreeningController extends Controller {
             }
         }
 
-        Response::view('hr/screening/triage-confirm', [
+        return Response::view('hr/screening/triage-confirm', [
             'requisition' => $requisition,
             'preview' => $preview
         ]);
@@ -264,11 +264,11 @@ class HrScreeningController extends Controller {
             $result = $service->executeTriage($id, $userId);
         } catch (\Exception $e) {
             Session::flash('error', $e->getMessage());
-            Response::redirect("/hr/requisitions/{$id}/screening");
+            return Response::redirect("/hr/requisitions/{$id}/screening");
             return;
         }
 
-        Response::view('hr/screening/triage-results', [
+        return Response::view('hr/screening/triage-results', [
             'requisition' => $requisition,
             'results' => $result
         ]);
@@ -288,7 +288,7 @@ class HrScreeningController extends Controller {
 
         $this->auditRepo->log($id, $userId, ScreeningAuditAction::DUPLICATE_CHECK_RUN->value, null, null, null, ['suggestions_found' => count($suggestions)]);
 
-        Response::view('hr/screening/duplicates', [
+        return Response::view('hr/screening/duplicates', [
             'requisition' => $requisition,
             'suggestions' => $suggestions
         ]);
@@ -307,7 +307,7 @@ class HrScreeningController extends Controller {
             $candidateB = $request->query('candidate_b');
             
             if (!$candidateA || !$candidateB) {
-                Response::redirect("/hr/requisitions/{$id}/duplicates");
+                return Response::redirect("/hr/requisitions/{$id}/duplicates");
                 return;
             }
 
@@ -318,7 +318,7 @@ class HrScreeningController extends Controller {
             $candidates = Database::fetchAll($sql, [$candidateA, $candidateB]);
             
             if (count($candidates) !== 2) {
-                Response::redirect("/hr/requisitions/{$id}/duplicates");
+                return Response::redirect("/hr/requisitions/{$id}/duplicates");
                 return;
             }
 
@@ -331,10 +331,10 @@ class HrScreeningController extends Controller {
                 'confidence' => $request->query('confidence', 'LOW')
             ];
 
-            Response::view('hr/screening/duplicate-resolve', [
+            return Response::view('hr/screening/duplicate-resolve', [
                 'requisition' => $requisition,
                 'suggestion' => $suggestion,
-                'errors' => Session::getFlash('errors') ?: []
+                'errors' => Session::flashed('errors') ?: []
             ]);
             return;
         }
@@ -367,7 +367,7 @@ class HrScreeningController extends Controller {
         if (!empty($errors)) {
             Session::flash('errors', $errors);
             $url = "/hr/requisitions/{$id}/duplicates/resolve?candidate_a={$candidateA}&candidate_b={$candidateB}&confidence={$confidence}";
-            Response::redirect($url);
+            return Response::redirect($url);
             return;
         }
 
@@ -385,7 +385,38 @@ class HrScreeningController extends Controller {
         ]);
 
         Session::flash('success', 'Duplicate decision recorded successfully.');
-        Response::redirect("/hr/requisitions/{$id}/duplicates");
+        return Response::redirect("/hr/requisitions/{$id}/duplicates");
     }
-    public function audit($request, $id) {}
+    public function audit($request, $id) {
+        $this->requireRole('HR_ADMIN');
+        if (!ScreeningPolicy::canViewAudit()) {
+            throw new \App\Core\HttpException("Forbidden", 403);
+        }
+
+        $requisition = $this->getRequisition((int) $id);
+        $filters = [
+            'job_id' => (int) $id,
+            'action_type' => $request->input('action_type'),
+            'date_from' => $request->input('date_from'),
+            'date_to' => $request->input('date_to'),
+        ];
+
+        $page = max(1, (int) $request->input('page', 1));
+        $perPage = 25;
+        $result = $this->auditRepo->search($filters, $page, $perPage);
+        $totalRecords = (int) ($result['total'] ?? 0);
+
+        return $this->view('hr/screening/audit', [
+            'requisition' => $requisition,
+            'records' => $result['data'] ?? [],
+            'filters' => $filters,
+            'pagination' => [
+                'current' => $page,
+                'total' => max(1, (int) ceil($totalRecords / $perPage)),
+                'total_records' => $totalRecords,
+            ],
+            'title' => 'Screening Audit Log',
+        ]);
+    }
 }
+

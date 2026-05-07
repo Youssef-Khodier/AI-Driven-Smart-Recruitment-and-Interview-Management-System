@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-bold text-primary">Version <?= e($version['version_number']) ?></h1>
             <p class="text-text-muted mt-2 text-lg">Created by <?= e($version['creator_name']) ?> on <?= e(date('M j, Y, g:i a', strtotime($version['created_at']))) ?></p>
         </div>
-        <a href="<?= e(url('hr.versions.history', ['id' => $requisition['job_id']])) ?>" class="text-info hover:underline text-sm font-medium">&larr; Back to Version History</a>
+        <a href="<?= e(url('hr.requisitions.versions.index', [$requisition['job_id']])) ?>" class="text-info hover:underline text-sm font-medium">&larr; Back to Version History</a>
     </div>
 
     <div class="bg-card-surface border border-border-base rounded-xl shadow-sm overflow-hidden">

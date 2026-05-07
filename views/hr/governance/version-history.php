@@ -20,7 +20,7 @@
         </div>
     <?php endif; ?>
 
-    <form action="<?= e(url('hr.versions.compare', ['id' => $requisition['job_id']])) ?>" method="GET" class="space-y-4" id="compare-form">
+        <form action="<?= e(url('hr.requisitions.versions.compare', [$requisition['job_id']])) ?>" method="GET" class="space-y-4" id="compare-form">
         <div class="flex justify-end">
             <button type="submit" class="bg-primary hover:bg-primary-light text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50" id="compare-btn" disabled>
                 Compare Selected
@@ -58,7 +58,7 @@
                                 <?= e(substr(strip_tags($version['description_body']), 0, 100)) ?><?= strlen(strip_tags($version['description_body'])) > 100 ? '...' : '' ?>
                             </td>
                             <td class="px-6 py-4 text-right space-x-3">
-                                <a href="<?= e(url('hr.versions.show', ['id' => $requisition['job_id'], 'versionId' => $version['version_id']])) ?>" class="text-info hover:text-blue-700 font-medium text-sm transition-colors">
+                            <a href="<?= e(url('hr.requisitions.versions.show', [$requisition['job_id'], $version['version_id']])) ?>" class="text-info hover:text-blue-700 font-medium text-sm transition-colors">
                                     View
                                 </a>
                             </td>

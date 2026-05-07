@@ -310,7 +310,7 @@ final class AssessmentController extends Controller
 
     public function submitCandidate(Request $request, string $id): Response
     {
-        $this->requireCandidateAttempt((int) $id);
+        $attempt = $this->requireCandidateAttempt((int) $id);
         if ($this->expireIfNeeded((int) $id)) {
             return $this->redirect(url('candidate.assessments.result', [$id]));
         }
@@ -318,6 +318,7 @@ final class AssessmentController extends Controller
         $score = (new SimulatedAssessmentScorer())->score((int) $id);
         Database::query('UPDATE submissions SET finalized_at = ?, updated_at = ? WHERE ca_id = ?', [$now, $now, $id]);
         Database::update('candidate_assessments', ['status' => AssessmentAttemptStatus::SUBMITTED->value, 'score' => $score, 'end_time' => $now, 'updated_at' => $now], 'ca_id = ?', [(int) $id]);
+        $this->recordAssessmentScoreAudit((int) $attempt['candidate_id'], (int) $id, $attempt['status'] ?? null, AssessmentAttemptStatus::SUBMITTED->value, $score, 'Assessment submitted by candidate.');
         Session::flash('status', 'Assessment submitted. Your score is simulated and advisory.');
 
         return $this->redirect(url('candidate.assessments.result', [$id]));
@@ -347,7 +348,7 @@ final class AssessmentController extends Controller
     public function focusEvent(Request $request, string $id): Response
     {
         $this->requireCandidateAttempt((int) $id);
-        $data = $this->validate($request->body(), ['event_type' => ['required', ['in', ['FOCUS_LOST', 'FOCUS_RETURNED']]], 'visible_state' => []]);
+        $data = $this->validate($request->body(), ['event_type' => ['required', ['in', ['FOCUS_LOST', 'FOCUS_RETURNED', 'TAB_SWITCH']]], 'visible_state' => []]);
         $now = date('Y-m-d H:i:s');
         Database::insert('assessment_integrity_events', ['ca_id' => $id, 'event_type' => $data['event_type'], 'occurred_at' => $now, 'metadata' => json_encode(['visible_state' => $data['visible_state'] ?? null]), 'created_at' => $now]);
         Session::flash('status', 'Simulated proctoring event recorded.');
@@ -396,6 +397,7 @@ final class AssessmentController extends Controller
         $score = (new SimulatedAssessmentScorer())->score($id, $attempt['expires_at']);
         Database::query('UPDATE submissions SET finalized_at = ?, updated_at = ? WHERE ca_id = ? AND saved_at <= ?', [$now, $now, $id, $attempt['expires_at']]);
         Database::update('candidate_assessments', ['status' => AssessmentAttemptStatus::EXPIRED->value, 'score' => $score, 'end_time' => $attempt['expires_at'], 'updated_at' => $now], 'ca_id = ?', [$id]);
+        $this->recordAssessmentScoreAudit((int) $attempt['candidate_id'], $id, $attempt['status'] ?? null, AssessmentAttemptStatus::EXPIRED->value, $score, 'Assessment expired and was scored.');
 
         return true;
     }
@@ -410,6 +412,23 @@ final class AssessmentController extends Controller
         $score = (new SimulatedAssessmentScorer())->score($id, $now);
         Database::query('UPDATE submissions SET finalized_at = ?, updated_at = ? WHERE ca_id = ? AND saved_at <= ?', [$now, $now, $id, $now]);
         Database::update('candidate_assessments', ['status' => AssessmentAttemptStatus::EXPIRED->value, 'score' => $score, 'end_time' => $now, 'remaining_seconds' => 0, 'updated_at' => $now], 'ca_id = ?', [$id]);
+        $this->recordAssessmentScoreAudit((int) $attempt['candidate_id'], $id, $attempt['status'] ?? null, AssessmentAttemptStatus::EXPIRED->value, $score, 'Assessment expired and was scored.');
+    }
+
+    private function recordAssessmentScoreAudit(int $actorId, int $attemptId, ?string $oldStatus, string $newStatus, float $score, string $reason): void
+    {
+        $actor = Database::fetch('SELECT role FROM users WHERE user_id = ?', [$actorId]);
+        Database::insert('compliance_audit_events', [
+            'actor_user_id' => $actorId,
+            'actor_role' => $actor['role'] ?? null,
+            'entity_type' => 'CANDIDATE_ASSESSMENT',
+            'entity_id' => $attemptId,
+            'action' => 'ASSESSMENT_SCORE_RECORDED',
+            'old_values' => json_encode(['status' => $oldStatus]),
+            'new_values' => json_encode(['status' => $newStatus, 'score' => $score]),
+            'reason' => $reason,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     private function requireCandidateAttempt(int $id): array

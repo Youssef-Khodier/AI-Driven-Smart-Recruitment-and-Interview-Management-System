@@ -54,7 +54,7 @@ final class AuditLogRepository
 
     public static function entities(): array
     {
-        return ['ACCOUNT', 'INTERVIEW', 'POST_OFFER', 'APPLICATION_STATUS', 'JOB_REQUISITION_STATUS', 'SCREENING', 'REQUISITION_GOVERNANCE'];
+        return ['ACCOUNT', 'INTERVIEW', 'POST_OFFER', 'APPLICATION_STATUS', 'JOB_REQUISITION_STATUS', 'SCREENING', 'REQUISITION_GOVERNANCE', 'FEEDBACK_GOVERNANCE', 'COMPLIANCE'];
     }
 
     public static function formatSummary(?string $raw, string $action): string
@@ -132,6 +132,16 @@ final class AuditLogRepository
                 SELECT rga.created_at AS occurred_at, rga.actor_user_id, actor.name AS actor_name, actor.email AS actor_email,
                     'REQUISITION_GOVERNANCE' AS entity_type, rga.job_id AS entity_id, rga.action, COALESCE(rga.new_values, rga.old_values) AS raw_summary
                 FROM requisition_governance_audit rga
-                JOIN users actor ON actor.user_id = rga.actor_user_id";
+                JOIN users actor ON actor.user_id = rga.actor_user_id
+                UNION ALL
+                SELECT fga.created_at AS occurred_at, fga.actor_user_id, COALESCE(actor.name, 'System') AS actor_name, COALESCE(actor.email, '') AS actor_email,
+                    'FEEDBACK_GOVERNANCE' AS entity_type, fga.entity_id, fga.action, COALESCE(fga.new_values, fga.old_values) AS raw_summary
+                FROM feedback_governance_audit_records fga
+                LEFT JOIN users actor ON actor.user_id = fga.actor_user_id
+                UNION ALL
+                SELECT cae.created_at AS occurred_at, cae.actor_user_id, actor.name AS actor_name, actor.email AS actor_email,
+                    'COMPLIANCE' AS entity_type, cae.entity_id, cae.action, COALESCE(cae.new_values, cae.old_values) AS raw_summary
+                FROM compliance_audit_events cae
+                JOIN users actor ON actor.user_id = cae.actor_user_id";
     }
 }

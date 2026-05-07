@@ -8,6 +8,7 @@ use App\Core\Response;
 use App\Core\HttpException;
 use App\Core\Session;
 use App\Core\Database;
+use App\Repositories\OnboardingRepository;
 
 /**
  * Candidate-facing onboarding welcome portal.
@@ -88,7 +89,7 @@ final class CandidateOnboardingController extends Controller
         $candidateId = (int)$actor['user_id'];
 
         $onboarding = Database::fetch(
-            'SELECT ob.*
+            'SELECT ob.*, o.application_id, o.offer_id
              FROM onboarding ob
              JOIN offers o ON ob.offer_id = o.offer_id
              JOIN applications a ON o.application_id = a.application_id
@@ -105,20 +106,15 @@ final class CandidateOnboardingController extends Controller
             return $this->redirect(url('candidate.onboarding.show', [$onboardingId]))->with('error', 'Invalid task.');
         }
 
-        // Track completed tasks in session per onboarding record
-        $sessionKey = 'onboarding_tasks_' . $onboardingId;
-        $completed = $_SESSION[$sessionKey] ?? [];
-        if (!is_array($completed)) {
-            $completed = [];
-        }
-
-        if (!in_array($taskKey, $completed)) {
-            $completed[] = $taskKey;
-            $_SESSION[$sessionKey] = $completed;
-        }
-
-        // If all tasks are done, update the DB boolean
         $allTasks = array_column($this->getAllTaskDefinitions(), 'key');
+        if (!in_array($taskKey, $allTasks, true)) {
+            return $this->redirect(url('candidate.onboarding.show', [$onboardingId]))->with('error', 'Invalid task.');
+        }
+
+        OnboardingRepository::completeTask($onboarding, $taskKey, $candidateId);
+        $completed = OnboardingRepository::completedTaskKeys($onboardingId);
+
+        // If all tasks are done, update the DB boolean.
         if (count(array_intersect($allTasks, $completed)) >= count($allTasks)) {
             Database::update('onboarding', [
                 'documents_completed' => 1,
@@ -135,18 +131,15 @@ final class CandidateOnboardingController extends Controller
      */
     private function getOnboardingTasks(array $onboarding): array
     {
-        $onboardingId = $onboarding['onboarding_id'];
-        $sessionKey = 'onboarding_tasks_' . $onboardingId;
-        $completed = $_SESSION[$sessionKey] ?? [];
-        if (!is_array($completed)) {
-            $completed = [];
-        }
+        $onboardingId = (int)$onboarding['onboarding_id'];
 
-        // If documents_completed is true in DB, mark all as done
+        // If documents_completed is true in DB, mark all as done.
         if (!empty($onboarding['documents_completed'])) {
             $allTasks = $this->getAllTaskDefinitions();
             return array_map(fn($t) => array_merge($t, ['completed' => true]), $allTasks);
         }
+
+        $completed = OnboardingRepository::completedTaskKeys($onboardingId);
 
         return array_map(function ($task) use ($completed) {
             $task['completed'] = in_array($task['key'], $completed);

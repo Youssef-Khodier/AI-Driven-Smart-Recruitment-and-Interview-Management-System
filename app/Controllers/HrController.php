@@ -142,6 +142,7 @@ final class HrController extends Controller
         $data = $this->validate($request->body(), [
             'department_id' => ['required'],
             'title' => ['required', ['max', 180]],
+            'location' => [['max', 160]],
             'description' => ['required'],
             'requirements' => ['required'],
         ]);
@@ -149,6 +150,7 @@ final class HrController extends Controller
         $id = Database::insert('job_requisitions', [
             'department_id' => $data['department_id'],
             'title' => $data['title'],
+            'location' => $data['location'] ?? null,
             'description' => $data['description'],
             'requirements' => $data['requirements'],
             'status' => JobRequisitionStatus::DRAFT->value,
@@ -192,6 +194,7 @@ final class HrController extends Controller
         $data = $this->validate($request->body(), [
             'department_id' => ['required'],
             'title' => ['required', ['max', 180]],
+            'location' => [['max', 160]],
             'description' => ['required'],
             'requirements' => ['required'],
         ]);
@@ -208,6 +211,7 @@ final class HrController extends Controller
             }
         }
 
+        $data['location'] = $data['location'] ?? null;
         Database::update('job_requisitions', $data, 'job_id = ?', [(int) $id]);
         Session::flash('status', $flashMessage);
 

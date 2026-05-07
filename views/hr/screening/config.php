@@ -1,5 +1,4 @@
 <?php $title = 'Configure Screening Rules'; ?>
-<?php ob_start(); ?>
 <div class="max-w-4xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
@@ -22,7 +21,7 @@
         </div>
     <?php endif; ?>
 
-    <?php if ($flash = \App\Core\Session::getFlash('success')): ?>
+    <?php if ($flash = \App\Core\Session::flashed('success')): ?>
         <div class="bg-success-bg border border-success/30 text-success-dark p-4 rounded-lg text-sm mb-4">
             <?= e($flash) ?>
         </div>
@@ -39,7 +38,7 @@
             </div>
             <div class="p-6 space-y-4" id="skills-container">
                 <?php 
-                $oldInput = \App\Core\Session::getFlash('old_input');
+                $oldInput = \App\Core\Session::flashed('old_input');
                 $oldSkills = $oldInput['skills'] ?? $skills;
                 if (empty($oldSkills)) {
                     $oldSkills = [['skill_name' => '', 'weight' => '', 'evidence_field' => 'skill_keywords']];
@@ -230,5 +229,3 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

@@ -5,8 +5,9 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Core\Database;
 use App\Core\Auth;
-use App\Core\Csrf;
 use App\Core\HttpException;
+use App\Core\Response;
+use App\Core\Session;
 use App\Core\View;
 use App\Repositories\GovernanceRepository;
 use App\Policies\GovernancePolicy;
@@ -34,14 +35,13 @@ class HrGovernanceController extends Controller
         }
 
         $requisitions = $this->repo->getPendingApprovals($user['department_id']);
-        return View::render('hr/governance/approval-queue', ['requisitions' => $requisitions]);
+        return $this->view('hr/governance/approval-queue', ['requisitions' => $requisitions]);
     }
 
     public function approveForm($request, $id)
     {
         $user = Auth::user();
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT r.*, d.name AS department_name, u.name AS creator_name FROM job_requisitions r JOIN departments d ON d.department_id = r.department_id JOIN users u ON u.user_id = r.created_by WHERE r.job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT r.*, d.name AS department_name, u.name AS creator_name FROM job_requisitions r JOIN departments d ON d.department_id = r.department_id JOIN users u ON u.user_id = r.created_by WHERE r.job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -51,15 +51,13 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        return View::render('hr/governance/approve-form', ['requisition' => $requisition]);
+        return $this->view('hr/governance/approve-form', ['requisition' => $requisition]);
     }
 
     public function approveRequisition($request, $id)
     {
-        Csrf::verify($request['csrf_token'] ?? '');
         $user = Auth::user();
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -69,22 +67,21 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $comments = $request['comments'] ?? null;
+        $comments = $request->input('comments');
         $this->repo->recordApprovalStep($id, $user['user_id'], ApprovalDecision::APPROVED->value, $comments);
         
-        $db->query("UPDATE job_requisitions SET status = ?, approved_by = ?, approved_at = NOW() WHERE job_id = ?", [JobRequisitionStatus::APPROVED->value, $user['user_id'], $id]);
+        Database::query("UPDATE job_requisitions SET status = ?, approved_by = ?, approved_at = NOW() WHERE job_id = ?", [JobRequisitionStatus::APPROVED->value, $user['user_id'], $id]);
         
         $this->repo->recordGovernanceAudit($id, $user['user_id'], GovernanceAuditAction::REQUISITION_APPROVED->value, null, ['status' => JobRequisitionStatus::APPROVED->value], $comments);
 
-        return $this->redirect('/hr/approvals', 'Requisition approved successfully.');
+        Session::flash('status', 'Requisition approved successfully.');
+        return Response::redirect(url('hr.approvals.index'));
     }
 
     public function rejectRequisition($request, $id)
     {
-        Csrf::verify($request['csrf_token'] ?? '');
         $user = Auth::user();
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -94,14 +91,15 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $comments = $request['comments'] ?? null;
+        $comments = $request->input('comments');
         $this->repo->recordApprovalStep($id, $user['user_id'], ApprovalDecision::REJECTED->value, $comments);
         
-        $db->query("UPDATE job_requisitions SET status = ? WHERE job_id = ?", [JobRequisitionStatus::REJECTED->value, $id]);
+        Database::query("UPDATE job_requisitions SET status = ? WHERE job_id = ?", [JobRequisitionStatus::REJECTED->value, $id]);
         
         $this->repo->recordGovernanceAudit($id, $user['user_id'], GovernanceAuditAction::REQUISITION_REJECTED->value, null, ['status' => JobRequisitionStatus::REJECTED->value], $comments);
 
-        return $this->redirect('/hr/approvals', 'Requisition rejected.');
+        Session::flash('status', 'Requisition rejected.');
+        return Response::redirect(url('hr.approvals.index'));
     }
 
     public function versionHistory($request, $id)
@@ -111,8 +109,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -120,7 +117,7 @@ class HrGovernanceController extends Controller
 
         $versions = $this->repo->getVersionHistory($id);
 
-        return View::render('hr/governance/version-history', [
+        return $this->view('hr/governance/version-history', [
             'requisition' => $requisition,
             'versions' => $versions
         ]);
@@ -133,8 +130,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -146,7 +142,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(404, 'Version Not Found');
         }
 
-        return View::render('hr/governance/version-show', [
+        return $this->view('hr/governance/version-show', [
             'requisition' => $requisition,
             'version' => $version
         ]);
@@ -166,8 +162,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(400, 'Two versions are required for comparison');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -190,7 +185,7 @@ class HrGovernanceController extends Controller
         $diffDescription = TemplateVersionDiffService::diff($v1['description_body'], $v2['description_body']);
         $diffRequirements = TemplateVersionDiffService::diff($v1['requirements_body'], $v2['requirements_body']);
 
-        return View::render('hr/governance/version-compare', [
+        return $this->view('hr/governance/version-compare', [
             'requisition' => $requisition,
             'v1' => $v1,
             'v2' => $v2,
@@ -206,8 +201,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -220,7 +214,7 @@ class HrGovernanceController extends Controller
         $activePlatforms = $this->repo->getActivePlatforms();
         $publishedPlatforms = $this->repo->getPublishedPlatforms($id);
 
-        return View::render('hr/governance/publish-form', [
+        return $this->view('hr/governance/publish-form', [
             'requisition' => $requisition,
             'activePlatforms' => $activePlatforms,
             'publishedPlatforms' => $publishedPlatforms
@@ -229,11 +223,9 @@ class HrGovernanceController extends Controller
 
     public function publishRequisition($request, $id)
     {
-        Csrf::verify($request['csrf_token'] ?? '');
         $user = Auth::user();
         
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -243,9 +235,10 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $selectedPlatforms = $request['platforms'] ?? [];
+        $selectedPlatforms = $request->input('platforms', []);
         if (!is_array($selectedPlatforms) || empty($selectedPlatforms)) {
-            return $this->redirect("/hr/requisitions/$id/publish", "Please select at least one platform.", 'error');
+            Session::flash('error', 'Please select at least one platform.');
+            return Response::redirect(url('hr.requisitions.publish.form', [$id]));
         }
 
         $publishedCount = 0;
@@ -257,20 +250,19 @@ class HrGovernanceController extends Controller
             }
         }
 
-        return $this->redirect("/hr/requisitions/$id", "Successfully published to $publishedCount platform(s).");
+        Session::flash('status', "Successfully published to $publishedCount platform(s).");
+        return Response::redirect(url('hr.requisitions.show', [$id]));
     }
 
     public function unpublishRequisition($request, $id)
     {
-        Csrf::verify($request['csrf_token'] ?? '');
         $user = Auth::user();
         
         if ($user['role'] !== 'HR_ADMIN') {
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -283,7 +275,8 @@ class HrGovernanceController extends Controller
 
         $this->repo->recordGovernanceAudit($id, $user['user_id'], GovernanceAuditAction::SYNC_UNPUBLISHED->value, null, null, 'Unpublished from all platforms');
 
-        return $this->redirect("/hr/requisitions/$id", "Successfully unpublished from job boards.");
+        Session::flash('status', 'Successfully unpublished from job boards.');
+        return Response::redirect(url('hr.requisitions.show', [$id]));
     }
 
     public function syncHistory($request, $id)
@@ -293,8 +286,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -302,7 +294,7 @@ class HrGovernanceController extends Controller
 
         $syncRecords = $this->repo->getSyncHistory($id);
 
-        return View::render('hr/governance/sync-history', [
+        return $this->view('hr/governance/sync-history', [
             'requisition' => $requisition,
             'syncRecords' => $syncRecords
         ]);
@@ -315,8 +307,7 @@ class HrGovernanceController extends Controller
             throw new HttpException(403, 'Forbidden');
         }
 
-        $db = Database::getInstance();
-        $requisition = $db->query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
+        $requisition = Database::query("SELECT * FROM job_requisitions WHERE job_id = ?", [$id])->fetch();
 
         if (!$requisition) {
             throw new HttpException(404, 'Not Found');
@@ -332,75 +323,10 @@ class HrGovernanceController extends Controller
 
         $logs = $this->repo->getGovernanceAuditLog($id, $filters);
 
-        return View::render('hr/governance/governance-audit', [
+        return $this->view('hr/governance/governance-audit', [
             'requisition' => $requisition,
             'logs' => $logs
         ]);
     }
 
-    public function departmentHeads()
-    {
-        $user = Auth::user();
-        if (!$this->policy->manageDepartmentHeads($user)) {
-            throw new HttpException(403, 'Forbidden');
-        }
-
-        $db = Database::getInstance();
-        $departments = $db->query("SELECT * FROM departments ORDER BY name")->fetchAll();
-        $heads = $this->repo->getDepartmentHeads();
-        
-        $hrAdmins = $db->query("SELECT user_id, name, department_id FROM users WHERE role = 'HR_ADMIN' AND is_department_head = 0")->fetchAll();
-
-        return View::render('hr/governance/department-heads', [
-            'departments' => $departments,
-            'heads' => $heads,
-            'hrAdmins' => $hrAdmins
-        ]);
-    }
-
-    public function assignDepartmentHead($request)
-    {
-        Csrf::verify($request['csrf_token'] ?? '');
-        $user = Auth::user();
-        if (!$this->policy->manageDepartmentHeads($user)) {
-            throw new HttpException(403, 'Forbidden');
-        }
-
-        $targetUserId = (int)($request['user_id'] ?? 0);
-        $db = Database::getInstance();
-        $targetUser = $db->query("SELECT * FROM users WHERE user_id = ?", [$targetUserId])->fetch();
-
-        if (!$targetUser || $targetUser['role'] !== 'HR_ADMIN') {
-            throw new HttpException(400, 'Invalid user');
-        }
-
-        try {
-            $this->repo->setDepartmentHead($targetUserId, true);
-            $this->repo->recordGovernanceAudit(0, $user['user_id'], GovernanceAuditAction::DEPT_HEAD_ASSIGNED->value, null, ['user_id' => $targetUserId, 'department_id' => $targetUser['department_id']]);
-            return $this->redirect('/hr/governance/department-heads', 'Department head assigned successfully.');
-        } catch (\Exception $e) {
-            return $this->redirect('/hr/governance/department-heads', $e->getMessage(), 'error');
-        }
-    }
-
-    public function removeDepartmentHead($request, $id)
-    {
-        Csrf::verify($request['csrf_token'] ?? '');
-        $user = Auth::user();
-        if (!$this->policy->manageDepartmentHeads($user)) {
-            throw new HttpException(403, 'Forbidden');
-        }
-
-        $targetUserId = (int)$id;
-        $db = Database::getInstance();
-        $targetUser = $db->query("SELECT * FROM users WHERE user_id = ?", [$targetUserId])->fetch();
-        
-        if (!$targetUser) {
-            throw new HttpException(404, 'User not found');
-        }
-
-        $this->repo->setDepartmentHead($targetUserId, false);
-        $this->repo->recordGovernanceAudit(0, $user['user_id'], GovernanceAuditAction::DEPT_HEAD_REMOVED->value, ['user_id' => $targetUserId, 'department_id' => $targetUser['department_id']]);
-        return $this->redirect('/hr/governance/department-heads', 'Department head removed successfully.');
-    }
 }

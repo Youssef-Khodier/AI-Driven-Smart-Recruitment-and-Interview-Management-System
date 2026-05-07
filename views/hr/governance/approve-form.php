@@ -34,7 +34,7 @@
         </div>
 
         <form method="POST" action="<?= e(url('hr.requisitions.approve', ['id' => $requisition['job_id']])) ?>" class="space-y-4 border-t pt-4">
-            <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+            <?= csrf_field() ?>
             
             <div>
                 <label for="comments" class="block text-sm font-medium text-text-primary mb-1">Comments (Optional)</label>

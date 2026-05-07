@@ -21,6 +21,37 @@
         </div>
     </div>
 
+    <form method="POST" action="<?= e(url('hr.interviews.recommendations', [$application['application_id']])) ?>" class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-5 space-y-4">
+        <?= csrf_field() ?>
+        <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+            <div class="flex-1">
+                <label class="block text-sm font-medium text-primary mb-1">Requested Date & Time</label>
+                <input type="datetime-local" name="scheduled_at" value="<?= e(old('scheduled_at')) ?>" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+            </div>
+            <div class="w-full lg:w-48">
+                <label class="block text-sm font-medium text-primary mb-1">Duration</label>
+                <input type="number" name="duration_minutes" value="<?= e(old('duration_minutes', '60')) ?>" min="1" required class="w-full border-border-base rounded-md shadow-sm focus:ring-secondary focus:border-secondary sm:text-sm">
+            </div>
+            <button type="submit" class="bg-surface-container-low hover:bg-surface-container-highest text-primary border border-border-base px-5 py-2 rounded-md transition-colors font-medium flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">balance</span> Recommend Panel
+            </button>
+        </div>
+        <?php if (!empty($recommendation['recommended_panel'])): ?>
+            <div class="border-t border-border-base pt-4">
+                <h2 class="text-sm font-semibold text-primary mb-2">Lowest-load recommendation</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <?php foreach ($recommendation['recommended_panel'] as $member): ?>
+                        <div class="bg-surface-container-lowest border border-border-base rounded-lg p-3 text-sm">
+                            <div class="font-medium text-primary"><?= e($member['name']) ?></div>
+                            <div class="text-text-muted"><?= e($member['role_in_panel']) ?> - <?= e($member['active_assignment_count']) ?> active assignment(s)</div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <p class="text-xs text-text-muted mt-2">Use these names in the assignment rows below. The recommendation snapshot is saved for audit visibility.</p>
+            </div>
+        <?php endif; ?>
+    </form>
+
     <form method="POST" action="<?= e(url('hr.interviews.store', [$application['application_id']])) ?>" class="bg-card-surface rounded-xl shadow-ambient border border-border-base p-6 md:p-8 space-y-6">
         <?= csrf_field() ?>
 

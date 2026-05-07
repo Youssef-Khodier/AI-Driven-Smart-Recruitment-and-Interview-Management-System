@@ -1,5 +1,4 @@
 <?php $title = 'Screening Audit Log'; ?>
-<?php ob_start(); ?>
 <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-center justify-between">
         <div>
@@ -102,5 +101,3 @@
         <?php endif; ?>
     </div>
 </div>
-<?php $content = ob_get_clean(); ?>
-<?php require __DIR__ . '/../../layouts/app.php'; ?>

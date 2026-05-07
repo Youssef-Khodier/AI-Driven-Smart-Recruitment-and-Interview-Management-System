@@ -62,4 +62,42 @@ final class OnboardingRepository
             'updated_at' => date('Y-m-d H:i:s'),
         ], 'onboarding_id = ?', [$onboardingId]);
     }
+
+    public static function completedTaskKeys(int $onboardingId): array
+    {
+        $records = Database::fetchAll(
+            "SELECT changed_fields
+             FROM post_offer_audit_records
+             WHERE onboarding_id = ? AND action = 'ONBOARDING_TASK_COMPLETE'
+             ORDER BY created_at ASC, audit_id ASC",
+            [$onboardingId]
+        );
+
+        $keys = [];
+        foreach ($records as $record) {
+            $payload = json_decode($record['changed_fields'] ?? '', true);
+            $taskKey = $payload['task_key']['new'] ?? $payload['task_key'] ?? null;
+            if (is_string($taskKey) && $taskKey !== '' && !in_array($taskKey, $keys, true)) {
+                $keys[] = $taskKey;
+            }
+        }
+
+        return $keys;
+    }
+
+    public static function completeTask(array $onboarding, string $taskKey, int $actorUserId): void
+    {
+        if (in_array($taskKey, self::completedTaskKeys((int)$onboarding['onboarding_id']), true)) {
+            return;
+        }
+
+        PostOfferAuditRepository::record(
+            (int)$onboarding['application_id'],
+            (int)$onboarding['offer_id'],
+            (int)$onboarding['onboarding_id'],
+            $actorUserId,
+            'ONBOARDING_TASK_COMPLETE',
+            ['task_key' => ['new' => $taskKey]]
+        );
+    }
 }

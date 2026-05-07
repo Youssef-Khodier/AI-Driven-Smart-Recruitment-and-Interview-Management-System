@@ -64,10 +64,22 @@
                         <span class="text-2xl font-bold text-primary"><?= e(number_format($snap['aggregate_score'], 1)) ?></span>
                         <span class="text-text-muted text-sm ml-2">/100</span>
                         <span class="ml-3 px-2 py-1 rounded text-xs font-medium <?= $snap['normalization_status'] === 'APPLIED' ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning' ?>"><?= e($snap['normalization_status']) ?></span>
+                        <span class="ml-2 px-2 py-1 rounded text-xs font-medium <?= (int)$snap['missing_feedback_count'] === 0 ? 'bg-success-bg text-success' : 'bg-warning-bg text-warning' ?>">
+                            <?= (int)$snap['missing_feedback_count'] === 0 ? 'CONSENSUS READY' : 'WAITING FOR FEEDBACK' ?>
+                        </span>
                     </div>
                     <span class="text-text-muted text-sm"><?= e(date('M j, Y g:i a', strtotime($snap['created_at']))) ?></span>
                 </div>
-                <p class="text-sm text-text-muted mt-1">Included: <?= e($snap['included_feedback_count'] ?? 0) ?> | Missing: <?= e($snap['missing_feedback_count'] ?? 0) ?></p>
+                <p class="text-sm text-text-muted mt-1">Included: <?= e($snap['included_feedback_count'] ?? 0) ?> | Missing: <?= e($snap['missing_feedback_count'] ?? 0) ?> | Recommendation: <?= e($snap['recommendation']) ?></p>
+                <?php $normalized = json_decode($snap['normalized_score_summary'] ?? '{}', true); $averages = $normalized['averages'] ?? []; ?>
+                <?php if (!empty($averages)): ?>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-xs">
+                        <span class="bg-surface-container-low rounded px-2 py-1 text-text-muted">Technical <?= e($averages['technical_score'] ?? '0') ?>/10</span>
+                        <span class="bg-surface-container-low rounded px-2 py-1 text-text-muted">Communication <?= e($averages['communication_score'] ?? '0') ?>/10</span>
+                        <span class="bg-surface-container-low rounded px-2 py-1 text-text-muted">Culture <?= e($averages['culture_fit_score'] ?? '0') ?>/10</span>
+                        <span class="bg-surface-container-low rounded px-2 py-1 text-text-muted">Overall <?= e($averages['overall_score'] ?? '0') ?>/10</span>
+                    </div>
+                <?php endif; ?>
             </div>
         <?php endforeach; ?>
         <?php if (empty($snapshots)): ?>
@@ -130,6 +142,9 @@
                     <span class="px-2 py-1 rounded text-xs font-medium bg-info/10 text-info"><?= e($d['status']) ?></span>
                     <span class="text-text-muted text-sm"><?= e(date('M j, Y', strtotime($d['created_at']))) ?></span>
                 </div>
+                <?php if ($d['status'] === 'PENDING'): ?>
+                    <p class="text-sm text-success mt-2">Consensus record created because all required feedback is submitted.</p>
+                <?php endif; ?>
                 <?php if ($d['rationale']): ?>
                     <p class="text-sm text-text-muted mt-2"><?= e($d['rationale']) ?></p>
                 <?php endif; ?>

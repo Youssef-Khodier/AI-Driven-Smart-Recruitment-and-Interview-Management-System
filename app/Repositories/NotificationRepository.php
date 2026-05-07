@@ -113,7 +113,7 @@ final class NotificationRepository
     public static function findMissingFeedbackReminders(): array
     {
         return Database::fetchAll(
-            "SELECT i.interview_id, i.scheduled_at, i.updated_at, ia.interviewer_id,
+            "SELECT i.interview_id, i.scheduled_at, i.updated_at, ia.interviewer_id, a.candidate_id,
                     candidate_user.name AS candidate_name, j.title AS job_title
              FROM interviews i
              JOIN interviewers_assignment ia ON ia.interview_id = i.interview_id
@@ -132,7 +132,7 @@ final class NotificationRepository
     public static function findOffersExpiringWithin48Hours(): array
     {
         return Database::fetchAll(
-            'SELECT o.offer_id, o.expiry_date, o.created_by, u.name AS candidate_name, j.title AS job_title
+            'SELECT o.offer_id, o.expiry_date, o.created_by, a.candidate_id, u.name AS candidate_name, j.title AS job_title
              FROM offers o
              JOIN applications a ON a.application_id = o.application_id
              JOIN candidates c ON c.candidate_id = a.candidate_id
@@ -147,7 +147,7 @@ final class NotificationRepository
     public static function findExpiredSentOffers(): array
     {
         return Database::fetchAll(
-            'SELECT o.offer_id, o.expiry_date, o.created_by, u.name AS candidate_name, j.title AS job_title
+            'SELECT o.offer_id, o.expiry_date, o.created_by, a.candidate_id, u.name AS candidate_name, j.title AS job_title
              FROM offers o
              JOIN applications a ON a.application_id = o.application_id
              JOIN candidates c ON c.candidate_id = a.candidate_id
